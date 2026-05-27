@@ -7,8 +7,27 @@ All SVG paths connect at exact geometric junction points.
 """
 import json, os
 
-NB_PATH = "/Users/quintin/PhytonNotebook/CERN_Visualisierung/notebooks/CERN_Beschleuniger_Schaltzentrale.ipynb"
-ROOT_PATH = "/Users/quintin/PhytonNotebook/CERN_Beschleuniger_Schaltzentrale.ipynb"
+script_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.abspath(os.path.join(script_dir, "..", ".."))
+
+NB_PATH = os.path.join(project_root, "CERN_Visualisierung", "notebooks", "CERN_Beschleuniger_Schaltzentrale.ipynb")
+ROOT_PATH = os.path.join(project_root, "CERN_Beschleuniger_Schaltzentrale.ipynb")
+
+import math
+def generate_pipe_path(sign, delta=5.5):
+    cx, cy, r_base = 350, 240, 180
+    pts = []
+    for i in range(181):
+        a = i * math.pi / 90.0
+        r = r_base + sign * delta * math.sin(a * 2)
+        x = cx + r * math.cos(a)
+        y = cy + r * math.sin(a)
+        pts.append(f"{'M' if i==0 else 'L'} {x:.2f},{y:.2f}")
+    return " ".join(pts)
+
+pipe1_path = generate_pipe_path(1)
+pipe2_path = generate_pipe_path(-1)
+
 
 def md(lines):
     return {"cell_type":"markdown","metadata":{},"source":[l+"\n" for l in lines]}
@@ -35,7 +54,7 @@ cells.append(md([
 "### Ablauf",
 "1. **Teilchenart wählen** (Protonen oder Blei-Ionen)",
 "2. **Bunches injizieren**: Jeder Klick schickt ein Bunch durch die gesamte Kette. Du siehst den Punkt von der Quelle durch jeden Ring wandern.",
-"3. **LHC auffüllen**: Der LHC braucht mindestens **5 Bunches pro Strahl** (Beam 1 im Uhrzeigersinn über TI 2, Beam 2 gegen den Uhrzeigersinn über TI 8).",
+"3. **LHC auffüllen**: Der LHC braucht mindestens **6 Bunches pro Strahl** (Beam 1 im Uhrzeigersinn über TI 2, Beam 2 gegen den Uhrzeigersinn über TI 8).",
 "4. **Energie rampen**: Alle LHC-Bunches beschleunigen synchron auf Kollisionsenergie.",
 "5. **Kollidieren**: Erst wenn beide Strahlen gefüllt und auf Maximalenergie sind, können Kollisionen an den Detektoren (ATLAS, CMS, ALICE, LHCb) ausgelöst werden.",
 ]))
@@ -55,22 +74,14 @@ cells.append(code([
 cells.append(md([
 "## 🎛️ Stellwerk starten",
 "Führe die nächste Zelle aus. Dann:",
-"1. Wähle **Protonen** oder **Blei-Ionen**",
-"2. Klicke **Inject Beam 1** – beobachte wie der Bunch von der Quelle durch alle Ringe zum LHC wandert",
-"3. Wiederhole für **Beam 2** – der Bunch nimmt den anderen Transferweg (TI 8)",
-"4. Fülle beide Strahlen auf (je ≥5 Bunches), dann **Ramp** und **Collide!**",
+"1. Wähle **Protonen** oder **Blei-Ionen** (oder nutze eines der **Experiment-Presets**)",
+"2. Klicke **Füllprotokoll (Autopilot)** für eine automatische, symmetrische Injektion beider Strahlen",
+"3. Alternativ: Injiziere manuelle Bunches für **Beam 1** (über TI 2) und **Beam 2** (über TI 8)",
+"4. Starte das **Ramping** und führe nach dem **Beam Squeeze** Kollisionen aus!",
 ]))
 
 # ── CELL 4: The Interactive Dashboard ─────────────────────────────────────────
-# All SVG coordinates are computed so paths connect at exact junction points.
-# Ring layout:
-#   LHC: cx=350 cy=240 r=180   |  SPS: cx=400 cy=148 r=65
-#   PS:  cx=242 cy=332 r=38    |  PSB: cx=142 cy=385 r=18
-#   LEIR: cx=142 cy=275 r=18
-# Junction angles computed via atan2 between ring centers.
-
-html = r"""
-<div id="cern-v4">
+html = r"""<div id="cern-v4">
 <style>
 #cern-v4{background:#0d1117;color:#c9d1d9;font-family:-apple-system,'Segoe UI',Roboto,sans-serif;border-radius:16px;padding:20px;border:1px solid #30363d;max-width:1100px;margin:0 auto;user-select:none}
 .cv4-hdr{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #21262d;padding-bottom:10px;margin-bottom:14px}
@@ -86,9 +97,9 @@ html = r"""
 .cv4-sel-tab.act-i{background:rgba(227,119,194,.12);border-color:#e377c2;color:#e377c2}
 .cv4-grid{display:grid;grid-template-columns:1fr 310px;gap:20px}
 @media(max-width:860px){.cv4-grid{grid-template-columns:1fr}}
-.cv4-svg-wrap{background:#090d13;border-radius:12px;border:1px solid #21262d;height:500px;display:flex;align-items:center;justify-content:center;position:relative}
+.cv4-svg-wrap{background:#090d13;border-radius:12px;border:1px solid #21262d;height:500px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
 .cv4-panel{background:#161b22;border-radius:12px;border:1px solid #30363d;padding:14px;display:flex;flex-direction:column;gap:14px}
-.cv4-ptitle{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:#8b949e;border-bottom:1px solid #30363d;padding-bottom:6px;margin-bottom:6px}
+.cv4-ptitle{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#8b949e;border-bottom:1px solid #30363d;padding-bottom:6px;margin-bottom:6px;font-weight:700}
 .cv4-btn{background:#21262d;color:#c9d1d9;border:1px solid #30363d;padding:9px 14px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;transition:all .2s;text-align:center}
 .cv4-btn:hover{background:#30363d;border-color:#8b949e}
 .cv4-btn.act{background:rgba(88,166,255,.15);border-color:#58a6ff;color:#58a6ff}
@@ -103,7 +114,7 @@ html = r"""
 .cv4-fill-bar-inner.b2{background:#ff7f0e}
 .cv4-fill-bar-inner.b1i{background:#e377c2}
 .cv4-fill-bar-inner.b2i{background:#c77dff}
-.cv4-rg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cv4-grid{display:grid;grid-template-columns:1fr 310px;gap:20px}
 .cv4-ro{background:#0d1117;border-radius:5px;border:1px solid #21262d;padding:7px 10px}
 .cv4-ro-l{font-size:9px;color:#8b949e;text-transform:uppercase}
 .cv4-ro-v{font-size:14px;font-weight:700;color:#f0f6fc;font-family:'Courier New',monospace}
@@ -117,7 +128,7 @@ html = r"""
 .svg-path.lit{stroke:#58a6ff;filter:drop-shadow(0 0 5px rgba(88,166,255,.6))}
 .svg-path.lit-i{stroke:#e377c2;filter:drop-shadow(0 0 5px rgba(227,119,194,.6))}
 .svg-path.lit-b2{stroke:#ff7f0e;filter:drop-shadow(0 0 5px rgba(255,127,14,.6))}
-.svg-lhc{stroke:rgba(88,166,255,.08);stroke-width:3.5;fill:none}
+.svg-lhc{stroke:rgba(88,166,255,.08);stroke-width:4;fill:none}
 .svg-lhc.lit{stroke:rgba(88,166,255,.3)}
 .svg-lhc.lit-i{stroke:rgba(227,119,194,.3)}
 .svg-node{fill:#0d1117;stroke:#21262d;stroke-width:2}
@@ -131,23 +142,65 @@ html = r"""
 .cv4-dtabs{display:flex;gap:3px;margin-bottom:6px}
 .cv4-dtab{flex:1;background:#21262d;border:1px solid #30363d;padding:5px;font-size:10px;color:#8b949e;border-radius:4px;cursor:pointer;text-align:center;font-weight:700}
 .cv4-dtab.act{background:rgba(88,166,255,.12);border-color:#58a6ff;color:#58a6ff}
+.cv4-sli-lbl{display:flex;justify-content:space-between;font-size:10px;color:#8b949e;margin-top:4px}
+.cv4-sli{width:100%;background:#21262d;border-radius:3px;height:4px;outline:none;-webkit-appearance:none;margin-top:2px}
+.cv4-sli::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:12px;height:12px;border-radius:50%;background:#58a6ff;cursor:pointer;border:1px solid #30363d}
+.cv4-sli::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#58a6ff;cursor:pointer;border:1px solid #30363d}
+.cv4-quench{background:rgba(248,81,73,.15);border:1px solid #f85149;color:#f85149;padding:10px;border-radius:6px;font-size:12px;font-weight:bold;text-align:center;animation:cv4blink 1s infinite}
+@keyframes cv4blink{0%,100%{opacity:.5}50%{opacity:1}}
+.geo-element{transition:opacity 0.3s ease, fill-opacity 0.3s ease;}
 </style>
 
 <div class="cv4-hdr">
- <div><span class="cv4-logo">⚛️ CERN CCC</span><span class="cv4-badge">Schaltzentrale v4</span></div>
- <div class="cv4-status"><span class="cv4-dot" id="sdot"></span><span id="stxt">OFFLINE</span></div>
+ <div><span class="cv4-logo">⚛️ CERN CCC</span><span class="cv4-badge">Schaltzentrale v5 - Real Map</span></div>
+ <div style="display:flex;align-items:center;gap:12px">
+  <button class="cv4-btn act" id="btn-toggle-geo" style="padding:4px 8px;font-size:10.5px">🌐 Geo-Overlay</button>
+  <div class="cv4-status"><span class="cv4-dot" id="sdot"></span><span id="stxt">OFFLINE</span></div>
+ </div>
 </div>
 
 <div class="cv4-sel">
- <div class="cv4-sel-tab act-p" id="sel-p">🔵 Protonen (LINAC4 → PSB → PS → SPS → LHC)</div>
- <div class="cv4-sel-tab" id="sel-i">🟣 Blei-Ionen (LINAC3 → LEIR → PS → SPS → LHC)</div>
+  <div class="cv4-sel-tab act-p" id="sel-p">🔵 Protonen (LINAC4 → PSB → PS → SPS → LHC)</div>
+  <div class="cv4-sel-tab" id="sel-i">🟣 Blei-Ionen (LINAC3 → LEIR → PS → SPS → LHC)</div>
 </div>
 
 <div class="cv4-grid">
  <div class="cv4-svg-wrap">
-  <svg id="svg" width="700" height="480" viewBox="0 0 700 480">
-   <!-- Paths: all endpoints computed for exact geometric connection -->
-   <!-- LINAC4: straight line ending at PSB left edge (124,385) -->
+  <!-- Interactive Absolute Overlay Reset Zoom Button -->
+  <button class="cv4-btn off" id="btn-zoom-out" style="position:absolute;top:12px;left:12px;padding:5px 10px;font-size:10px;background:rgba(22,27,34,0.85);border-color:#30363d;z-index:10;transition:all 0.2s">🔍 Ansicht zurücksetzen</button>
+
+  <svg id="svg" width="700" height="480" viewBox="0 0 700 480" style="background:#090d13">
+   <!-- Architectural Grid for tech style -->
+   <defs>
+    <pattern id="arch-grid" width="30" height="30" patternUnits="userSpaceOnUse">
+     <path d="M 30 0 L 0 0 0 30" fill="none" stroke="rgba(255,255,255,0.012)" stroke-width="0.5"/>
+    </pattern>
+   </defs>
+   <rect width="100%" height="100%" fill="url(#arch-grid)" />
+
+   <!-- GEOGRAPHICAL FEATURES (Toggleable via .geo-element) -->
+   <!-- Geneva Lake (Lac Léman) in top-right -->
+   <path class="geo-element" d="M 520,0 Q 560,50 620,60 T 700,75 L 700,0 Z" fill="rgba(88,166,255,0.04)" stroke="rgba(88,166,255,0.12)" stroke-width="1.5" />
+   <text class="geo-element" x="610" y="30" fill="rgba(88,166,255,0.22)" font-size="8px" font-family="monospace">LAC LÉMAN (GENFER SEE)</text>
+
+   <!-- French-Swiss Border (dashed line cutting diagonally) -->
+   <path class="geo-element" d="M 0,220 L 700,120" stroke="rgba(255,255,255,0.06)" stroke-width="1.2" stroke-dasharray="6,6" />
+   <text class="geo-element" x="80" y="200" fill="rgba(255,255,255,0.12)" font-size="7.5px" font-family="monospace" transform="rotate(-8, 80, 200)">STAATSGRENZE SCHWEIZ (CH) - FRANKREICH (FR)</text>
+
+   <!-- Jura Mountain Ridge in the top-left -->
+   <path class="geo-element" d="M 0,50 Q 80,80 150,50 T 250,20" stroke="rgba(255,255,255,0.04)" stroke-width="1.5" stroke-dasharray="3,6" fill="none" />
+   <text class="geo-element" x="60" y="40" fill="rgba(255,255,255,0.10)" font-size="7px" font-family="monospace">JURA-GEBIRGE (FR)</text>
+
+   <!-- Geographic Town/Site Markers -->
+   <text class="geo-element" x="142" y="430" fill="rgba(255,255,255,0.18)" font-size="7.5px" font-family="monospace" text-anchor="middle">CERN Meyrin Campus (CH)</text>
+   <text class="geo-element" x="430" y="90" fill="rgba(255,255,255,0.18)" font-size="7.5px" font-family="monospace" text-anchor="middle">CERN Prévessin Campus (FR)</text>
+   <text class="geo-element" x="100" y="225" fill="rgba(255,255,255,0.18)" font-size="7.5px" font-family="monospace">St. Genis-Pouilly (FR)</text>
+   <text class="geo-element" x="350" y="25" fill="rgba(255,255,255,0.18)" font-size="7.5px" font-family="monospace" text-anchor="middle">Ferney-Voltaire (FR)</text>
+   <path class="geo-element" d="M 590,320 L 670,290" stroke="rgba(255,255,255,0.08)" stroke-width="3" />
+   <text class="geo-element" x="630" y="332" fill="rgba(255,255,255,0.15)" font-size="7.5px" font-family="monospace" text-anchor="middle">Flughafen Genf (GVA)</text>
+
+   <!-- REAL CERN TOP-VIEW ACCELERATOR STRUCTURE -->
+   <!-- LINAC4: straight line injecting into PSB (cx=142, cy=385) -->
    <path id="p-linac4" d="M 30,385 L 124,385" class="svg-path"/>
    <!-- PSB ring cx=142 cy=385 r=18 -->
    <circle id="p-psb" cx="142" cy="385" r="18" class="svg-path"/>
@@ -166,16 +219,34 @@ html = r"""
    <!-- Transfer PS→SPS -->
    <path id="p-ps-sps" d="M 265.2,301.6 Q 312,248 356.8,198.6" class="svg-path"/>
 
-   <!-- SPS ring cx=400 cy=148 r=65 -->
+   <!-- SPS ring: medium ring located SOUTH-EAST inside the LHC, near ALICE. cx=400 cy=148 r=65 -->
    <circle id="p-sps" cx="400" cy="148" r="65" class="svg-path"/>
 
-   <!-- TI 2: SPS → LHC near ALICE (left) -->
+   <!-- TI 2: SPS → LHC injection near ALICE (Point 2, left) -->
    <path id="p-ti2" d="M 339.5,173.7 Q 255,195 170,240" class="svg-path"/>
-   <!-- TI 8: SPS → LHC near LHCb (right) -->
+   <!-- TI 8: SPS → LHC injection near LHCb (Point 8, right) -->
    <path id="p-ti8" d="M 453.4,187.1 Q 495,215 530,240" class="svg-path"/>
 
-   <!-- LHC ring cx=350 cy=240 r=180 -->
+   <!-- Modulated crossover beam vacuum tubes inside the LHC arcs (Double-bore design) -->
+    <!-- Beam 1 tube: starts outer at 45°, crosses in detectors -->
+    <path id="lhc-pipe1" class="geo-element" d="PLACEHOLDER_PIPE1" stroke="rgba(88,166,255,0.22)" stroke-width="1.2" fill="none" stroke-dasharray="3,3" style="transition: opacity 0.3s;" />
+    <!-- Beam 2 tube: starts inner at 45°, crosses in detectors -->
+    <path id="lhc-pipe2" class="geo-element" d="PLACEHOLDER_PIPE2" stroke="rgba(255,127,14,0.22)" stroke-width="1.2" fill="none" stroke-dasharray="3,3" style="transition: opacity 0.3s;" />
+
+   <!-- LHC tunnel (massive average ring cx=350 cy=240 r=180) -->
    <circle id="p-lhc" cx="350" cy="240" r="180" class="svg-path svg-lhc"/>
+
+   <!-- STYLISH ACCELERATOR DETECTORS & DETAILS -->
+   <!-- RF Cavities on the LHC ring (Point 4) represented as small bright rects -->
+   <rect x="340" y="415" width="20" height="10" fill="rgba(255,127,14,0.2)" stroke="#ff7f0e" stroke-width="1" />
+   <rect x="340" y="55" width="20" height="10" fill="rgba(255,127,14,0.2)" stroke="#ff7f0e" stroke-width="1" />
+   <text x="350" y="435" fill="rgba(255,127,14,0.5)" font-size="6px" font-family="monospace" text-anchor="middle">400 MHz RF</text>
+
+   <!-- Quadrupole focusing triplets near the detectors -->
+   <path d="M 330,420 L 370,420" stroke="#2ea44f" stroke-width="3" opacity="0.3" />
+   <path d="M 330,60 L 370,60" stroke="#2ea44f" stroke-width="3" opacity="0.3" />
+   <path d="M 170,220 L 170,260" stroke="#2ea44f" stroke-width="3" opacity="0.3" />
+   <path d="M 530,220 L 530,260" stroke="#2ea44f" stroke-width="3" opacity="0.3" />
 
    <!-- Nodes / Labels -->
    <circle id="n-linac4" cx="30" cy="385" r="5" class="svg-node"/>
@@ -193,15 +264,23 @@ html = r"""
    <circle id="n-sps" cx="400" cy="148" r="10" class="svg-node"/>
    <text x="400" y="230" class="svg-lbl">SPS</text>
 
-   <!-- LHC Detector Nodes -->
-   <circle id="d-atlas" cx="350" cy="420" r="14" class="svg-node"/>
-   <text x="350" y="448" class="svg-lbl" style="fill:#e6edf3;font-weight:bold">ATLAS</text>
-   <circle id="d-cms" cx="350" cy="60" r="14" class="svg-node"/>
-   <text x="350" y="42" class="svg-lbl" style="fill:#e6edf3;font-weight:bold">CMS</text>
-   <circle id="d-alice" cx="170" cy="240" r="12" class="svg-node"/>
-   <text x="134" y="240" class="svg-lbl" style="fill:#e6edf3;font-weight:bold">ALICE</text>
-   <circle id="d-lhcb" cx="530" cy="240" r="12" class="svg-node"/>
-   <text x="567" y="240" class="svg-lbl" style="fill:#e6edf3;font-weight:bold">LHCb</text>
+   <!-- LHC Detector Groups for interactive zoom -->
+   <g id="grp-atlas" style="cursor:pointer">
+    <circle id="d-atlas" cx="350" cy="420" r="14" class="svg-node"/>
+    <text x="350" y="448" class="svg-lbl" style="fill:#e6edf3;font-weight:bold">ATLAS (IP1)</text>
+   </g>
+   <g id="grp-cms" style="cursor:pointer">
+    <circle id="d-cms" cx="350" cy="60" r="14" class="svg-node"/>
+    <text x="350" y="42" class="svg-lbl" style="fill:#e6edf3;font-weight:bold">CMS (IP5)</text>
+   </g>
+   <g id="grp-alice" style="cursor:pointer">
+    <circle id="d-alice" cx="170" cy="240" r="12" class="svg-node"/>
+    <text x="134" y="240" class="svg-lbl" style="fill:#e6edf3;font-weight:bold">ALICE (IP2)</text>
+   </g>
+   <g id="grp-lhcb" style="cursor:pointer">
+    <circle id="d-lhcb" cx="530" cy="240" r="12" class="svg-node"/>
+    <text x="567" y="240" class="svg-lbl" style="fill:#e6edf3;font-weight:bold">LHCb (IP8)</text>
+   </g>
 
    <!-- TI labels -->
    <text x="248" y="186" class="svg-lbl" style="font-size:8px">TI 2</text>
@@ -211,10 +290,24 @@ html = r"""
 
  <div class="cv4-panel">
   <div>
+   <div class="cv4-ptitle">🔬 EXPERIMENT-PRESETS (SCHNELLWAHL)</div>
+   <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px">
+    <button class="cv4-btn" id="btn-pre-higgs" style="background:rgba(88,166,255,.10);border-color:#58a6ff;color:#58a6ff;font-size:9.5px;padding:6px 2px">Higgs-Suche (ATLAS/CMS)</button>
+    <button class="cv4-btn" id="btn-pre-qgp" style="background:rgba(227,119,194,.10);border-color:#e377c2;color:#e377c2;font-size:9.5px;padding:6px 2px">QGP-Erzeugung (ALICE)</button>
+    <button class="cv4-btn" id="btn-pre-lhcb" style="background:rgba(255,127,14,.10);border-color:#ff7f0e;color:#ff7f0e;font-size:9.5px;padding:6px 2px">CP-Verletzung (LHCb)</button>
+    <button class="cv4-btn" id="btn-pre-pilot" style="background:rgba(23,190,207,.10);border-color:#17becf;color:#17becf;font-size:9.5px;padding:6px 2px">Pilot-Strahl (Testrun)</button>
+   </div>
+  </div>
+
+  <div>
    <div class="cv4-ptitle">📡 INJEKTION</div>
    <div style="display:flex;flex-direction:column;gap:6px">
-    <button class="cv4-btn" id="btn-b1">📥 Inject Beam 1 (CW, via TI 2)</button>
-    <button class="cv4-btn" id="btn-b2">📥 Inject Beam 2 (CCW, via TI 8)</button>
+    <button class="cv4-btn" id="btn-speed-toggle" style="background:rgba(88,166,255,.08);border-color:rgba(88,166,255,.3);color:#58a6ff;font-size:10.5px;padding:6px 4px;margin-bottom:2px">⏱️ Modus: Zeitraffer (Schnell)</button>
+    <button class="cv4-btn" id="btn-auto" style="background:rgba(46,164,79,.15);border-color:#2ea44f;color:#2ea44f">⚙️ Füllprotokoll (Autopilot)</button>
+    <div style="display:flex;gap:4px">
+     <button class="cv4-btn" id="btn-b1" style="flex:1;padding:6px;font-size:10px">📥 Manuell B1</button>
+     <button class="cv4-btn" id="btn-b2" style="flex:1;padding:6px;font-size:10px">📥 Manuell B2</button>
+    </div>
    </div>
    <div class="cv4-tracker" id="tracker">
     <span class="step" id="tr-src">Quelle</span><span class="arr">→</span>
@@ -224,19 +317,41 @@ html = r"""
     <span class="step" id="tr-lhc">LHC</span>
    </div>
   </div>
+
   <div>
    <div class="cv4-ptitle">🔋 LHC FÜLLSTAND</div>
-   <div class="cv4-fill-row"><span style="width:50px">B1 <span id="b1c">0</span>/5</span><div class="cv4-fill-bar"><div class="cv4-fill-bar-inner b1" id="b1bar" style="width:0%"></div></div></div>
-   <div class="cv4-fill-row" style="margin-top:4px"><span style="width:50px">B2 <span id="b2c">0</span>/5</span><div class="cv4-fill-bar"><div class="cv4-fill-bar-inner b2" id="b2bar" style="width:0%"></div></div></div>
+   <div class="cv4-fill-row"><span style="width:50px">B1 <span id="b1c">0</span>/6</span><div class="cv4-fill-bar"><div class="cv4-fill-bar-inner b1" id="b1bar" style="width:0%"></div></div></div>
+   <div class="cv4-fill-row" style="margin-top:4px"><span style="width:50px">B2 <span id="b2c">0</span>/6</span><div class="cv4-fill-bar"><div class="cv4-fill-bar-inner b2" id="b2bar" style="width:0%"></div></div></div>
   </div>
+
+  <div>
+   <div class="cv4-ptitle">🎛️ CCC BETRIEBSPARAMETER</div>
+   <div class="cv4-sli-lbl"><span>Ziel-Energie:</span><span id="lbl-energy">6.8 TeV</span></div>
+   <input type="range" class="cv4-sli" id="sli-energy" min="1.0" max="7.0" step="0.2" value="6.8">
+
+   <div class="cv4-sli-lbl" style="margin-top:8px"><span>Bunch-Intensität:</span><span id="lbl-intensity">1.15e11 p</span></div>
+   <input type="range" class="cv4-sli" id="sli-intensity" min="0.1" max="1.8" step="0.05" value="1.15">
+
+   <div class="cv4-sli-lbl" style="margin-top:8px"><span>Strahl-Fokus β* (Squeeze):</span><span id="lbl-beta">1.50 m</span></div>
+   <input type="range" class="cv4-sli" id="sli-beta" min="0.3" max="1.5" step="0.1" value="1.5" disabled>
+
+   <div class="cv4-sli-lbl" style="margin-top:8px"><span>Ramp-Rate dB/dt:</span><span id="lbl-rampspeed" style="color:#58a6ff">0.05 T/s (Sicher)</span></div>
+   <input type="range" class="cv4-sli" id="sli-rampspeed" min="0.02" max="0.15" step="0.01" value="0.05">
+  </div>
+
   <div>
    <div class="cv4-ptitle">⚡ LHC BETRIEB</div>
    <div style="display:flex;flex-direction:column;gap:6px">
     <button class="cv4-btn off" id="btn-ramp">🚀 Energie-Ramping starten</button>
     <div class="cv4-fill-row"><span style="width:50px;font-size:10px">Ramp</span><div class="cv4-fill-bar"><div class="cv4-fill-bar-inner b1" id="rbar" style="width:0%"></div></div></div>
-    <button class="cv4-btn danger off" id="btn-coll">💥 Strahlkollision auslösen!</button>
+    <button class="cv4-btn off" id="btn-squeeze" style="background:rgba(23,190,207,.15);border-color:#17becf;color:#17becf">🗜️ Beam Squeeze starten (β*)</button>
+    <div style="display:flex;gap:4px">
+     <button class="cv4-btn danger off" id="btn-coll" style="flex:1;font-size:10.5px;padding:9px 2px">💥 Kollision (manuell)</button>
+     <button class="cv4-btn off" id="btn-autocoll" style="flex:1.2;background:rgba(248,81,73,.08);border-color:rgba(248,81,73,.4);color:#f85149;font-size:10.5px;padding:9px 2px">▶️ Auto-Datennahme</button>
+    </div>
    </div>
   </div>
+
   <div>
    <div class="cv4-ptitle">📊 MESSWERTE</div>
    <div class="cv4-rg">
@@ -262,9 +377,15 @@ html = r"""
  </div>
  <div>
   <div class="cv4-ptitle">📊 MASSENSPEKTRUM <span id="sp-info" style="float:right;font-size:10px;color:#58a6ff">Kollisionen: 0</span></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;font-size:10px;padding:0 4px">
+   <span>Signifikanz: <strong id="lbl-sig" style="font-family:monospace;color:#8b949e">0.00 σ</strong></span>
+   <span id="lbl-sig-status" style="font-weight:bold;color:#8b949e;font-size:9.5px">Rauschen (Kein Signal)</span>
+  </div>
+  <div class="cv4-fill-bar" style="height:4px;margin-bottom:6px;background:#21262d;border-radius:2px;overflow:hidden">
+   <div class="cv4-fill-bar-inner" id="sig-bar" style="width:0%;background:#8b949e;height:100%;transition:all 0.2s"></div>
+  </div>
   <div class="cv4-histwrap"><canvas id="cv-hist" style="width:100%;height:100%"></canvas></div>
  </div>
-</div>
 </div>
 
 <script>
@@ -301,26 +422,71 @@ const J={
 // ═══════════════════════════════════════════════════════════════════════════
 let isIon=false, injecting=false, ramped=false;
 let b1Count=0, b2Count=0, collisions=0;
-const NEEDED=5;
+const NEEDED=6;
 let lhcDots={b1:[],b2:[]};
-let lhcSpeed=0.0015; // rad/ms at injection energy
+let lhcSpeed=0.0030; // rad/ms at injection energy (Proton default)
 let lhcAngle=0, lhcRunning=false, lhcLastT=null;
 let lhcEnergy=450; // GeV
 let massData=[];
 let selDet="ATLAS";
+let isFastMode=true; // Toggleable speed mode
+
+function getDurations() {
+  if (isFastMode) {
+    return {
+      linac: isIon ? 350 : 200,
+      ring1: isIon ? 900 : 500,
+      trToPs: isIon ? 150 : 100,
+      ps: isIon ? 1000 : 600,
+      trToSps: isIon ? 200 : 100,
+      sps: isIon ? 800 : 500,
+      ti: isIon ? 250 : 150,
+      autoDelay: 150
+    };
+  } else {
+    return {
+      linac: isIon ? 1200 : 600,
+      ring1: isIon ? 3400 : 1900,
+      trToPs: isIon ? 300 : 150,
+      ps: isIon ? 3600 : 2000,
+      trToSps: isIon ? 400 : 200,
+      sps: isIon ? 2700 : 1600,
+      ti: isIon ? 500 : 250,
+      autoDelay: 800
+    };
+  }
+}
+
+// CCC OPERATOR STATES
+let paramEnergy = 6.8;      // Target Energy (TeV)
+let paramIntensity = 1.15;  // Bunch Intensity (10^11 protons)
+let paramBetaStar = 1.5;    // Beam size at IP (meters)
+let paramRampSpeed = 0.05;  // Magnetic field ramp rate (T/s)
+let squeezing = false;      // Squeeze in progress
+let squeezed = false;       // Squeeze complete
+let cryoRecovery = false;   // Cryogenic recovery active
+let autoCollInterval = null; // Auto Collide loop
 
 // ═══════════════════════════════════════════════════════════════════════════
 // DOM REFERENCES
 // ═══════════════════════════════════════════════════════════════════════════
 const $=id=>document.getElementById(id);
 const sdot=$("sdot"),stxt=$("stxt");
-const btnB1=$("btn-b1"),btnB2=$("btn-b2"),btnRamp=$("btn-ramp"),btnColl=$("btn-coll");
+const btnB1=$("btn-b1"),btnB2=$("btn-b2"),btnRamp=$("btn-ramp"),btnColl=$("btn-coll"),btnAuto=$("btn-auto"),btnSqueeze=$("btn-squeeze");
+const btnAutoColl=$("btn-autocoll"),btnSpeedToggle=$("btn-speed-toggle");
 const b1c=$("b1c"),b2c=$("b2c"),b1bar=$("b1bar"),b2bar=$("b2bar"),rbar=$("rbar");
 const vE=$("v-e"),vB=$("v-b"),vG=$("v-g"),vT=$("v-t");
 const spInfo=$("sp-info");
+const sliEnergy=$("sli-energy"), sliIntensity=$("sli-intensity"), sliBeta=$("sli-beta"), sliRampSpeed=$("sli-rampspeed");
+const lblEnergy=$("lbl-energy"), lblIntensity=$("lbl-intensity"), lblBeta=$("lbl-beta"), lblRampSpeed=$("lbl-rampspeed");
 const trSteps=["tr-src","tr-inj","tr-ps","tr-sps","tr-lhc"].map($);
 const trInj=$("tr-inj");
 const selP=$("sel-p"),selI=$("sel-i");
+
+const btnToggleGeo=$("btn-toggle-geo");
+const btnPreHiggs=$("btn-pre-higgs"),btnPreQgp=$("btn-pre-qgp"),btnPreLhcb=$("btn-pre-lhcb"),btnPrePilot=$("btn-pre-pilot");
+const btnZoomOut=$("btn-zoom-out");
+const grpAtlas=$("grp-atlas"),grpCms=$("grp-cms"),grpAlice=$("grp-alice"),grpLhcb=$("grp-lhcb");
 
 // SVG path elements
 const paths={
@@ -335,11 +501,38 @@ const nodes={
  atlas:$("d-atlas"), cms:$("d-cms"), alice:$("d-alice"), lhcb:$("d-lhcb")
 };
 
-// Canvas
+// Canvas references
 const cvEv=$("cv-ev"), ctxEv=cvEv.getContext("2d");
 const cvHist=$("cv-hist"), ctxHist=cvHist.getContext("2d");
 
-// Detector tabs
+// High-DPI Resolution backing store setup for super crisp Retinas
+let dpr = window.devicePixelRatio || 1;
+let evW = 340, evH = 180, histW = 340, histH = 130;
+
+function resizeCanvases(){
+ // Resize Event Display
+ const rEv = cvEv.getBoundingClientRect();
+ evW = rEv.width || 340;
+ evH = rEv.height || 180;
+ cvEv.width = evW * dpr;
+ cvEv.height = evH * dpr;
+ cvEv.style.width = evW + "px";
+ cvEv.style.height = evH + "px";
+ ctxEv.resetTransform ? ctxEv.resetTransform() : null;
+ ctxEv.scale(dpr, dpr);
+ 
+ // Resize Histogram
+ const rHist = cvHist.getBoundingClientRect();
+ histW = rHist.width || 340;
+ histH = rHist.height || 130;
+ cvHist.width = histW * dpr;
+ cvHist.height = histH * dpr;
+ cvHist.style.width = histW + "px";
+ cvHist.style.height = histH + "px";
+ ctxHist.resetTransform ? ctxHist.resetTransform() : null;
+ ctxHist.scale(dpr, dpr);
+}
+
 ["atlas","cms","alice","lhcb"].forEach(d=>{
  $("dt-"+d).addEventListener("click",()=>{
   document.querySelectorAll(".cv4-dtab").forEach(t=>t.classList.remove("act"));
@@ -349,9 +542,6 @@ const cvHist=$("cv-hist"), ctxHist=cvHist.getContext("2d");
  });
 });
 
-// ═══════════════════════════════════════════════════════════════════════════
-// HADRON SELECTION
-// ═══════════════════════════════════════════════════════════════════════════
 selP.addEventListener("click",()=>{ if(injecting)return; setMode(false); });
 selI.addEventListener("click",()=>{ if(injecting)return; setMode(true); });
 
@@ -374,24 +564,31 @@ function setMode(ion){
 }
 
 function resetLHC(){
+ resetFlag = true;
+ autopilotActive = false;
+ stopAutoCollide();
+ document.querySelectorAll(".traveling-dot").forEach(d=>d.remove());
+ btnB1.classList.remove("off"); btnB2.classList.remove("off"); btnAuto.classList.remove("off");
+ injecting = false;
  lhcDots.b1.forEach(d=>d.el.remove()); lhcDots.b2.forEach(d=>d.el.remove());
  lhcDots={b1:[],b2:[]}; b1Count=0; b2Count=0; collisions=0; massData=[];
- ramped=false; lhcEnergy=isIon?177:450; lhcSpeed=0.0015;
+ ramped=false; squeezed=false; squeezing=false;
+ lhcEnergy=isIon?177:450; lhcSpeed=isIon?0.0019:0.0030;
+ paramBetaStar=1.5;
  b1c.innerText="0"; b2c.innerText="0"; b1bar.style.width="0%"; b2bar.style.width="0%";
  rbar.style.width="0%"; spInfo.innerText="Kollisionen: 0";
- btnRamp.classList.add("off"); btnColl.classList.add("off");
+ btnRamp.classList.add("off"); btnSqueeze.classList.add("off"); btnColl.classList.add("off");
+ btnAutoColl.classList.add("off");
+ sliEnergy.disabled = false; sliIntensity.disabled = false; sliBeta.value = 1.5; sliBeta.disabled = true; sliRampSpeed.disabled = false;
+ lblBeta.innerText = "1.50 m";
  updateReadouts();
- // Clear path glows
  Object.values(paths).forEach(p=>{p.classList.remove("lit","lit-i","lit-b2")});
  Object.values(nodes).forEach(n=>{n.classList.remove("glow","glow-i","flash")});
  paths.lhc.classList.remove("lit","lit-i");
  setStatus("BEREIT","on");
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// ANIMATION PRIMITIVES
-// ═══════════════════════════════════════════════════════════════════════════
-function moveAlongPath(dot, pathEl, dur){
+async function moveAlongPath(dot, pathEl, dur){
  return new Promise(res=>{
   const len=pathEl.getTotalLength();
   let t0=null;
@@ -406,33 +603,27 @@ function moveAlongPath(dot, pathEl, dur){
  });
 }
 
-function orbitRing(dot, ring, entryA, exitA, orbits, dur){
- // Clockwise orbit (angle increases) from entryA to exitA + orbits full turns
- let partial=((exitA-entryA)%(2*Math.PI)+2*Math.PI)%(2*Math.PI);
- let totalA=orbits*2*Math.PI+partial;
- return new Promise(res=>{
-  let t0=null;
-  function step(ts){
-   if(!t0) t0=ts;
-   let p=Math.min((ts-t0)/dur,1);
-   // Ease: start slow, accelerate (simulating energy ramp in ring)
-   let ep=p*p*(3-2*p); // smoothstep
-   let a=entryA+ep*totalA;
-   dot.setAttribute("cx",ring.cx+ring.r*Math.cos(a));
-   dot.setAttribute("cy",ring.cy+ring.r*Math.sin(a));
-   p<1 ? requestAnimationFrame(step) : res();
-  }
-  requestAnimationFrame(step);
- });
+async function orbitRing(dot, ring, entryA, exitA, orbits, dur){
+  let partial=((exitA-entryA)%(2*Math.PI)+2*Math.PI)%(2*Math.PI);
+  let totalA=orbits*2*Math.PI+partial;
+  return new Promise(res=>{
+   let t0=null;
+   function step(ts){
+    if(!t0) t0=ts;
+    let p=Math.min((ts-t0)/dur,1);
+    let a=entryA+p*totalA;
+    dot.setAttribute("cx",ring.cx+ring.r*Math.cos(a));
+    dot.setAttribute("cy",ring.cy+ring.r*Math.sin(a));
+    p<1 ? requestAnimationFrame(step) : res();
+   }
+   requestAnimationFrame(step);
+  });
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// INJECTION CYCLE — the core physical simulation
-// A single bunch traverses: Source → LINAC → Ring1 → PS → SPS → TI → LHC
-// ═══════════════════════════════════════════════════════════════════════════
 async function injectBunch(beam){
  if(injecting) return;
  injecting=true;
+ resetFlag = false;
  btnB1.classList.add("off"); btnB2.classList.add("off");
 
  const ion=isIon;
@@ -442,14 +633,13 @@ async function injectBunch(beam){
  const dotColorB2=ion?"#c77dff":"#ff7f0e";
  const color=beam===1?dotColor:dotColorB2;
 
- // Create the bunch dot
  const dot=document.createElementNS(SVG_NS,"circle");
+ dot.setAttribute("class", "traveling-dot");
  dot.setAttribute("r","4");
  dot.setAttribute("fill",color);
  dot.style.filter="drop-shadow(0 0 4px "+color+")";
  svg.appendChild(dot);
 
- // Helper to light/unlight paths and track progress
  function lightPath(el){el.classList.add(litCls)}
  function lightNode(el){el.classList.add(glowCls)}
  function dimPath(el){el.classList.remove(litCls,"lit","lit-i","lit-b2")}
@@ -462,16 +652,15 @@ async function injectBunch(beam){
   });
  }
 
- // ── Phase 1: Source → LINAC ──
  setTracker(0);
  const linacPath=ion?paths.linac3:paths.linac4;
  const linacNode=ion?nodes.linac3:nodes.linac4;
  lightNode(linacNode); lightPath(linacPath);
  setStatus(ion?"LINAC 3 FEUERT":"LINAC 4 FEUERT","on");
- await moveAlongPath(dot, linacPath, 800);
+ await moveAlongPath(dot, linacPath, getDurations().linac);
+ if (resetFlag) { dot.remove(); return; }
  dimNode(linacNode);
 
- // ── Phase 2: Orbit in PSB/LEIR ──
  setTracker(1);
  const ring1=ion?R.LEIR:R.PSB;
  const ring1Path=ion?paths.leir:paths.psb;
@@ -480,84 +669,133 @@ async function injectBunch(beam){
  const ring1Exit=ion?J.LEIR_EXIT:J.PSB_EXIT;
  lightPath(ring1Path); lightNode(ring1Node);
  setStatus(ion?"LEIR: Beschleunigung auf 72 MeV/u":"PSB: Beschleunigung auf 2 GeV","on");
- await orbitRing(dot, ring1, ring1Entry, ring1Exit, 3, 1800);
+ await orbitRing(dot, ring1, ring1Entry, ring1Exit, 3, getDurations().ring1);
+ if (resetFlag) { dot.remove(); return; }
  dimPath(ring1Path); dimPath(linacPath);
 
- // ── Phase 3: Transfer to PS ──
  const trToPs=ion?paths.leirPs:paths.psbPs;
  lightPath(trToPs);
- await moveAlongPath(dot, trToPs, 400);
+ await moveAlongPath(dot, trToPs, getDurations().trToPs);
+ if (resetFlag) { dot.remove(); return; }
  dimPath(trToPs); dimNode(ring1Node);
 
- // ── Phase 4: Orbit in PS ──
  setTracker(2);
  const psEntry=ion?J.PS_FROM_LEIR:J.PS_FROM_PSB;
  lightPath(paths.ps); lightNode(nodes.ps);
  setStatus(ion?"PS: Beschleunigung auf 5.9 GeV/u":"PS: Beschleunigung auf 26 GeV","on");
- await orbitRing(dot, R.PS, psEntry, J.PS_EXIT, 3, 2000);
+ await orbitRing(dot, R.PS, psEntry, J.PS_EXIT, 3, getDurations().ps);
+ if (resetFlag) { dot.remove(); return; }
  dimPath(paths.ps);
 
- // ── Phase 5: Transfer to SPS ──
  lightPath(paths.psSps);
- await moveAlongPath(dot, paths.psSps, 500);
+ await moveAlongPath(dot, paths.psSps, getDurations().trToSps);
+ if (resetFlag) { dot.remove(); return; }
  dimPath(paths.psSps); dimNode(nodes.ps);
 
- // ── Phase 6: Orbit in SPS ──
  setTracker(3);
  lightPath(paths.sps); lightNode(nodes.sps);
  const spsExit=beam===1?J.SPS_TI2:J.SPS_TI8;
  setStatus(ion?"SPS: Beschleunigung auf 177 GeV/u":"SPS: Beschleunigung auf 450 GeV","on");
- await orbitRing(dot, R.SPS, J.SPS_ENTRY, spsExit, 2, 1800);
+ await orbitRing(dot, R.SPS, J.SPS_ENTRY, spsExit, 2, getDurations().sps);
+ if (resetFlag) { dot.remove(); return; }
  dimPath(paths.sps);
 
- // ── Phase 7: Transfer via TI2 or TI8 to LHC ──
  const tiPath=beam===1?paths.ti2:paths.ti8;
  lightPath(tiPath);
  setStatus(beam===1?"Transfer via TI 2 zum LHC":"Transfer via TI 8 zum LHC","on");
- await moveAlongPath(dot, tiPath, 600);
+ await moveAlongPath(dot, tiPath, getDurations().ti);
+ if (resetFlag) { dot.remove(); return; }
  dimPath(tiPath); dimNode(nodes.sps);
 
- // ── Phase 8: Bunch arrives in LHC — becomes permanent ──
  setTracker(4);
- dot.remove(); // remove the traveling dot, create persistent one
+ dot.remove();
  addPermanentDot(beam);
-
  if(beam===1){ b1Count++; b1c.innerText=b1Count; b1bar.style.width=(b1Count/NEEDED*100)+"%"; }
  else { b2Count++; b2c.innerText=b2Count; b2bar.style.width=(b2Count/NEEDED*100)+"%"; }
-
  paths.lhc.classList.add(ion?"lit-i":"lit");
-
- // Check if ready for ramping
  if(b1Count>=NEEDED && b2Count>=NEEDED && !ramped){
   btnRamp.classList.remove("off");
   setStatus("LHC GEFÜLLT — Ramping möglich!","on");
  } else {
   setStatus("LHC B1:"+b1Count+"/"+NEEDED+" B2:"+b2Count+"/"+NEEDED,"on");
  }
-
  injecting=false;
  btnB1.classList.remove("off"); btnB2.classList.remove("off");
- // Reset tracker
  trSteps.forEach(s=>s.classList.remove("cur","cur-i","done"));
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// LHC PERSISTENT ORBIT SYSTEM
-// ═══════════════════════════════════════════════════════════════════════════
+btnRamp.addEventListener("click",async()=>{
+ if(ramped||injecting||cryoRecovery) return;
+ btnRamp.classList.add("off"); btnB1.classList.add("off"); btnB2.classList.add("off"); btnAuto.classList.add("off");
+ sliEnergy.disabled = true; sliIntensity.disabled = true; sliRampSpeed.disabled = true;
+ setStatus("RAMPING MAGNETFELD & ENERGIE...","on");
+ const startE=isIon?177:450;
+ const targetE=paramEnergy*1000;
+ const startSpeed=isIon?0.0019:0.0030;
+ const targetSpeed=(isIon?0.0042:0.0070)*(paramEnergy/(isIon?2.5:6.8));
+ const dur = 200 / paramRampSpeed;
+ let t0=null;
+ let quenched = false;
+ await new Promise(res=>{
+  function step(ts){
+   if(!t0) t0=ts;
+   let p=Math.min((ts-t0)/dur,1);
+   if(paramRampSpeed > 0.10 && p > 0.40) { quenched = true; res(); return; }
+   lhcEnergy=startE+p*(targetE-startE); lhcSpeed=startSpeed+p*(targetSpeed-startSpeed);
+   rbar.style.width=(p*100)+"%"; updateReadouts();
+   p<1 ? requestAnimationFrame(step) : res();
+  }
+  requestAnimationFrame(step);
+ });
+ if(quenched) { triggerQuench(); return; }
+ ramped=true; btnSqueeze.classList.remove("off"); sliBeta.disabled = false;
+ setStatus("RAMPING BEENDET — Squeeze-Phase einleiten!","on");
+});
+
+function triggerQuench(){
+ cryoRecovery = true; stopAutoCollide();
+ setStatus("💥 MAGNET-QUENCH DETEKTIERT! T > 1.9 K - Strahl gedumpt!", "danger");
+ sdot.className = "cv4-dot flash";
+ svg.style.transition = "filter 0.5s";
+ svg.style.filter = "sepia(1) saturate(3) hue-rotate(320deg)";
+ let secLeft = 5;
+ function cryoTick(){
+  if(secLeft > 0){ setStatus(`💥 MAGNET-QUENCH! Helium-Kühlung läuft... (${secLeft}s)`, "danger"); secLeft--; setTimeout(cryoTick, 1000); }
+  else { svg.style.filter = "none"; cryoRecovery = false; resetLHC(); setStatus("KÜHLUNG ERFOLGREICH — LHC BEREIT", "on"); }
+ }
+ cryoTick();
+}
+
+btnSqueeze.addEventListener("click",async()=>{
+ if(!ramped||squeezed||squeezing||cryoRecovery) return;
+ squeezing = true; btnSqueeze.classList.add("off"); sliBeta.disabled = true;
+ setStatus("🗜️ BEAM SQUEEZE: Fokussiere Strahlen an den IPs...","on");
+ let t0 = null; const dur = 2000; const targetBeta = parseFloat(sliBeta.value);
+ await new Promise(res=>{
+  function step(ts){
+   if(!t0) t0=ts;
+   let p=Math.min((ts-t0)/dur,1);
+   paramBetaStar = 1.5 - p * (1.5 - targetBeta);
+   lblBeta.innerText = paramBetaStar.toFixed(2) + " m";
+   p<1 ? requestAnimationFrame(step) : res();
+  }
+  requestAnimationFrame(step);
+ });
+ squeezing = false; squeezed = true; btnColl.classList.remove("off"); btnAutoColl.classList.remove("off");
+ [nodes.atlas,nodes.cms,nodes.alice,nodes.lhcb].forEach(n=>n.classList.add("glow"));
+ paths.lhc.classList.add(isIon?"lit-i":"lit");
+ setStatus("STABLE BEAMS — Strahlen fokussiert! Kollisionen bereit.","on");
+});
+
 function addPermanentDot(beam){
  const key=beam===1?"b1":"b2";
  const existing=lhcDots[key].length;
- const angleOffset=existing*(2*Math.PI/12); // space up to 12 bunches evenly
-
+ const angleOffset=existing*(2*Math.PI/NEEDED);
  const dot=document.createElementNS(SVG_NS,"circle");
  dot.setAttribute("r","3.5");
- let c;
- if(beam===1) c=isIon?"#e377c2":"#58a6ff";
- else c=isIon?"#c77dff":"#ff7f0e";
- dot.setAttribute("fill",c);
- dot.style.filter="drop-shadow(0 0 3px "+c+")";
+ let c=beam===1?(isIon?"#e377c2":"#58a6ff"):(isIon?"#c77dff":"#ff7f0e");
+ dot.setAttribute("fill",c); dot.style.filter="drop-shadow(0 0 3px "+c+")";
  svg.appendChild(dot);
-
  lhcDots[key].push({el:dot,off:angleOffset});
  if(!lhcRunning) startLHCLoop();
 }
@@ -568,165 +806,325 @@ function startLHCLoop(){
   if(!lhcLastT) lhcLastT=ts;
   let dt=ts-lhcLastT; lhcLastT=ts;
   lhcAngle+=lhcSpeed*dt;
-
   lhcDots.b1.forEach(d=>{
    let a=lhcAngle+d.off;
-   d.el.setAttribute("cx",R.LHC.cx+R.LHC.r*Math.cos(a));
-   d.el.setAttribute("cy",R.LHC.cy+R.LHC.r*Math.sin(a));
+   let r=180 + 5.5 * Math.sin(a * 2);
+   d.el.setAttribute("cx",R.LHC.cx+r*Math.cos(a)); d.el.setAttribute("cy",R.LHC.cy+r*Math.sin(a));
   });
   lhcDots.b2.forEach(d=>{
-   let a=-lhcAngle+d.off; // counter-clockwise
-   d.el.setAttribute("cx",R.LHC.cx+R.LHC.r*Math.cos(a));
-   d.el.setAttribute("cy",R.LHC.cy+R.LHC.r*Math.sin(a));
+   let a=-lhcAngle+d.off;
+   let r=180 - 5.5 * Math.sin(a * 2);
+   d.el.setAttribute("cx",R.LHC.cx+r*Math.cos(a)); d.el.setAttribute("cy",R.LHC.cy+r*Math.sin(a));
   });
   if(lhcRunning) requestAnimationFrame(frame);
  }
  requestAnimationFrame(frame);
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// LHC RAMPING
-// ═══════════════════════════════════════════════════════════════════════════
-btnRamp.addEventListener("click",async()=>{
- if(ramped||injecting) return;
- btnRamp.classList.add("off"); btnB1.classList.add("off"); btnB2.classList.add("off");
- setStatus("RAMPING ENERGY...","on");
-
- const startE=isIon?177:450;
- const targetE=isIon?2560:6800;
- const startSpeed=0.0015;
- const targetSpeed=0.007;
- const dur=4000;
- let t0=null;
-
- await new Promise(res=>{
-  function step(ts){
-   if(!t0) t0=ts;
-   let p=Math.min((ts-t0)/dur,1);
-   lhcEnergy=startE+p*(targetE-startE);
-   lhcSpeed=startSpeed+p*(targetSpeed-startSpeed);
-   rbar.style.width=(p*100)+"%";
-   updateReadouts();
-   p<1 ? requestAnimationFrame(step) : res();
-  }
-  requestAnimationFrame(step);
- });
-
- ramped=true;
- // Light up detector nodes
- [nodes.atlas,nodes.cms,nodes.alice,nodes.lhcb].forEach(n=>n.classList.add("glow"));
- btnColl.classList.remove("off");
- setStatus("STABLE BEAMS — "+(lhcEnergy/1000).toFixed(2)+" TeV"+(isIon?"/u":""),"on");
-});
-
-// ═══════════════════════════════════════════════════════════════════════════
-// COLLISION
-// ═══════════════════════════════════════════════════════════════════════════
 btnColl.addEventListener("click",()=>{
- if(!ramped) return;
- collisions+=isIon?2:5;
- spInfo.innerText="Kollisionen: "+collisions;
-
- // Flash selected detector
+ if(!ramped||!squeezed||cryoRecovery) return;
+ collisions+=1; spInfo.innerText="Kollisionen: "+collisions;
  let detNode=nodes[selDet.toLowerCase()];
  if(detNode){detNode.classList.add("flash");setTimeout(()=>detNode.classList.remove("flash"),350);}
-
- drawCollisionEvent();
- generateMassData();
- drawHist();
+ drawCollisionEvent(); generateMassData(); drawHist();
 });
 
-// ═══════════════════════════════════════════════════════════════════════════
-// READOUTS
-// ═══════════════════════════════════════════════════════════════════════════
+function toggleAutoCollide(){
+ if(autoCollInterval) stopAutoCollide(); else startAutoCollide();
+}
+
+function startAutoCollide(){
+ if(!ramped || !squeezed || cryoRecovery) return;
+ btnAutoColl.innerText = "⏸️ Datennahme stoppen"; btnAutoColl.classList.add("act");
+ btnColl.classList.add("off");
+ setStatus("DATENNAHME GESTARTET: Akkumuliere Kollisionsdaten...", "on");
+ autoCollInterval = setInterval(()=>{
+  if(cryoRecovery) { stopAutoCollide(); return; }
+  collisions += 1;
+  spInfo.innerText = "Kollisionen: " + collisions;
+  let detNode=nodes[selDet.toLowerCase()];
+  if(detNode){ detNode.classList.add("flash"); setTimeout(()=>detNode.classList.remove("flash"), 75); }
+  drawCollisionEvent(); generateMassData(); drawHist();
+ }, 125);
+}
+
+function stopAutoCollide(){
+ if(autoCollInterval) { clearInterval(autoCollInterval); autoCollInterval = null; }
+ btnAutoColl.innerText = "▶️ Auto-Datennahme"; btnAutoColl.classList.remove("act");
+ setStatus("DATENNAHME GESTOPPT", "on");
+ if(ramped && squeezed && !cryoRecovery) btnColl.classList.remove("off");
+}
+
 function updateReadouts(){
  vE.innerText=(lhcEnergy/1000).toFixed(2)+" TeV"+(isIon?"/u":"");
- let B=lhcEnergy/(0.299792458*2803.95);
- vB.innerText=B.toFixed(3)+" T";
- let g=lhcEnergy/(isIon?193.7:0.938272);
- vG.innerText=Math.round(g).toLocaleString("de-DE");
+ let B=lhcEnergy/(0.299792458*2803.95); vB.innerText=B.toFixed(3)+" T";
+ let g=lhcEnergy/(isIon?193.7:0.938272); vG.innerText=Math.round(g).toLocaleString("de-DE");
 }
 
 function setStatus(txt,cls){stxt.innerText=txt;sdot.className="cv4-dot "+cls;}
 
-// ═══════════════════════════════════════════════════════════════════════════
-// EVENT DISPLAY CANVAS
-// ═══════════════════════════════════════════════════════════════════════════
 function drawDetBg(){
- let w=cvEv.width,h=cvEv.height,cx=w/2,cy=h/2;
- ctxEv.clearRect(0,0,w,h);
- ctxEv.strokeStyle="#1a1f27";ctxEv.lineWidth=1;
- [18,42,66,88].forEach(r=>{ctxEv.beginPath();ctxEv.arc(cx,cy,r,0,2*Math.PI);ctxEv.stroke();});
- ctxEv.fillStyle="#8b949e";ctxEv.font="9px monospace";
- ctxEv.fillText(selDet+" | "+(isIon?"Pb-Pb":"p-p"),8,16);
+  let w=evW,h=evH,cx=w/2,cy=h/2;
+  ctxEv.clearRect(0,0,w,h);
+  ctxEv.strokeStyle="#1a1f27"; ctxEv.lineWidth=1; ctxEv.strokeRect(0,0,w,h);
+  ctxEv.fillStyle="#8b949e"; ctxEv.font="9px monospace"; ctxEv.fillText(selDet + " | " + (isIon?"Pb-Pb":"p-p"), 8, 16);
+  if (selDet === "ATLAS") {
+    ctxEv.strokeStyle="rgba(88,166,255,0.06)";
+    [20, 45, 70].forEach(r=>{ ctxEv.beginPath(); ctxEv.arc(cx,cy,r,0,2*Math.PI); ctxEv.stroke(); });
+    ctxEv.strokeStyle="rgba(88,166,255,0.2)"; ctxEv.lineWidth = 4;
+    for(let i=0; i<8; i++) { let a = i * Math.PI / 4; ctxEv.beginPath(); ctxEv.moveTo(cx + 65*Math.cos(a), cy + 65*Math.sin(a)); ctxEv.lineTo(cx + 85*Math.cos(a), cy + 85*Math.sin(a)); ctxEv.stroke(); }
+    ctxEv.lineWidth = 1; ctxEv.fillStyle="rgba(88,166,255,0.3)"; ctxEv.font="7px monospace"; ctxEv.fillText("TOROID-MAGNETE", cx - 30, cy + 82);
+  } else if (selDet === "CMS") {
+    ctxEv.strokeStyle="rgba(248,81,73,0.06)";
+    [20, 40, 80].forEach(r=>{ ctxEv.beginPath(); ctxEv.arc(cx,cy,r,0,2*Math.PI); ctxEv.stroke(); });
+    ctxEv.strokeStyle="rgba(248,81,73,0.2)"; ctxEv.lineWidth = 6;
+    ctxEv.beginPath(); ctxEv.arc(cx, cy, 55, 0, 2*Math.PI); ctxEv.stroke();
+    ctxEv.lineWidth = 1; ctxEv.fillStyle="rgba(248,81,73,0.3)"; ctxEv.font="7px monospace"; ctxEv.fillText("SOLENOID-SPULE", cx - 30, cy + 64);
+  } else if (selDet === "ALICE") {
+    ctxEv.strokeStyle="rgba(227,119,194,0.08)";
+    ctxEv.beginPath(); ctxEv.arc(cx,cy,35,0,2*Math.PI); ctxEv.stroke(); ctxEv.beginPath(); ctxEv.arc(cx,cy,15,0,2*Math.PI); ctxEv.stroke();
+    ctxEv.strokeStyle="rgba(227,119,194,0.2)"; ctxEv.beginPath();
+    for (let i = 0; i <= 8; i++) { let a = i * Math.PI / 4; let x = cx + 80 * Math.cos(a); let y = cy + 80 * Math.sin(a); if (i === 0) ctxEv.moveTo(x, y); else ctxEv.lineTo(x, y); }
+    ctxEv.stroke(); ctxEv.fillStyle="rgba(227,119,194,0.3)"; ctxEv.font="7px monospace"; ctxEv.fillText("TPC ZYLINDER", cx - 25, cy - 40); ctxEv.fillText("L3 MAGNET", cx - 20, cy + 76);
+  } else if (selDet === "LHCB") {
+    ctxEv.strokeStyle="rgba(255,127,14,0.12)"; ctxEv.beginPath(); ctxEv.moveTo(0, cy); ctxEv.lineTo(w, cy); ctxEv.stroke();
+    let stations = [{x: 40, label: "IP"},{x: 80, label: "RICH1"},{x: 130, label: "MAGNET"},{x: 180, label: "RICH2"},{x: 230, label: "ECAL"},{x: 290, label: "MUON"}];
+    stations.forEach(st => {
+      ctxEv.strokeStyle = st.label === "MAGNET" ? "rgba(255,127,14,0.4)" : "rgba(255,127,14,0.15)";
+      ctxEv.lineWidth = st.label === "MAGNET" ? 3 : 1;
+      ctxEv.beginPath(); ctxEv.moveTo(st.x, 25); ctxEv.lineTo(st.x, h - 15); ctxEv.stroke();
+      ctxEv.fillStyle = "rgba(255,127,14,0.4)"; ctxEv.font = "6.5px monospace"; ctxEv.fillText(st.label, st.x - 12, 22);
+    });
+    ctxEv.lineWidth = 1;
+  }
 }
 
 function drawCollisionEvent(){
- drawDetBg();
- let w=cvEv.width,h=cvEv.height,cx=w/2,cy=h/2;
- let nTracks=isIon?100:14;
- for(let i=0;i<nTracks;i++){
-  let a=Math.random()*2*Math.PI;
-  let len=isIon?(25+Math.random()*45):(35+Math.random()*55);
-  let curve=a+(Math.random()>.5?.18:-.18);
-  let tx=cx+len*Math.cos(a),ty=cy+len*Math.sin(a);
-  let cpx=cx+(len/2)*Math.cos(curve),cpy=cy+(len/2)*Math.sin(curve);
-  ctxEv.beginPath();ctxEv.moveTo(cx,cy);ctxEv.quadraticCurveTo(cpx,cpy,tx,ty);
-  if(isIon){
-   ctxEv.strokeStyle="rgba(227,119,194,0.4)";ctxEv.lineWidth=.8;ctxEv.stroke();
-  }else{
-   let mu=Math.random()>.75;
-   ctxEv.strokeStyle=mu?"#2ea44f":(Math.random()>.5?"#58a6ff":"#ff7f0e");
-   ctxEv.lineWidth=mu?1.8:1;ctxEv.stroke();
-   if(mu){ctxEv.fillStyle="#2ea44f";ctxEv.beginPath();ctxEv.arc(cx+88*Math.cos(a),cy+88*Math.sin(a),3,0,2*Math.PI);ctxEv.fill();}
+  drawDetBg();
+  let w=evW,h=evH,cx=w/2,cy=h/2;
+  if (selDet === "ATLAS") {
+    for(let i=0; i<12; i++) {
+      let a = Math.random()*2*Math.PI; let len = 35 + Math.random()*30;
+      ctxEv.strokeStyle = Math.random() > 0.5 ? "#58a6ff" : "#ff7f0e";
+      ctxEv.lineWidth = 0.8; ctxEv.beginPath(); ctxEv.moveTo(cx, cy); ctxEv.lineTo(cx+len*Math.cos(a), cy+len*Math.sin(a)); ctxEv.stroke();
+    }
+    for (let i = 0; i < 2; i++) {
+      let a = (i === 0 ? 0.35 : 3.4) + (Math.random() - 0.5) * 0.1;
+      ctxEv.strokeStyle = "#2ea44f"; ctxEv.lineWidth = 2;
+      ctxEv.beginPath(); ctxEv.moveTo(cx, cy); ctxEv.lineTo(cx + 88*Math.cos(a), cy + 88*Math.sin(a)); ctxEv.stroke();
+      ctxEv.fillStyle = "#2ea44f"; ctxEv.beginPath(); ctxEv.arc(cx + 88*Math.cos(a), cy + 88*Math.sin(a), 3.5, 0, 2*Math.PI); ctxEv.fill();
+    }
+    ctxEv.fillStyle = "#2ea44f"; ctxEv.font = "8px sans-serif"; ctxEv.fillText("Müon-Spur (μ)", cx + 45, cy + 30);
+  } else if (selDet === "CMS") {
+    [1.1, 4.3].forEach(ja => {
+      for (let i = 0; i < 8; i++) {
+        let a = ja + (Math.random() - 0.5) * 0.18; let len = 40 + Math.random() * 38;
+        ctxEv.strokeStyle = "#ff7f0e"; ctxEv.lineWidth = 0.9;
+        ctxEv.beginPath(); ctxEv.moveTo(cx, cy); ctxEv.lineTo(cx + len*Math.cos(a), cy + len*Math.sin(a)); ctxEv.stroke();
+      }
+    });
+    let ea = 2.7; ctxEv.strokeStyle = "#58a6ff"; ctxEv.lineWidth = 1.8; ctxEv.beginPath();
+    ctxEv.moveTo(cx, cy); ctxEv.quadraticCurveTo(cx + 40*Math.cos(ea+0.4), cy + 40*Math.sin(ea+0.4), cx + 78*Math.cos(ea), cy + 78*Math.sin(ea));
+    ctxEv.stroke(); ctxEv.fillStyle = "#58a6ff"; ctxEv.beginPath(); ctxEv.arc(cx + 78*Math.cos(ea), cy + 78*Math.sin(ea), 3, 0, 2*Math.PI); ctxEv.fill();
+    ctxEv.fillStyle = "#ff7f0e"; ctxEv.font = "8px sans-serif"; ctxEv.fillText("Hadron-Jets", cx + 32, cy - 25);
+  } else if (selDet === "ALICE") {
+    let nTracks = isIon ? 120 : 40;
+    for(let i=0; i<nTracks; i++) {
+      let a = Math.random()*2*Math.PI;
+      let len = 15 + Math.random()*58;
+      let curve = a + (Math.random() > 0.5 ? 0.22 : -0.22) * (len/70);
+      let tx = cx + len*Math.cos(a), ty = cy + len*Math.sin(a);
+      let cpx = cx + (len/2)*Math.cos(curve), cpy = cy + (len/2)*Math.sin(curve);
+      ctxEv.strokeStyle = isIon ? "rgba(227,119,194,0.6)" : "rgba(88,166,255,0.6)";
+      ctxEv.lineWidth = 0.7;
+      ctxEv.beginPath(); ctxEv.moveTo(cx, cy); ctxEv.quadraticCurveTo(cpx, cpy, tx, ty); ctxEv.stroke();
+    }
+    ctxEv.fillStyle = "rgba(227,119,194,0.8)"; ctxEv.font = "8px sans-serif";
+    ctxEv.fillText("TPC-Spuren: n = " + nTracks, cx - 40, cy - 4);
+  } else if (selDet === "LHCB") {
+    let ipx = 40, ipy = cy;
+    let nTracks = 16;
+    for (let i = 0; i < nTracks; i++) {
+      let a = (Math.random() - 0.5) * 0.65;
+      let len = 150 + Math.random() * 120;
+      let curve = a + (Math.random() > 0.5 ? 0.08 : -0.08);
+      let tx = ipx + len * Math.cos(a);
+      let ty = ipy + len * Math.sin(a);
+      let cpx = ipx + (len/2) * Math.cos(curve);
+      let cpy = ipy + (len/2) * Math.sin(curve);
+      let isMu = Math.random() > 0.85;
+      ctxEv.strokeStyle = isMu ? "#2ea44f" : "#ff7f0e";
+      ctxEv.lineWidth = isMu ? 1.5 : 0.8;
+      ctxEv.beginPath(); ctxEv.moveTo(ipx, ipy); ctxEv.quadraticCurveTo(cpx, cpy, tx, ty); ctxEv.stroke();
+      if (isMu && tx < w) {
+        ctxEv.fillStyle = "#2ea44f";
+        ctxEv.beginPath(); ctxEv.arc(tx, ty, 2.5, 0, 2*Math.PI); ctxEv.fill();
+      }
+    }
+    ctxEv.fillStyle = "#ff7f0e"; ctxEv.font = "8px sans-serif";
+    ctxEv.fillText("Forward-B-Zerfall", ipx + 90, ipy - 35);
   }
- }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
 // HISTOGRAM
 // ═══════════════════════════════════════════════════════════════════════════
 function generateMassData(){
+ // Skalierungsfaktor basierend auf Intensität (quadratisch) und Squeeze (antiproportional)
+ let rateFactor = Math.pow(paramIntensity, 2) / paramBetaStar;
+ let nPointsMultiplier = Math.max(1, Math.round(rateFactor * 4));
+ 
  if(!isIon){
-  for(let i=0;i<35;i++){let m=50+Math.exp(Math.random()*4.6)*1.5;if(m>50&&m<150)massData.push(m);}
-  for(let i=0;i<14;i++) massData.push(91.2+(Math.random()-.5)*4+(Math.random()-.5)*2);
-  for(let i=0;i<4;i++){let m=125+(Math.random()-.5)*2.8+(Math.random()-.5)*1.2;if(m>50&&m<150)massData.push(m);}
+  // Background (5x weniger pro Kollision, da wir 5x mehr Kollisionen sammeln)
+  let bgCount = Math.max(1, Math.round(4 * nPointsMultiplier));
+  for(let i=0; i<bgCount; i++){
+   let m=50+Math.exp(Math.random()*4.6)*1.5;
+   if(m>50&&m<150)massData.push(m);
+  }
+  // Z0 Peak (immer vorhanden)
+  let zCount = Math.max(1, Math.round(1.6 * nPointsMultiplier));
+  for(let i=0; i<zCount; i++) {
+   massData.push(91.2+(Math.random()-.5)*4+(Math.random()-.5)*2);
+  }
+  // Higgs Peak (Schwellenenergie-Kopplung! Wenn Energie < 4.0 TeV, wird kein Higgs erzeugt)
+  if(paramEnergy >= 4.0) {
+   let hCount = Math.max(1, Math.round(0.6 * nPointsMultiplier));
+   for(let i=0; i<hCount; i++){
+    let m=125+(Math.random()-.5)*2.8+(Math.random()-.5)*1.2;
+    if(m>50&&m<150)massData.push(m);
+   }
+  }
  }else{
-  for(let i=0;i<45;i++) massData.push(1+Math.random()*11);
-  for(let i=0;i<20;i++) massData.push(3.1+(Math.random()-.5)*.4+(Math.random()-.5)*.2);
-  for(let i=0;i<7;i++) massData.push(9.46+(Math.random()-.5)*.6+(Math.random()-.5)*.3);
+  // Heavy Ion: ALICE Quark-Gluon-Plasma Spektrum (5x weniger pro Kollision)
+  let bgCount = Math.max(1, Math.round(6 * nPointsMultiplier));
+  for(let i=0; i<bgCount; i++) massData.push(1+Math.random()*11);
+  
+  let jpsiCount = Math.max(1, Math.round(2.4 * nPointsMultiplier));
+  for(let i=0; i<jpsiCount; i++) massData.push(3.1+(Math.random()-.5)*.4+(Math.random()-.5)*.2);
+  
+  let upsilonCount = Math.max(1, Math.round(0.8 * nPointsMultiplier));
+  for(let i=0; i<upsilonCount; i++) massData.push(9.46+(Math.random()-.5)*.6+(Math.random()-.5)*.3);
  }
 }
 
+function getTargetDiscover() {
+  if (isIon) return 300;
+  if (selDet === "LHCB") return 400;
+  return 500;
+}
+
+function getSignificance() {
+  if (collisions === 0) return 0;
+  if (!isIon && selDet !== "LHCB" && paramEnergy < 4.0) return 0;
+  let target = getTargetDiscover();
+  return 5.0 * Math.sqrt(collisions / target);
+}
+
 function drawHist(){
- let w=cvHist.width,h=cvHist.height;
- ctxHist.clearRect(0,0,w,h);
- ctxHist.strokeStyle="#30363d";ctxHist.lineWidth=1;
- ctxHist.beginPath();ctxHist.moveTo(30,8);ctxHist.lineTo(30,h-16);ctxHist.lineTo(w-8,h-16);ctxHist.stroke();
- ctxHist.fillStyle="#8b949e";ctxHist.font="7.5px sans-serif";
- let mn=isIon?1:50, mx=isIon?12:150;
- ctxHist.fillText(mn+" GeV",30,h-5);ctxHist.fillText(mx+" GeV",w-40,h-5);
- if(!massData.length){ctxHist.fillStyle="#8b949e";ctxHist.font="10px monospace";ctxHist.fillText("WARTEN AUF KOLLISIONSDATEN...",w/2-90,h/2);return;}
- let nb=40,bins=Array(nb).fill(0);
- massData.forEach(v=>{if(v>=mn&&v<mx){let i=Math.floor((v-mn)/(mx-mn)*nb);if(i>=0&&i<nb)bins[i]++;}});
- let maxB=Math.max(...bins,1),bw=(w-40)/nb;
- let fc=isIon?"rgba(227,119,194,0.4)":"rgba(88,166,255,0.4)";
- let tc=isIon?"#e377c2":"#58a6ff";
- for(let i=0;i<nb;i++){let bh=bins[i]/maxB*(h-30);let x=30+i*bw,y=h-16-bh;
-  ctxHist.fillStyle=fc;ctxHist.fillRect(x,y,bw-1,bh);ctxHist.fillStyle=tc;ctxHist.fillRect(x,y,bw-1,1.5);}
- if(collisions>4){
-  ctxHist.strokeStyle="rgba(248,81,73,.6)";ctxHist.lineWidth=1.2;ctxHist.beginPath();
-  for(let xp=30;xp<w-8;xp++){
-   let v=mn+(xp-30)/(w-38)*(mx-mn),yv=0;
-   if(!isIon){yv=Math.exp(-(v-50)/25)*18+(1/((v-91.2)**2+2.5**2))*300+(1/((v-125)**2+1.6**2))*10;}
-   else{yv=4.2+(1/((v-3.1)**2+.15**2))*1.4+(1/((v-9.46)**2+.3**2))*.35;}
-   let sc=isIon?6.5:20,yp=h-16-yv/sc*(h-35);yp=Math.max(8,Math.min(h-16,yp));
-   xp===30?ctxHist.moveTo(xp,yp):ctxHist.lineTo(xp,yp);
-  }ctxHist.stroke();
-  ctxHist.fillStyle="#f0f6fc";ctxHist.font="8px sans-serif";
-  if(!isIon){ctxHist.fillText("Z⁰ (91 GeV)",w*.42,22);ctxHist.fillText("Higgs (125 GeV)",w*.7,38);}
-  else{ctxHist.fillText("J/Ψ (3.1 GeV)",w*.2,20);ctxHist.fillText("Υ (9.46 GeV)",w*.72,45);}
- }
+  let w=histW,h=histH;
+  ctxHist.clearRect(0,0,w,h);
+  ctxHist.strokeStyle="#30363d";ctxHist.lineWidth=1;
+  ctxHist.beginPath();ctxHist.moveTo(30,8);ctxHist.lineTo(30,h-16);ctxHist.lineTo(w-8,h-16);ctxHist.stroke();
+  ctxHist.fillStyle="#8b949e";ctxHist.font="7.5px sans-serif";
+  let mn=isIon?1:50, mx=isIon?12:150;
+  ctxHist.fillText(mn+" GeV",30,h-5);ctxHist.fillText(mx+" GeV",w-40,h-5);
+  
+  let sig = getSignificance();
+  $("lbl-sig").innerText = sig.toFixed(2) + " σ";
+  
+  let sigBar = $("sig-bar");
+  let sigStatus = $("lbl-sig-status");
+  let target = getTargetDiscover();
+  let progressPct = (paramEnergy < 4.0 && !isIon && selDet !== "LHCB") ? 0 : (collisions / target) * 100;
+  let pct = Math.min(100, progressPct);
+  sigBar.style.width = pct + "%";
+  
+  if (sig === 0) {
+    sigStatus.innerText = "Rauschen (Kein Signal)";
+    sigStatus.style.color = "#8b949e";
+    sigBar.style.background = "#30363d";
+  } else if (sig < 3.0) {
+    sigStatus.innerText = "Rauschen (Keine Signifikanz)";
+    sigStatus.style.color = "#8b949e";
+    sigBar.style.background = "#58a6ff";
+  } else if (sig < 5.0) {
+    sigStatus.innerText = "⚠️ Signal-Hinweis (Evidence!)";
+    sigStatus.style.color = "#ff7f0e";
+    sigBar.style.background = "#ff7f0e";
+  } else {
+    sigStatus.innerText = "🌟 5σ ENTDECKUNG (Discovery!)";
+    sigStatus.style.color = "#2ea44f";
+    sigBar.style.background = "#2ea44f";
+  }
+  
+  if(!massData.length){
+    ctxHist.fillStyle="#8b949e";
+    ctxHist.font="10px monospace";
+    ctxHist.fillText("WARTEN AUF KOLLISIONSDATEN...",w/2-90,h/2);
+    return;
+  }
+  
+  let nb=40,bins=Array(nb).fill(0);
+  massData.forEach(v=>{if(v>=mn&&v<mx){let i=Math.floor((v-mn)/(mx-mn)*nb);if(i>=0&&i<nb)bins[i]++;}});
+  let maxB=Math.max(...bins,1),bw=(w-40)/nb;
+  let fc=isIon?"rgba(227,119,194,0.4)":"rgba(88,166,255,0.4)";
+  let tc=isIon?"#e377c2":"#58a6ff";
+  for(let i=0;i<nb;i++){
+    let bh=bins[i]/maxB*(h-30);let x=30+i*bw,y=h-16-bh;
+    ctxHist.fillStyle=fc;ctxHist.fillRect(x,y,bw-1,bh);ctxHist.fillStyle=tc;ctxHist.fillRect(x,y,bw-1,1.5);
+  }
+  
+  if (sig > 0) {
+    let alpha = Math.min(1.0, collisions / target);
+    ctxHist.save();
+    ctxHist.globalAlpha = alpha;
+    
+    ctxHist.strokeStyle="rgba(248,81,73,1)";
+    ctxHist.lineWidth=1.5;
+    ctxHist.beginPath();
+    for(let xp=30;xp<w-8;xp++){
+      let v=mn+(xp-30)/(w-38)*(mx-mn),yv=0;
+      if(!isIon){yv=Math.exp(-(v-50)/25)*18+(1/((v-91.2)**2+2.5**2))*300+(1/((v-125)**2+1.6**2))*10;}
+      else{yv=4.2+(1/((v-3.1)**2+.15**2))*1.4+(1/((v-9.46)**2+.3**2))*.35;}
+      let sc=isIon?6.5:20,yp=h-16-yv/sc*(h-35);yp=Math.max(8,Math.min(h-16,yp));
+      xp===30?ctxHist.moveTo(xp,yp):ctxHist.lineTo(xp,yp);
+    }
+    ctxHist.stroke();
+    
+    ctxHist.fillStyle="#f0f6fc";
+    ctxHist.font="8.5px sans-serif";
+    if(!isIon){
+      ctxHist.fillText("Z⁰ Boson (91 GeV)",w*.35,22);
+      if(selDet === "LHCB") {
+        ctxHist.fillText("B-Meson-Physik & CP-Asymmetrie (LHCb)!",w*.58,38);
+      } else {
+        if(paramEnergy >= 4.0) {
+          ctxHist.fillText("Higgs-Boson (125 GeV) - 5σ Entdeckung!",w*.58,38);
+        } else {
+          ctxHist.fillStyle="rgba(248,81,73,0.6)";
+          ctxHist.fillText("Higgs unterdrückt (E < 4 TeV)",w*.58,38);
+        }
+      }
+    } else {
+      ctxHist.fillText("J/Ψ (3.1 GeV) - Quark-Gluon-Plasma",w*.15,20);
+      ctxHist.fillText("Υ (9.46 GeV)",w*.68,45);
+    }
+    ctxHist.restore();
+  }
+  
+  if (sig < 5.0) {
+    ctxHist.fillStyle="rgba(255,255,255,0.45)";
+    ctxHist.font="8.5px monospace";
+    if (sig === 0) {
+      if (paramEnergy < 4.0 && !isIon && selDet !== "LHCB") {
+        ctxHist.fillText("⚠️ Strahlenergie zu gering für Higgs-Produktion (< 4.0 TeV)!", w/2 - 145, 12);
+      } else {
+        ctxHist.fillText("Keine Kollisionen akkumuliert. Starte Kollisionen!", w/2 - 120, 12);
+      }
+    } else {
+      ctxHist.fillText("Sammle Statistik für Entdeckung (Signifikanz: " + sig.toFixed(1) + "σ / 5.0σ)", w/2 - 140, 12);
+    }
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -735,18 +1133,219 @@ function drawHist(){
 btnB1.addEventListener("click",()=>injectBunch(1));
 btnB2.addEventListener("click",()=>injectBunch(2));
 
+btnSpeedToggle.addEventListener("click",()=>{
+  isFastMode = !isFastMode;
+  if(isFastMode) {
+    btnSpeedToggle.innerText = "⏱️ Modus: Zeitraffer (Schnell)";
+    btnSpeedToggle.style.background = "rgba(88,166,255,.08)";
+    btnSpeedToggle.style.borderColor = "rgba(88,166,255,.3)";
+    btnSpeedToggle.style.color = "#58a6ff";
+  } else {
+    btnSpeedToggle.innerText = "⏱️ Modus: Echtzeit (Didaktisch)";
+    btnSpeedToggle.style.background = "rgba(227,119,194,.08)";
+    btnSpeedToggle.style.borderColor = "rgba(227,119,194,.3)";
+    btnSpeedToggle.style.color = "#e377c2";
+  }
+});
+
+// GEO OVERLAY TOGGLE
+let geoVisible = true;
+btnToggleGeo.addEventListener("click",()=>{
+ geoVisible = !geoVisible;
+ document.querySelectorAll(".geo-element").forEach(el=>{
+  el.style.opacity = geoVisible ? "1" : "0";
+  el.style.pointerEvents = geoVisible ? "auto" : "none";
+ });
+ btnToggleGeo.classList.toggle("act", geoVisible);
+});
+
+// INTERACTIVE SVG CAMERA ZOOM LOGIC
+let currentVB = {x:0, y:0, w:700, h:480};
+let zoomTarget = null; // "ATLAS", "CMS", "ALICE", "LHCB" or null
+
+function animateViewBox(tx, ty, tw, th, dur=500){
+ const startX = currentVB.x, startY = currentVB.y, startW = currentVB.w, startH = currentVB.h;
+ let t0 = null;
+ function step(ts){
+  if(!t0) t0 = ts;
+  let p = Math.min((ts-t0)/dur, 1);
+  let ep = p*p*(3-2*p); // Custom cubic ease-in-out
+  currentVB.x = startX + ep*(tx-startX);
+  currentVB.y = startY + ep*(ty-startY);
+  currentVB.w = startW + ep*(tw-startW);
+  currentVB.h = startH + ep*(th-startH);
+  svg.setAttribute("viewBox", `${currentVB.x} ${currentVB.y} ${currentVB.w} ${currentVB.h}`);
+  if(p<1) requestAnimationFrame(step);
+ }
+ requestAnimationFrame(step);
+}
+
+function zoomToDetector(name){
+ if(zoomTarget === name){
+  // Zoom out
+  zoomTarget = null;
+  btnZoomOut.classList.add("off");
+  animateViewBox(0, 0, 700, 480);
+ } else {
+  zoomTarget = name;
+  btnZoomOut.classList.remove("off");
+  let tx, ty, tw=160, th=120;
+  if(name === "ATLAS") { tx = 270; ty = 360; }
+  else if(name === "CMS") { tx = 270; ty = 0; }
+  else if(name === "ALICE") { tx = 90; ty = 180; }
+  else if(name === "LHCB") { tx = 450; ty = 180; }
+  animateViewBox(tx, ty, tw, th);
+  
+  // Update event display tabs too
+  document.querySelectorAll(".cv4-dtab").forEach(t=>t.classList.remove("act"));
+  $("dt-"+name.toLowerCase()).classList.add("act");
+  selDet=name;
+  drawDetBg();
+ }
+}
+
+btnZoomOut.addEventListener("click", () => {
+ zoomTarget = null;
+ btnZoomOut.classList.add("off");
+ animateViewBox(0, 0, 700, 480);
+});
+
+grpAtlas.addEventListener("click", () => zoomToDetector("ATLAS"));
+grpCms.addEventListener("click", () => zoomToDetector("CMS"));
+grpAlice.addEventListener("click", () => zoomToDetector("ALICE"));
+grpLhcb.addEventListener("click", () => zoomToDetector("LHCB"));
+
+// PRESETS CLICK LISTENERS
+btnPreHiggs.addEventListener("click",()=>{
+ setMode(false); // Protonen
+ resetLHC();
+ sliEnergy.value = 6.8; paramEnergy = 6.8; lblEnergy.innerText = "6.8 TeV";
+ sliIntensity.value = 1.20; paramIntensity = 1.20; lblIntensity.innerText = "1.20e11 p";
+ sliBeta.value = 0.3; paramBetaStar = 0.3; lblBeta.innerText = "0.30 m";
+ sliRampSpeed.value = 0.05; paramRampSpeed = 0.05; lblRampSpeed.innerText = "0.05 T/s (Sicher)"; lblRampSpeed.style.color = "#58a6ff";
+ document.querySelectorAll(".cv4-dtab").forEach(t=>t.classList.remove("act"));
+ $("dt-atlas").classList.add("act"); selDet="ATLAS";
+ updateReadouts(); drawDetBg(); drawHist();
+ setStatus("PRESET GELADEN: Higgs-Boson-Suche (Standardmodell p-p Kollision bei 13.6 TeV)", "on");
+});
+
+btnPreQgp.addEventListener("click",()=>{
+ setMode(true); // Blei-Ionen
+ resetLHC();
+ sliEnergy.value = 2.5; paramEnergy = 2.5; lblEnergy.innerText = "2.5 TeV";
+ sliIntensity.value = 0.90; paramIntensity = 0.90; lblIntensity.innerText = "0.90e11 p";
+ sliBeta.value = 0.4; paramBetaStar = 0.4; lblBeta.innerText = "0.40 m";
+ sliRampSpeed.value = 0.05; paramRampSpeed = 0.05; lblRampSpeed.innerText = "0.05 T/s (Sicher)"; lblRampSpeed.style.color = "#58a6ff";
+ document.querySelectorAll(".cv4-dtab").forEach(t=>t.classList.remove("act"));
+ $("dt-alice").classList.add("act"); selDet="ALICE";
+ updateReadouts(); drawDetBg(); drawHist();
+ setStatus("PRESET GELADEN: Blei-Ionen-Kollision zur Erzeugung des Quark-Gluon-Plasmas in ALICE", "on");
+});
+
+btnPreLhcb.addEventListener("click",()=>{
+ setMode(false); // Protonen
+ resetLHC();
+ sliEnergy.value = 6.5; paramEnergy = 6.5; lblEnergy.innerText = "6.5 TeV";
+ sliIntensity.value = 1.00; paramIntensity = 1.00; lblIntensity.innerText = "1.00e11 p";
+ sliBeta.value = 0.6; paramBetaStar = 0.6; lblBeta.innerText = "0.60 m";
+ sliRampSpeed.value = 0.05; paramRampSpeed = 0.05; lblRampSpeed.innerText = "0.05 T/s (Sicher)"; lblRampSpeed.style.color = "#58a6ff";
+ document.querySelectorAll(".cv4-dtab").forEach(t=>t.classList.remove("act"));
+ $("dt-lhcb").classList.add("act"); selDet="LHCB";
+ updateReadouts(); drawDetBg(); drawHist();
+ setStatus("PRESET GELADEN: CP-Verletzung & Schönheit (B-Physik p-p Kollision bei 13 TeV in LHCb)", "on");
+});
+
+btnPrePilot.addEventListener("click",()=>{
+ setMode(false); // Protonen
+ resetLHC();
+ sliEnergy.value = 0.4; paramEnergy = 0.4; lblEnergy.innerText = "0.4 TeV";
+ sliIntensity.value = 0.10; paramIntensity = 0.10; lblIntensity.innerText = "0.10e11 p";
+ sliBeta.value = 1.5; paramBetaStar = 1.5; lblBeta.innerText = "1.50 m";
+ sliRampSpeed.value = 0.02; paramRampSpeed = 0.02; lblRampSpeed.innerText = "0.02 T/s (Sicher)"; lblRampSpeed.style.color = "#58a6ff";
+ updateReadouts(); drawDetBg(); drawHist();
+ setStatus("PRESET GELADEN: Pilot-Strahl (Inbetriebnahme des LHC auf Injektionsniveau)", "on");
+});
+
+btnAutoColl.addEventListener("click", toggleAutoCollide);
+
+btnAuto.addEventListener("click",async()=>{
+ if(injecting||ramped||b1Count>=NEEDED||b2Count>=NEEDED||cryoRecovery) return;
+ btnAuto.classList.add("off");
+ btnB1.classList.add("off");
+ btnB2.classList.add("off");
+ sliEnergy.disabled = true; // Sperre Parameter während Injektion
+ 
+ // Realistischer Beladungsprozess: Zuerst Beam 1 komplett füllen, danach erst Beam 2!
+ setStatus("FÜLLPROTOKOLL GESTARTET: Fülle zuerst Beam 1 (im Uhrzeigersinn)...","on");
+ 
+ for(let i=b1Count; i<NEEDED; i++){
+  setStatus(`PROTOKOLL: Fülle LHC Beam 1 (Clockwise) - Bunch ${i+1}/${NEEDED}...`,"on");
+  await injectBunch(1);
+  if(i < NEEDED - 1) {
+    await new Promise(r=>setTimeout(r, getDurations().autoDelay));
+  }
+ }
+ 
+ await new Promise(r=>setTimeout(r, getDurations().autoDelay * 2));
+ setStatus("PROTOKOLL: Beam 1 stabil! Fülle nun Beam 2 (gegen den Uhrzeigersinn)...","on");
+ 
+ for(let i=b2Count; i<NEEDED; i++){
+  setStatus(`PROTOKOLL: Fülle LHC Beam 2 (Counter-Clockwise) - Bunch ${i+1}/${NEEDED}...`,"on");
+  await injectBunch(2);
+  if(i < NEEDED - 1) {
+    await new Promise(r=>setTimeout(r, getDurations().autoDelay));
+  }
+ }
+ 
+ setStatus("FÜLLSCHEMA BEENDET: Beide Strahlen unabhängig gefüllt und stabil! Ramping bereit.","on");
+ btnAuto.classList.remove("off");
+});
+
+// SLIDERS BINDING
+sliEnergy.addEventListener("input",()=>{
+ paramEnergy = parseFloat(sliEnergy.value);
+ lblEnergy.innerText = paramEnergy.toFixed(1) + " TeV";
+ updateReadouts();
+});
+
+sliIntensity.addEventListener("input",()=>{
+ paramIntensity = parseFloat(sliIntensity.value);
+ lblIntensity.innerText = paramIntensity.toFixed(2) + "e11 p";
+});
+
+sliBeta.addEventListener("input",()=>{
+ lblBeta.innerText = parseFloat(sliBeta.value).toFixed(2) + " m";
+});
+
+sliRampSpeed.addEventListener("input",()=>{
+ paramRampSpeed = parseFloat(sliRampSpeed.value);
+ if(paramRampSpeed > 0.10) {
+  lblRampSpeed.innerText = paramRampSpeed.toFixed(2) + " T/s (⚠️ RISIKO)";
+  lblRampSpeed.style.color = "#f85149";
+ } else {
+  lblRampSpeed.innerText = paramRampSpeed.toFixed(2) + " T/s (Sicher)";
+  lblRampSpeed.style.color = "#58a6ff";
+ }
+});
+
 // ═══════════════════════════════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════════════════════════════
+resizeCanvases();
 updateReadouts(); drawDetBg(); drawHist();
 setStatus("BEREIT — Wähle Teilchenart und starte Injektion","on");
 
-})();
-</script>
-"""
+// Handle resize dynamically
+window.addEventListener("resize", ()=>{
+ resizeCanvases(); drawDetBg(); drawHist();
+});
 
+})();
+</script>"""
+
+html_replaced = html.replace("PLACEHOLDER_PIPE1", pipe1_path).replace("PLACEHOLDER_PIPE2", pipe2_path)
 cells.append(code([
-    "display(HTML(r'''" + html.replace("'''","\\'\\'\\'") + "'''))"
+    "display(HTML(r'''" + html_replaced.replace("'''","\\'\\'\\'") + "'''))"
 ]))
 
 # ── CELL 5: Analysis intro ───────────────────────────────────────────────────
@@ -755,6 +1354,10 @@ cells.append(md([
 "",
 "Nach zahlreichen Kollisionen analysieren wir das akkumulierte Massenspektrum.",
 "Setze `heavy_ion_analysis = True` für Blei-Ionen (J/ψ, Υ) oder `False` für Protonen (Higgs, Z0).",
+"",
+"> [!TIP]",
+"> **Didaktischer Hinweis zur Entdeckung & Statistik**:",
+"> Im realen LHC ist das Signal-zu-Rausch-Verhältnis (Signal-to-Background Ratio) für das Higgs-Boson extrem winzig (z.B. ca. 1 zu 1000 im Zerfallskanal H → ZZ* → 4l). Um die Entdeckung in unserem Schul-Bedienfeld innerhalb weniger Sekunden erlebbar zu machen, wurde die statistische Higgs-Kopplungsstärke didaktisch vergrößert. Die Notwendigkeit, eine signifikante Anzahl an Kollisionen (Statistik) zu sammeln, um das Signal über das Rauschen (Fluktuationen) zu heben, bleibt jedoch vollkommen identisch!",
 ]))
 
 # ── CELL 6: Scientific fitting ───────────────────────────────────────────────
