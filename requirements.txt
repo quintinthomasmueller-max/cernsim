@@ -1,0 +1,12 @@
+# CERN-Visualisierung & Akkretion (Notebooks)
+numpy
+scipy
+matplotlib
+pandas
+
+# Stiftungs-Simulator (Streamlit-App)
+streamlit
+plotly
+
+# Jupyter-Umgebung
+jupyter
