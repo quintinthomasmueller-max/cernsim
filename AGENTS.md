@@ -26,25 +26,26 @@ Hauptdatei: `cern/notebooks/CERN_Beschleuniger_Schaltzentrale.ipynb`.
   `lade_dimuon_4vektoren`, `dimuon_invariante_masse`, `lade_higgs_4l`).
 - **Echte Daten**: `cern/data/cms_dimuon_subset.csv` (12 000 Events — **nie ganz lesen**).
 
-## Widget editieren
-- **Jetzt (vor Refactor)**: Zelle-4-String via Python-Patch-Skript (`rep()` mit exakten Matches,
-  große Blöcke per Anker-Slicing). Fragil bei Whitespace → exakte Strings aus dem extrahierten
-  `/tmp/cell3.html` nehmen, nicht abtippen.
-- **Nach Refactor**: Quelldateien unter `cern/app/` direkt mit dem Edit-Tool; `scripts/sync_widget.py`
-  baut die Notebook-Zelle neu. → siehe `docs/agent-workflow-plan.md`.
+## Widget editieren (NEU — modular)
+Quelle der Wahrheit: `cern/app/`. **Niemals** Zelle 4 von Hand editieren.
+- Relevante Datei direkt mit dem **Edit-Tool** bearbeiten:
+  - `engine.js` — timeScale, getDurations, injectBunch, flowStep, fuellProtokoll, Ramp, LHC-Loop
+  - `display.js` — DETKONFIG, drawDetBg, drawParticle*, drawCollisionEvent, Legende
+  - `spectrum.js` — sampleEvent, generateMassData, classify, getSignificance, drawHist
+  - `geometry.js` (SVG/Ringe), `state.js`, `handlers.js` (Listener/Init), `styles.css`, `shell.html`
+  - `data.js` = CERN_REAL-Blob (~37 KB) — **nicht lesen/editieren**, außer Daten ändern sich.
+- Danach **immer**: `bash scripts/check.sh` (führt sync aus + node --check + nbformat/ast).
+- `scripts/sync_widget.py` bündelt `cern/app/*` → Notebook-Zelle 4 (self-contained) +
+  `build/widget_bundle.html` + `cern/app/index.html` (Standalone-App).
+- Hinweis: Module sind geordnete Slices EINER IIFE (gemeinsame Closure). Einzeln nicht
+  node-prüfbar — `node --check` läuft auf dem gebündelten `build/widget.js` (via check.sh).
 
 ## Standard-Befehle
 ```
-# Widget-JS extrahieren + Syntax prüfen (headless)
-python3 - <<'PY'
-import json,re; nb=json.load(open('cern/notebooks/CERN_Beschleuniger_Schaltzentrale.ipynb'))
-w=next(c for c in nb['cells'] if "cern-v4" in ''.join(c['source'])); s=''.join(w['source'])
-open('/tmp/widget.js','w').write(re.search(r'<script>(.*)</script>',s,re.S).group(1))
-PY
-node --check /tmp/widget.js
-# Notebook validieren + alle Code-Zellen parsen
-python3 -c "import json,ast,nbformat as nf; nb=json.load(open('cern/notebooks/CERN_Beschleuniger_Schaltzentrale.ipynb')); nf.validate(nb); [ast.parse(''.join(c['source'])) for c in nb['cells'] if c['cell_type']=='code']; print('OK')"
+bash scripts/check.sh          # sync + node --check + nbformat.validate + ast.parse (headless)
+python3 scripts/sync_widget.py # nur neu bündeln (Zelle 4 + build/ + index.html)
 ```
+Standalone-App im Browser (nur bei Layout/Render-Fragen): `cern/app/index.html` öffnen.
 
 ## Commits
 - Branch `feat/echte-cern-daten-event-display`. **Outputs vor Commit leeren** (Trust + Größe).
