@@ -528,3 +528,56 @@ def lade_higgs_4l(n=2000, seed=2):
     m4l = m4l[(m4l >= 80) & (m4l <= 250)]
     return m4l, dict(quelle='ATLAS-kalibrierte Simulation (H→ZZ*→4ℓ, 10 fb⁻¹)',
                      n=int(m4l.size), n_signal=n_sig)
+
+
+def lade_dimuon_4vektoren(n=None, seed=1):
+    """
+    Lädt die ECHTEN CMS-Dimuon-Ereignisse MIT vollen 4-Vektoren beider Myonen
+    (Repo-Subset, der die Impulskomponenten enthält). Grundlage für die
+    didaktische Berechnung der invarianten Masse "von Hand".
+
+    Returns
+    -------
+    (EV, info) : (dict von np.ndarrays, dict)
+        EV-Schlüssel: E1,px1,py1,pz1,Q1, E2,px2,py2,pz2,Q2, M
+        info: dict(quelle, n)
+    """
+    if not os.path.exists(_SUBSET):
+        raise FileNotFoundError(
+            f"Subset mit 4-Vektoren nicht gefunden: {_SUBSET}\n"
+            "Diese Lektion benötigt den echten CMS-Subset (mit Impulskomponenten).")
+    cols = ['E1', 'px1', 'py1', 'pz1', 'Q1', 'E2', 'px2', 'py2', 'pz2', 'Q2', 'M']
+    rows = []
+    with open(_SUBSET, newline='') as f:
+        for row in csv.DictReader(f):
+            try:
+                rows.append([float(row[k]) for k in cols])
+            except (KeyError, ValueError):
+                continue
+    a = np.asarray(rows, dtype=float)
+    if n is not None and a.shape[0] > n:
+        a = a[np.random.default_rng(seed).choice(a.shape[0], n, replace=False)]
+    EV = {k: a[:, i] for i, k in enumerate(cols)}
+    EV['Q1'] = EV['Q1'].astype(int)
+    EV['Q2'] = EV['Q2'].astype(int)
+    return EV, dict(quelle='CMS Open Data Run2011A DoubleMu, √s=7 TeV (Repo-Subset, 4-Vektoren)',
+                    n=int(a.shape[0]))
+
+
+M_MYON = 0.105658  # Myonmasse [GeV/c²]
+
+
+def dimuon_invariante_masse(EV, m_myon=M_MYON):
+    """
+    Invariante Masse des Myon-Paares aus den gemessenen IMPULSEN.
+    Der Detektor misst p⃗ (Spurkrümmung); die Energie wird über die bekannte
+    Myonmasse rekonstruiert:  E = √(p² + m²).  Dann  M² = (ΣE)² − |Σp⃗|².
+    Vektorisiert über alle Ereignisse.
+    """
+    E1 = np.sqrt(EV['px1']**2 + EV['py1']**2 + EV['pz1']**2 + m_myon**2)
+    E2 = np.sqrt(EV['px2']**2 + EV['py2']**2 + EV['pz2']**2 + m_myon**2)
+    Es = E1 + E2
+    px = EV['px1'] + EV['px2']
+    py = EV['py1'] + EV['py2']
+    pz = EV['pz1'] + EV['pz2']
+    return np.sqrt(np.maximum(Es**2 - (px**2 + py**2 + pz**2), 0.0))
