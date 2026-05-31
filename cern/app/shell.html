@@ -19,6 +19,18 @@
   <!-- Interactive Absolute Overlay Reset Zoom Button -->
   <button class="cv4-btn off" id="btn-zoom-out" style="position:absolute;top:12px;left:12px;padding:5px 10px;font-size:10px;background:rgba(22,27,34,0.85);border-color:#30363d;z-index:10;transition:all 0.2s">🔍 Ansicht zurücksetzen</button>
 
+  <!-- INFO PANEL -->
+  <div id="info-panel" class="cv4-info-panel">
+   <button class="cv4-info-close" id="info-close">✕</button>
+   <div id="info-hdr"></div>
+   <div class="cv4-info-body">
+    <div class="cv4-info-title" id="info-title"></div>
+    <div class="cv4-info-sub" id="info-sub"></div>
+    <div class="cv4-info-stats-grid" id="info-stats"></div>
+    <div class="cv4-info-text" id="info-text"></div>
+   </div>
+  </div>
+
   <svg id="svg" width="700" height="480" viewBox="0 0 700 480" style="background:#090d13">
    <!-- Architectural Grid for tech style -->
    <defs>
@@ -135,6 +147,15 @@
    <!-- TI labels -->
    <text x="248" y="186" class="svg-lbl" style="font-size:8px">TI 2</text>
    <text x="485" y="205" class="svg-lbl" style="font-size:8px">TI 8</text>
+
+   <!-- INFO HIT TARGETS — transparent click zones; order = innermost last (highest z in SVG) -->
+   <circle id="hit-lhc" cx="350" cy="240" r="180" fill="none" stroke="rgba(88,166,255,0.01)" stroke-width="22" pointer-events="stroke" class="info-hit-ring"/>
+   <circle id="hit-sps" cx="400" cy="148" r="73" fill="rgba(0,0,0,0.01)" class="info-hit"/>
+   <circle id="hit-ps"  cx="242" cy="332" r="48" fill="rgba(0,0,0,0.01)" class="info-hit"/>
+   <circle id="hit-psb" cx="142" cy="390" r="24" fill="rgba(0,0,0,0.01)" class="info-hit"/>
+   <circle id="hit-leir" cx="142" cy="265" r="24" fill="rgba(0,0,0,0.01)" class="info-hit"/>
+   <circle id="hit-linac4" cx="55" cy="385" r="32" fill="rgba(0,0,0,0.01)" class="info-hit"/>
+   <circle id="hit-linac3" cx="55" cy="275" r="32" fill="rgba(0,0,0,0.01)" class="info-hit"/>
   </svg>
  </div>
 
@@ -172,16 +193,21 @@
 
   <div>
    <div class="cv4-ptitle">🎛️ CCC BETRIEBSPARAMETER</div>
-   <div class="cv4-sli-lbl"><span>Ziel-Energie:</span><span id="lbl-energy">6.8 TeV</span></div>
+
+   <div class="cv4-sli-lbl"><span>Ziel-Energie: <button class="cv4-pi-btn" data-pi="energy">ⓘ</button></span><span id="lbl-energy">6.8 TeV</span></div>
+   <div class="cv4-param-info" id="pi-energy"></div>
    <input type="range" class="cv4-sli" id="sli-energy" min="0.45" max="7.0" step="0.05" value="6.8">
 
-   <div class="cv4-sli-lbl" style="margin-top:8px"><span>Bunch-Intensität:</span><span id="lbl-intensity">1.15e11 p</span></div>
+   <div class="cv4-sli-lbl" style="margin-top:8px"><span>Bunch-Intensität: <button class="cv4-pi-btn" data-pi="intensity">ⓘ</button></span><span id="lbl-intensity">1.15e11 p</span></div>
+   <div class="cv4-param-info" id="pi-intensity"></div>
    <input type="range" class="cv4-sli" id="sli-intensity" min="0.1" max="1.8" step="0.05" value="1.15">
 
-   <div class="cv4-sli-lbl" style="margin-top:8px"><span>Strahl-Fokus β* (Squeeze):</span><span id="lbl-beta">1.50 m</span></div>
+   <div class="cv4-sli-lbl" style="margin-top:8px"><span>Strahl-Fokus β*: <button class="cv4-pi-btn" data-pi="beta">ⓘ</button></span><span id="lbl-beta">1.50 m</span></div>
+   <div class="cv4-param-info" id="pi-beta"></div>
    <input type="range" class="cv4-sli" id="sli-beta" min="0.3" max="1.5" step="0.1" value="1.5" disabled>
 
-   <div class="cv4-sli-lbl" style="margin-top:8px"><span>Ramp-Rate dB/dt:</span><span id="lbl-rampspeed" style="color:#58a6ff">0.05 T/s (Sicher)</span></div>
+   <div class="cv4-sli-lbl" style="margin-top:8px"><span>Ramp-Rate dB/dt: <button class="cv4-pi-btn" data-pi="rampspeed">ⓘ</button></span><span id="lbl-rampspeed" style="color:#58a6ff">0.05 T/s (Sicher)</span></div>
+   <div class="cv4-param-info" id="pi-rampspeed"></div>
    <input type="range" class="cv4-sli" id="sli-rampspeed" min="0.02" max="0.15" step="0.01" value="0.05">
   </div>
 
@@ -189,8 +215,10 @@
    <div class="cv4-ptitle">⚡ LHC BETRIEB</div>
    <div style="display:flex;flex-direction:column;gap:6px">
     <button class="cv4-btn off" id="btn-ramp">🚀 Energie-Ramping starten</button>
+    <div><button class="cv4-pi-btn" data-pi="ramp" style="font-size:9px">ⓘ Was ist Energie-Ramping?</button><div class="cv4-param-info" id="pi-ramp"></div></div>
     <div class="cv4-fill-row"><span style="width:50px;font-size:10px">Ramp</span><div class="cv4-fill-bar"><div class="cv4-fill-bar-inner b1" id="rbar" style="width:0%"></div></div></div>
     <button class="cv4-btn off" id="btn-squeeze" style="background:rgba(23,190,207,.15);border-color:#17becf;color:#17becf">🗜️ Beam Squeeze starten (β*)</button>
+    <div><button class="cv4-pi-btn" data-pi="squeeze" style="font-size:9px">ⓘ Was ist der Beam Squeeze?</button><div class="cv4-param-info" id="pi-squeeze"></div></div>
     <div style="display:flex;gap:4px">
      <button class="cv4-btn danger off" id="btn-coll" style="flex:1;font-size:10.5px;padding:9px 2px">💥 Kollision (manuell)</button>
      <button class="cv4-btn off" id="btn-autocoll" style="flex:1.2;background:rgba(248,81,73,.08);border-color:rgba(248,81,73,.4);color:#f85149;font-size:10.5px;padding:9px 2px">▶️ Auto-Datennahme</button>

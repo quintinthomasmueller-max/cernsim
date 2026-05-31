@@ -20,7 +20,7 @@ BUILD= os.path.join(ROOT, 'build')
 
 # Reihenfolge der JS-Module ist BINDEND (gemeinsame IIFE-Closure, kein Hoisting für const).
 JS_MODULES = ['data.js', 'geometry.js', 'state.js', 'engine.js',
-              'display.js', 'spectrum.js', 'handlers.js']
+              'display.js', 'spectrum.js', 'info.js', 'handlers.js']
 
 def read(p): return open(os.path.join(APP, p)).read()
 

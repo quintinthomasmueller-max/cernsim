@@ -65,3 +65,24 @@
 .cv4-quench{background:rgba(248,81,73,.15);border:1px solid #f85149;color:#f85149;padding:10px;border-radius:6px;font-size:12px;font-weight:bold;text-align:center;animation:cv4blink 1s infinite}
 @keyframes cv4blink{0%,100%{opacity:.5}50%{opacity:1}}
 .geo-element{transition:opacity 0.3s ease, fill-opacity 0.3s ease;}
+.info-hit{cursor:pointer;transition:fill 0.18s}
+.info-hit:hover{fill:rgba(88,166,255,0.07)!important}
+.info-hit-ring{cursor:pointer;transition:stroke 0.18s}
+.info-hit-ring:hover{stroke:rgba(88,166,255,0.12)!important}
+.cv4-info-panel{position:absolute;top:16px;right:16px;width:252px;background:#0d1117;border:1px solid #30363d;border-radius:10px;z-index:20;display:none;box-shadow:0 8px 32px rgba(0,0,0,0.75);overflow:hidden;animation:cv4infoin 0.18s ease}
+@keyframes cv4infoin{from{opacity:0;transform:scale(0.96) translateY(-4px)}to{opacity:1;transform:none}}
+.cv4-info-panel.visible{display:block}
+.cv4-info-close{position:absolute;top:7px;right:7px;background:rgba(13,17,23,0.82);border:1px solid #30363d;color:#8b949e;border-radius:4px;cursor:pointer;padding:1px 7px;font-size:11px;z-index:2;line-height:1.7;transition:all .15s}
+.cv4-info-close:hover{color:#f85149;border-color:#f85149}
+.cv4-info-body{padding:9px 12px 12px}
+.cv4-info-title{font-size:13px;font-weight:800;color:#e6edf3;margin-bottom:2px}
+.cv4-info-sub{font-size:8.5px;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.4px;line-height:1.4}
+.cv4-info-stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-bottom:8px}
+.cv4-info-stat{background:#161b22;border:1px solid #21262d;border-radius:4px;padding:4px 5px}
+.cv4-info-stat-l{display:block;font-size:7.5px;color:#8b949e;text-transform:uppercase;letter-spacing:0.3px}
+.cv4-info-stat-v{display:block;font-size:10px;font-weight:700;font-family:'Courier New',monospace}
+.cv4-info-text{font-size:10px;color:#8b949e;line-height:1.56}
+.cv4-pi-btn{background:none;border:1px solid #30363d;color:#58a6ff;border-radius:3px;cursor:pointer;padding:0 5px;font-size:10px;line-height:1.5;vertical-align:middle;margin-left:3px;transition:all .15s}
+.cv4-pi-btn:hover{background:rgba(88,166,255,.1);border-color:#58a6ff}
+.cv4-param-info{max-height:0;overflow:hidden;transition:max-height 0.28s ease,padding 0.28s ease,margin 0.28s ease;font-size:9.5px;color:#8b949e;line-height:1.55;padding:0 8px;margin:0;background:rgba(13,17,23,0.7);border-left:2px solid #30363d;border-radius:0 0 4px 4px}
+.cv4-param-info.open{max-height:180px;padding:6px 8px;margin-top:3px}

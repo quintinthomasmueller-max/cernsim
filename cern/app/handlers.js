@@ -80,10 +80,34 @@ btnZoomOut.addEventListener("click", () => {
  animateViewBox(0, 0, 700, 480);
 });
 
-grpAtlas.addEventListener("click", () => zoomToDetector("ATLAS"));
-grpCms.addEventListener("click", () => zoomToDetector("CMS"));
-grpAlice.addEventListener("click", () => zoomToDetector("ALICE"));
-grpLhcb.addEventListener("click", () => zoomToDetector("LHCB"));
+grpAtlas.addEventListener("click", () => { showInfo("ATLAS"); zoomToDetector("ATLAS"); });
+grpCms.addEventListener("click",   () => { showInfo("CMS");   zoomToDetector("CMS");   });
+grpAlice.addEventListener("click", () => { showInfo("ALICE"); zoomToDetector("ALICE"); });
+grpLhcb.addEventListener("click",  () => { showInfo("LHCB");  zoomToDetector("LHCB");  });
+
+// INFO PANEL — Beschleuniger-Knoten
+document.getElementById("hit-linac4").addEventListener("click", () => showInfo("LINAC4"));
+document.getElementById("hit-linac3").addEventListener("click", () => showInfo("LINAC3"));
+document.getElementById("hit-psb").addEventListener("click",    () => showInfo("PSB"));
+document.getElementById("hit-leir").addEventListener("click",   () => showInfo("LEIR"));
+document.getElementById("hit-ps").addEventListener("click",     () => showInfo("PS"));
+document.getElementById("hit-sps").addEventListener("click",    () => showInfo("SPS"));
+document.getElementById("hit-lhc").addEventListener("click",    () => showInfo("LHC"));
+document.getElementById("info-close").addEventListener("click", hideInfo);
+
+// PARAM INFO ACCORDION — ⓘ-Buttons füllen und toggeln Textboxen
+document.querySelectorAll('.cv4-pi-btn').forEach(btn => {
+ btn.addEventListener('click', e => {
+  e.stopPropagation();
+  const key = btn.dataset.pi;
+  const box = document.getElementById('pi-' + key);
+  if(!box) return;
+  if(!box.textContent && PARAM_INFO[key]) box.textContent = PARAM_INFO[key];
+  const wasOpen = box.classList.contains('open');
+  document.querySelectorAll('.cv4-param-info.open').forEach(x => x.classList.remove('open'));
+  if(!wasOpen) box.classList.add('open');
+ });
+});
 
 // PRESETS CLICK LISTENERS
 btnPreHiggs.addEventListener("click",()=>{
