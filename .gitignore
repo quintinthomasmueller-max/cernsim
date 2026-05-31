@@ -10,3 +10,6 @@ venv/
 
 # macOS
 .DS_Store
+cern/data/cms_dimuon_full.csv
+build/
+cern/app/index.html
