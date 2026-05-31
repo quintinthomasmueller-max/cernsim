@@ -4,6 +4,14 @@
 default:
     @just --list
 
+# Bündelt cern/app/* -> Notebook-Zelle 4 + build/ + cern/app/index.html
+sync:
+    python3 scripts/sync_widget.py
+
+# Headless-Prüfung: sync + node --check + nbformat.validate + ast.parse
+check:
+    bash scripts/check.sh
+
 # Startet den Jupyter Notebook Server im Root-Verzeichnis
 jupyter:
     jupyter notebook --NotebookApp.default_url="/tree"
@@ -12,14 +20,14 @@ jupyter:
 lab:
     jupyter lab
 
-# Generiert das physikalisch kohärente CERN-Stellwerk-Notebook neu
+# Generiert das CERN-Stellwerk-Notebook von Grund auf neu (Legacy-Generator)
 generate:
-    python CERN_Visualisierung/scripts/create_notebook.py
+    python3 cern/scripts/create_notebook.py
 
 # Startet den interaktiven Streamlit-Simulator für die Familienstiftung
 streamlit:
-    streamlit run stiftung_simulator.py
+    streamlit run stiftung/stiftung_simulator.py
 
-# Installiert alle benötigten Python-Bibliotheken für die Simulationen
+# Installiert alle benötigten Python-Bibliotheken
 setup:
-    pip install numpy scipy matplotlib pandas plotly streamlit jupyter jupyterlab
+    pip install -r requirements.txt

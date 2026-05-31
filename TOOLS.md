@@ -47,7 +47,7 @@ Alle Einheiten sind in standardmäßigen SI-Einheiten definiert, ergänzt durch 
 
 ## 🎛️ 2. Der Dashboard-Generator (`create_notebook.py`)
 
-Die Datei `CERN_Visualisierung/scripts/create_notebook.py` ist ein Metaprogrammierungs-Skript. Es generiert das voll-interaktive Jupyter-Notebook `CERN_Beschleuniger_Schaltzentrale.ipynb` im Hauptverzeichnis. 
+Die Datei `cern/scripts/create_notebook.py` ist ein Metaprogrammierungs-Skript. Es generiert das voll-interaktive Jupyter-Notebook `cern/notebooks/CERN_Beschleuniger_Schaltzentrale.ipynb`. 
 
 ### Geometrisches Layout (SVG-Koordinaten)
 Damit die Teilchenstrahlen flüssig und physikalisch korrekt von einem Beschleunigerring in den nächsten springen, basiert das SVG-Stellwerk auf exakter Trigonometrie. Wenn du Änderungen am Layout vornimmst, **musst** du diese Radien und Zentren beachten:

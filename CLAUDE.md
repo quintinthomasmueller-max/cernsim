@@ -42,14 +42,22 @@ Quelle der Wahrheit: `cern/app/`. **Niemals** Zelle 4 von Hand editieren.
 
 ## Standard-Befehle
 ```
-bash scripts/check.sh          # sync + node --check + nbformat.validate + ast.parse (headless)
+bash scripts/check.sh          # sync + node --check + jupytext --sync + nbformat.validate + ast.parse (headless)
 python3 scripts/sync_widget.py # nur neu bündeln (Zelle 4 + build/ + index.html)
 ```
 Standalone-App im Browser (nur bei Layout/Render-Fragen): `cern/app/index.html` öffnen.
 
+## Notebook-Workflow (jupytext + nbstripout)
+- Das `.ipynb` ist mit einem **`.py`-Spiegel** (`py:percent`) gepaart — *die* diffbare/reviewbare
+  Quelle für das **Curriculum** (Markdown + Python-Zellen). Zelle 4 (Widget) bleibt generiert.
+- Curriculum editieren: entweder `.py` ODER `.ipynb` ändern, dann `jupytext --sync` (läuft in `check.sh`).
+- **`nbstripout`** ist als Git-Filter installiert (`.gitattributes`) → Outputs werden beim Commit
+  automatisch entfernt. Kein manuelles „Outputs leeren" mehr nötig.
+
 ## Commits
-- Branch `feat/echte-cern-daten-event-display`. **Outputs vor Commit leeren** (Trust + Größe).
-- `.DS_Store` und `cern/resources/ai_studio_code (5).html` nicht committen (nicht von uns).
+- Branch `feat/echte-cern-daten-event-display`. Outputs werden via `nbstripout`-Filter auto-gestrippt.
+- `scratch/`, `CERN_Visualisierung/`, `.DS_Store`, `cern/resources/ai_studio_code*.html`
+  sind jetzt in `.gitignore` (nicht committen).
 - `Co-Authored-By:`-Zeile beibehalten.
 
 ## Konventionen

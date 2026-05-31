@@ -395,19 +395,28 @@ def standardmodell_teilchen():
 import os, csv, urllib.request
 
 # PDG-Massen/-Breiten der im Myon-Spektrum sichtbaren Resonanzen (GeV).
-# Diese Tabelle ist die gemeinsame "physikalische Wahrheit" für Python UND das
-# JS-Widget – beide Anzeigen sampeln an exakt denselben Werten.
-RESONANZEN = {
-    'rho/omega': dict(m=0.780,  breite=0.100, kanal='μ⁺μ⁻',  region='PILOT', farbe='#9467bd'),
-    'phi':       dict(m=1.019,  breite=0.004, kanal='μ⁺μ⁻',  region='PILOT', farbe='#8c564b'),
-    'J/psi':     dict(m=3.097,  breite=0.093, kanal='μ⁺μ⁻',  region='QGP',   farbe='#2ca02c'),
-    'psi(2S)':   dict(m=3.686,  breite=0.030, kanal='μ⁺μ⁻',  region='QGP',   farbe='#98df8a'),
-    'Upsilon1S': dict(m=9.460,  breite=0.054, kanal='μ⁺μ⁻',  region='QGP',   farbe='#d62728'),
-    'Upsilon2S': dict(m=10.023, breite=0.032, kanal='μ⁺μ⁻',  region='QGP',   farbe='#ff9896'),
-    'Upsilon3S': dict(m=10.355, breite=0.020, kanal='μ⁺μ⁻',  region='QGP',   farbe='#ffbb78'),
-    'Z0':        dict(m=91.19,  breite=2.490, kanal='μ⁺μ⁻',  region='HIGGS', farbe='#17becf'),
-    'Higgs':     dict(m=125.0,  breite=0.004, kanal='ZZ*→4ℓ', region='HIGGS', farbe='#aec7e8'),
-}
+# Single Source of Truth: cern/data/physics.json. Diese Tabelle ist die gemeinsame
+# "physikalische Wahrheit" für Python UND das JS-Widget (CERN_REAL.reso wird via
+# scripts/gen_constants.py aus derselben JSON erzeugt) – beide sampeln an exakt
+# denselben Werten. NICHT hier hardcoden; Werte ausschließlich in physics.json pflegen.
+def _load_resonanzen():
+    """Lädt die Resonanztabelle aus cern/data/physics.json.
+
+    Liefert {name: dict(m, breite, kanal, region, farbe)} – identische Struktur
+    wie die frühere Hardcoding-Tabelle, damit alle Konsumenten unverändert laufen.
+    """
+    import json, os  # lokal: unabhängig von den Modul-Imports
+    pfad = os.path.normpath(os.path.join(os.path.dirname(__file__), '..', 'data', 'physics.json'))
+    with open(pfad, encoding='utf-8') as f:
+        physik = json.load(f)
+    return {
+        name: dict(m=e['m'], breite=e['breite'], kanal=e['kanal'],
+                   region=e['region'], farbe=e['farbe'])
+        for name, e in physik['resonanzen'].items()
+    }
+
+
+RESONANZEN = _load_resonanzen()
 
 # Historische LHC-Meilensteine der Higgs-Suche (für die Signifikanz-Zeitachse).
 HISTORIE = {

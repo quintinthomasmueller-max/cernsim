@@ -1,12 +1,17 @@
-# CERN-Visualisierung & Akkretion (Notebooks)
-numpy
-scipy
-matplotlib
-pandas
+# Numerik & Analyse (Notebooks)
+numpy>=1.26
+scipy>=1.11
+matplotlib>=3.8
+pandas>=2.1
 
 # Stiftungs-Simulator (Streamlit-App)
-streamlit
-plotly
+streamlit>=1.30
+plotly>=5.18
 
 # Jupyter-Umgebung
-jupyter
+jupyter>=1.0
+nbformat>=5.9
+
+# Notebook-Workflow: diffbarer .py-Spiegel + Output-Stripping (siehe AGENTS.md)
+jupytext>=1.16
+nbstripout>=0.7

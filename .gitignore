@@ -10,6 +10,16 @@ venv/
 
 # macOS
 .DS_Store
-cern/data/cms_dimuon_full.csv
+*/.DS_Store
+
+# Generierte Artefakte (Quelle: cern/app/* via scripts/sync_widget.py)
 build/
 cern/app/index.html
+
+# Große Rohdaten (nur Subset wird versioniert)
+cern/data/cms_dimuon_full.csv
+
+# Einmal-/Wegwerf-Skripte und veraltete Kopien (nicht versionieren)
+scratch/
+CERN_Visualisierung/
+cern/resources/ai_studio_code*.html

@@ -45,6 +45,15 @@ def build_standalone():
             + body + '</body></html>')
 
 def main():
+    # Resonanztabelle aus physics.json in data.js.reso spiegeln (Single Source of Truth),
+    # damit das gebündelte Widget garantiert dieselben Werte wie Python nutzt.
+    try:
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        import gen_constants
+        gen_constants.write()
+    except Exception as e:
+        print(f"⚠ gen_constants übersprungen ({e}) – data.js.reso evtl. nicht synchron")
+
     inner = build_inner()
     assert "'''" not in inner, "Inhalt enthält ''' — bricht den Python-Rohstring!"
 

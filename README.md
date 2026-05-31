@@ -35,8 +35,10 @@ PhytonNotebook/
 Interaktive Simulation und Visualisierung eines Teilchenbeschleunigers.
 
 - `notebooks/CERN_Beschleuniger_Schaltzentrale.ipynb` – Haupt-Notebook (Schaltzentralen-Ansicht)
+- `notebooks/CERN_Beschleuniger_Schaltzentrale.py` – jupytext-Spiegel (`py:percent`, diffbar; via `jupytext --sync` gekoppelt)
+- `app/` – modulare Widget-Quellen (JS/CSS/HTML), gebündelt von `scripts/sync_widget.py` in Zelle 4
 - `scripts/cern_utils.py` – Hilfsfunktionen (Physik, Massenspektrum, Kollisionen)
-- `scripts/create_notebook.py` – generiert das Notebook nach `cern/notebooks/`
+- `scripts/create_notebook.py` – Legacy-Generator (erzeugt das Notebook von Grund auf)
 - `data/`, `resources/`, `output/` – Daten, Ressourcen und Ausgaben
 
 ### Akkretions-Notebooks (`akkretion/`)

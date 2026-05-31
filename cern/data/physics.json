@@ -1,0 +1,15 @@
+{
+  "_kommentar": "EINZIGE QUELLE DER WAHRHEIT (Single Source of Truth) für die Resonanztabelle. Wird von Python (cern/scripts/cern_utils.py -> RESONANZEN) UND vom JS-Widget (cern/app/data.js -> CERN_REAL.reso, generiert via scripts/gen_constants.py) konsumiert. NIEMALS data.js.reso oder RESONANZEN von Hand ändern -- nur hier.",
+  "quelle": "PDG 2024 (Massen & natürliche Breiten in GeV). Widget-Werte sind die im Dimuon-Spektrum sichtbaren Resonanzen; Upsilon-Zustände sind im Widget zu 'Upsilon' (1S) zusammengefasst.",
+  "resonanzen": {
+    "rho/omega": { "m": 0.78,   "breite": 0.1,   "kanal": "μ⁺μ⁻",   "region": "PILOT", "farbe": "#9467bd", "widget": "rho/omega" },
+    "phi":       { "m": 1.019,  "breite": 0.004, "kanal": "μ⁺μ⁻",   "region": "PILOT", "farbe": "#8c564b", "widget": "phi" },
+    "J/psi":     { "m": 3.097,  "breite": 0.093, "kanal": "μ⁺μ⁻",   "region": "QGP",   "farbe": "#2ca02c", "widget": "J/psi" },
+    "psi(2S)":   { "m": 3.686,  "breite": 0.03,  "kanal": "μ⁺μ⁻",   "region": "QGP",   "farbe": "#98df8a", "widget": null },
+    "Upsilon1S": { "m": 9.46,   "breite": 0.054, "kanal": "μ⁺μ⁻",   "region": "QGP",   "farbe": "#d62728", "widget": "Upsilon" },
+    "Upsilon2S": { "m": 10.023, "breite": 0.032, "kanal": "μ⁺μ⁻",   "region": "QGP",   "farbe": "#ff9896", "widget": null },
+    "Upsilon3S": { "m": 10.355, "breite": 0.02,  "kanal": "μ⁺μ⁻",   "region": "QGP",   "farbe": "#ffbb78", "widget": null },
+    "Z0":        { "m": 91.19,  "breite": 2.49,  "kanal": "μ⁺μ⁻",   "region": "HIGGS", "farbe": "#17becf", "widget": "Z0" },
+    "Higgs":     { "m": 125.0,  "breite": 0.004, "kanal": "ZZ*→4ℓ", "region": "HIGGS", "farbe": "#aec7e8", "widget": "Higgs" }
+  }
+}
