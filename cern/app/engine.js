@@ -64,14 +64,7 @@ function resizeCanvases(){
  ctxHist.scale(dpr, dpr);
 }
 
-["atlas","cms","alice","lhcb"].forEach(d=>{
- $("dt-"+d).addEventListener("click",()=>{
-  document.querySelectorAll(".cv4-dtab").forEach(t=>t.classList.remove("act"));
-  $("dt-"+d).classList.add("act");
-  selDet=d.toUpperCase();
-  drawCollisionEvent(lastEvent);
- });
-});
+// Detektor-Tab-Klicks werden zentral in handlers.js (selectDetector) gebunden.
 
 selP.addEventListener("click",()=>{ if(filling)return; setMode(false); });
 selI.addEventListener("click",()=>{ if(filling)return; setMode(true); });
@@ -103,7 +96,7 @@ function resetLHC(){
  btnAuto.classList.remove("off");
  filling = false; clearIllum();
  lhcDots.b1.forEach(d=>d.el.remove()); lhcDots.b2.forEach(d=>d.el.remove());
- lhcDots={b1:[],b2:[]}; b1Count=0; b2Count=0; collisions=0; massData=[];
+ lhcDots={b1:[],b2:[]}; b1Count=0; b2Count=0; collisions=0; resetSpectrumData();
  ramped=false; squeezed=false; squeezing=false;
  lhcEnergy=isIon?177:450; lhcSpeed=isIon?0.0050:0.0078;
  paramBetaStar=1.5;

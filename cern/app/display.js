@@ -3,15 +3,16 @@
 // Lerninhalt: jede Teilchenart hinterlässt in den Detektorlagen eine andere Signatur.
 // ═══════════════════════════════════════════════════════════════════════════
 const DETKONFIG = {
- ATLAS: { typ:'barrel', farbe:'#58a6ff', rolle:'Allzweck · großes Toroid-Myon-System', bend:0.55,
+ // bend = visuelle Krümmungsstärke (skaliert mit B-Feld: CMS 3.8T > ATLAS 2T > ALICE 0.5T)
+ ATLAS: { typ:'barrel', farbe:'#58a6ff', rolle:'Allzweck · 2T Solenoid + Toroid-Myon-System', bend:0.80,
    lagen:[ {r:26,name:'Spur',kind:'track'}, {r:38,name:'EM',kind:'em'},
            {r:52,name:'HAD',kind:'had'}, {r:62,name:'Toroid',kind:'coil'},
            {r:86,name:'μ-Kammer',kind:'muon'} ] },
- CMS: { typ:'barrel', farbe:'#f85149', rolle:'kompakt · 3.8 T Solenoid · Kristall-ECAL', bend:1.0,
+ CMS: { typ:'barrel', farbe:'#f85149', rolle:'kompakt · 3.8 T Solenoid · Kristall-ECAL', bend:1.40,
    lagen:[ {r:30,name:'Tracker',kind:'track'}, {r:40,name:'ECAL',kind:'em'},
            {r:52,name:'HCAL',kind:'had'}, {r:60,name:'Solenoid',kind:'coil'},
            {r:86,name:'μ-Joch',kind:'muon'} ] },
- ALICE: { typ:'barrel', farbe:'#e377c2', rolle:'Schwerionen · TPC · hohe Multiplizität', bend:0.35,
+ ALICE: { typ:'barrel', farbe:'#e377c2', rolle:'Schwerionen · TPC · hohe Multiplizität · 0.5T', bend:0.60,
    lagen:[ {r:14,name:'ITS',kind:'track'}, {r:58,name:'TPC',kind:'track'},
            {r:70,name:'TOF',kind:'em'}, {r:86,name:'Außen',kind:'muon'} ] },
  LHCB: { typ:'forward', farbe:'#ff7f0e', rolle:'Vorwärtsspektrometer · Sekundärvertex',
@@ -28,12 +29,20 @@ function radii(D,sc){ const trk=(rKind(D,'track',true)||30), em=(rKind(D,'em')||
   had=(rKind(D,'had')||em+10), mu=(rKind(D,'muon')||had+20);
   return {Rtrk:trk*sc, Rem:em*sc, Rhad:had*sc, Rmu:mu*sc}; }
 
-function drawLegend(){ const items=[['μ','#2ea44f'],['e','#58a6ff'],['γ','#f1e05a'],['Had','#ff7f0e'],['ν','#8b949e']];
- const gap=Math.min(30,(evW-14)/items.length), y=evH-5;
- ctxEv.save(); ctxEv.font='7px sans-serif'; ctxEv.textAlign='left';
- items.forEach((it,i)=>{ const x=8+i*gap;
+function drawLegend(){
+ // Legende mit Kurzinfo: was jede Farbe/Signatur bedeutet
+ const items=[
+  ['μ (alle Lagen)','#2ea44f'],
+  ['e⁻ (→EM-Kal.)','#58a6ff'],
+  ['γ (→EM, kein Track)','#f1e05a'],
+  ['Had (→HAD-Kal.)','#ff7f0e'],
+  ['ν: fehl. E_T (MET)','#8b949e']
+ ];
+ const gap=Math.min(62,(evW-8)/items.length), y=evH-5;
+ ctxEv.save(); ctxEv.font='6px sans-serif'; ctxEv.textAlign='left';
+ items.forEach((it,i)=>{ const x=4+i*gap;
   ctxEv.fillStyle=it[1]; ctxEv.beginPath(); ctxEv.arc(x+2,y-2,2.3,0,2*Math.PI); ctxEv.fill();
-  ctxEv.fillStyle='rgba(225,230,238,0.92)'; ctxEv.fillText(it[0], x+7, y); });
+  ctxEv.fillStyle='rgba(205,215,230,0.85)'; ctxEv.fillText(it[0], x+7, y); });
  ctxEv.restore(); }
 
 function emCluster(cx,cy,ang,r0,r1,col){ ctxEv.save(); ctxEv.globalAlpha=0.6; ctxEv.fillStyle=col; ctxEv.beginPath();
@@ -49,22 +58,38 @@ function muonHit(p,ang){ const px=Math.cos(ang+Math.PI/2), py=Math.sin(ang+Math.
  ctxEv.strokeStyle='#2ea44f'; ctxEv.lineWidth=3; ctxEv.beginPath();
  ctxEv.moveTo(p[0]-4*px,p[1]-4*py); ctxEv.lineTo(p[0]+4*px,p[1]+4*py); ctxEv.stroke();
  ctxEv.fillStyle='#2ea44f'; ctxEv.beginPath(); ctxEv.arc(p[0],p[1],2.3,0,2*Math.PI); ctxEv.fill(); }
-function metArrow(cx,cy,ang,len){ ctxEv.save(); ctxEv.setLineDash([4,3]); ctxEv.strokeStyle='#8b949e'; ctxEv.lineWidth=1.5;
+function metArrow(cx,cy,ang,len){ ctxEv.save(); ctxEv.setLineDash([4,3]); ctxEv.strokeStyle='#8b949e'; ctxEv.lineWidth=1.8;
  const tx=cx+len*Math.cos(ang), ty=cy+len*Math.sin(ang);
  ctxEv.beginPath(); ctxEv.moveTo(cx,cy); ctxEv.lineTo(tx,ty); ctxEv.stroke(); ctxEv.setLineDash([]);
  ctxEv.fillStyle='#8b949e'; ctxEv.beginPath(); ctxEv.moveTo(tx,ty);
- ctxEv.lineTo(tx-6*Math.cos(ang-0.4),ty-6*Math.sin(ang-0.4)); ctxEv.lineTo(tx-6*Math.cos(ang+0.4),ty-6*Math.sin(ang+0.4));
- ctxEv.closePath(); ctxEv.fill(); ctxEv.restore(); }
+ ctxEv.lineTo(tx-7*Math.cos(ang-0.4),ty-7*Math.sin(ang-0.4)); ctxEv.lineTo(tx-7*Math.cos(ang+0.4),ty-7*Math.sin(ang+0.4));
+ ctxEv.closePath(); ctxEv.fill();
+ // Label: fehlende Transversalenergie
+ ctxEv.font='5.5px monospace'; ctxEv.fillStyle='rgba(139,148,158,0.8)';
+ ctxEv.fillText('E_T^miss',tx+4*Math.cos(ang+Math.PI/2),ty+4*Math.sin(ang+Math.PI/2));
+ ctxEv.restore(); }
 
 function drawParticleBarrel(cx,cy,ang,typ,pt,q,D,sc){
- const R=radii(D,sc); const curv=q*(D.bend||0.6)*Math.min(0.95,16/Math.max(4,pt));
- if(typ==='bg'){ drawTrack(cx,cy,ang,R.Rtrk*(0.7+Math.random()*0.5),curv,
-    isIon?'rgba(227,119,194,0.42)':'rgba(120,140,170,0.40)',0.7); return; }
- if(typ==='mu'){ let p=drawTrack(cx,cy,ang,R.Rmu,curv,'#2ea44f',2.0); muonHit(p,ang); }
+ const R=radii(D,sc);
+ // Krümmung ∝ q·B/p (Lorentzkraft): höheres pT → weniger Ablenkung
+ // Faktor 22 statt 16 → stärkere Sichtbarkeit bei didaktischen pT-Werten
+ const curv=q*(D.bend||0.6)*Math.min(0.75,22/Math.max(4,pt));
+ if(typ==='bg'){
+  // Untergrund: Spuren enden an TPC-/Tracker-Außenkante (nicht random gestutzt)
+  const bgLen = isIon ? R.Rtrk : R.Rtrk*(0.85+Math.random()*0.3);
+  drawTrack(cx,cy,ang,bgLen,curv,
+    isIon?'rgba(227,119,194,0.38)':'rgba(120,140,170,0.38)',0.7); return; }
+ if(typ==='mu'){
+  // Myon: durchquert ALLE Lagen (MIP = minimal ionisierendes Teilchen)
+  let p=drawTrack(cx,cy,ang,R.Rmu,curv,'#2ea44f',2.2); muonHit(p,ang);
+  // Kleine Markierung zeigt B-Feld-Ablenkung
+  const bx=cx+(R.Rtrk*1.1)*Math.cos(ang), by=cy+(R.Rtrk*1.1)*Math.sin(ang);
+  ctxEv.save(); ctxEv.fillStyle='rgba(46,164,79,0.55)'; ctxEv.font='5.5px monospace';
+  ctxEv.fillText('B↺',bx+3,by-2); ctxEv.restore(); }
  else if(typ==='e'){ drawTrack(cx,cy,ang,R.Rtrk,curv,'#58a6ff',2.0); emCluster(cx,cy,ang,R.Rtrk,R.Rem,'#58a6ff'); }
  else if(typ==='gamma'){ emCluster(cx,cy,ang,R.Rtrk,R.Rem,'#f1e05a'); }
  else if(typ==='had'){ drawTrack(cx,cy,ang,R.Rem,curv,'rgba(255,127,14,0.9)',1.4); hadShower(cx,cy,ang,R.Rem,R.Rhad); }
- else if(typ==='nu'){ metArrow(cx,cy,ang,R.Rtrk*1.3); }
+ else if(typ==='nu'){ metArrow(cx,cy,ang,R.Rtrk*1.6); }
 }
 function lhcbX(st){ const xs=evW-12; return 18+st/330*(xs-18); }
 function drawParticleForward(vx,vy,slope,typ,pt,q,bg){
@@ -134,9 +159,18 @@ function drawCollisionEvent(ev){
  } else {
   let nbg=Math.round((isIon?64:11)*Math.min(2.2,Math.max(.3,paramIntensity)));
   for(let i=0;i<nbg;i++) drawParticleBarrel(cx,cy,Math.random()*2*Math.PI,'bg',4+Math.random()*9,Math.random()<.5?1:-1,D,sc);
-  if(!isIon){ drawParticleBarrel(cx,cy,1.1+Math.random(),'gamma',20,0,D,sc);
-              drawParticleBarrel(cx,cy,3.6+Math.random(),'had',26,1,D,sc);
-              drawParticleBarrel(cx,cy,5.2+Math.random()*0.6,'nu',0,0,D,sc); }
+  if(!isIon){
+   drawParticleBarrel(cx,cy,1.1+Math.random()*0.5,'gamma',20,0,D,sc);
+   drawParticleBarrel(cx,cy,3.6+Math.random()*0.5,'had',26,1,D,sc);
+   // MET-Pfeil: zeigt entgegen dem vektoriellen pT-Summe der Leptonen (Impulserhaltung)
+   let metAng;
+   if(evd && evd.leptons && evd.leptons.length){
+    let sx=0,sy=0;
+    evd.leptons.forEach(L=>{ const phi=L.phi!=null?L.phi:0; sx+=(L.pt||10)*Math.cos(phi); sy+=(L.pt||10)*Math.sin(phi); });
+    metAng=Math.atan2(-sy,-sx); // entgegengesetzt = fehlende Energie
+   } else { metAng=5.2+Math.random()*0.6; }
+   drawParticleBarrel(cx,cy,metAng,'nu',0,0,D,sc);
+  }
   if(evd && evd.leptons) evd.leptons.forEach(L=>{
    drawParticleBarrel(cx,cy, L.phi!=null?L.phi:Math.random()*2*Math.PI, L.lep==='e'?'e':'mu', L.pt||10, L.q||1, D, sc); });
  }

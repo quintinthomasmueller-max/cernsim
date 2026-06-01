@@ -165,7 +165,9 @@ display(HTML(r'''<div id="cern-v4">
 .cv4-sli::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#58a6ff;cursor:pointer;border:1px solid #30363d}
 .cv4-quench{background:rgba(248,81,73,.15);border:1px solid #f85149;color:#f85149;padding:10px;border-radius:6px;font-size:12px;font-weight:bold;text-align:center;animation:cv4blink 1s infinite}
 @keyframes cv4blink{0%,100%{opacity:.5}50%{opacity:1}}
-.geo-element{transition:opacity 0.3s ease, fill-opacity 0.3s ease;}
+.geo-element{transition:opacity 0.3s ease, fill-opacity 0.3s ease, filter 0.3s ease;}
+/* Geo-Overlay ausgegraut: gedimmt + entsättigt (per Button), statt komplett ausgeblendet */
+#svg.geo-dimmed .geo-element{opacity:0.22;filter:grayscale(1) brightness(0.85);}
 .info-hit{cursor:pointer;transition:fill 0.18s}
 .info-hit:hover{fill:rgba(88,166,255,0.07)!important}
 .info-hit-ring{cursor:pointer;transition:stroke 0.18s}
@@ -173,6 +175,13 @@ display(HTML(r'''<div id="cern-v4">
 .cv4-info-panel{position:absolute;top:16px;right:16px;width:252px;background:#0d1117;border:1px solid #30363d;border-radius:10px;z-index:20;display:none;box-shadow:0 8px 32px rgba(0,0,0,0.75);overflow:hidden;animation:cv4infoin 0.18s ease}
 @keyframes cv4infoin{from{opacity:0;transform:scale(0.96) translateY(-4px)}to{opacity:1;transform:none}}
 .cv4-info-panel.visible{display:block}
+.cv4-hdr-photo{position:relative;height:120px;background:linear-gradient(135deg,#0a0e16,#11161f);overflow:hidden}
+.cv4-hdr-photo img{width:100%;height:100%;object-fit:cover;display:block}
+.cv4-hdr-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(13,17,23,0) 45%,rgba(13,17,23,0.82) 100%);border-bottom:3px solid var(--accent);pointer-events:none}
+.cv4-hdr-cred{position:absolute;right:5px;bottom:5px;max-width:90%;font-size:7px;font-family:monospace;color:rgba(230,237,243,0.62);text-shadow:0 1px 2px #000;text-align:right;line-height:1.3;pointer-events:none}
+.cv4-hdr-fbtxt{display:none;position:absolute;inset:0;align-items:center;justify-content:center;font-size:13px;font-weight:800;letter-spacing:1px;color:var(--accent);opacity:0.5;text-transform:uppercase}
+.cv4-hdr-noimg{background:linear-gradient(135deg,#0a1628,#0d2b52)}
+.cv4-hdr-noimg .cv4-hdr-fbtxt{display:flex}
 .cv4-info-close{position:absolute;top:7px;right:7px;background:rgba(13,17,23,0.82);border:1px solid #30363d;color:#8b949e;border-radius:4px;cursor:pointer;padding:1px 7px;font-size:11px;z-index:2;line-height:1.7;transition:all .15s}
 .cv4-info-close:hover{color:#f85149;border-color:#f85149}
 .cv4-info-body{padding:9px 12px 12px}
@@ -223,31 +232,33 @@ display(HTML(r'''<div id="cern-v4">
    <!-- Architectural Grid for tech style -->
    <defs>
     <pattern id="arch-grid" width="30" height="30" patternUnits="userSpaceOnUse">
-     <path d="M 30 0 L 0 0 0 30" fill="none" stroke="rgba(255,255,255,0.012)" stroke-width="0.5"/>
+     <path d="M 30 0 L 0 0 0 30" fill="none" stroke="rgba(255,255,255,0.025)" stroke-width="0.5"/>
     </pattern>
    </defs>
    <rect width="100%" height="100%" fill="url(#arch-grid)" />
 
    <!-- GEOGRAPHICAL FEATURES (Toggleable via .geo-element) -->
    <!-- Geneva Lake (Lac Léman) in top-right -->
-   <path class="geo-element" d="M 520,0 Q 560,50 620,60 T 700,75 L 700,0 Z" fill="rgba(88,166,255,0.04)" stroke="rgba(88,166,255,0.12)" stroke-width="1.5" />
-   <text class="geo-element" x="610" y="30" fill="rgba(88,166,255,0.22)" font-size="8px" font-family="monospace">LAC LÉMAN (GENFER SEE)</text>
+   <path class="geo-element" d="M 520,0 Q 560,50 620,60 T 700,75 L 700,0 Z" fill="rgba(88,166,255,0.088)" stroke="rgba(88,166,255,0.264)" stroke-width="1.5" />
+   <text class="geo-element" x="610" y="30" fill="rgba(88,166,255,0.484)" font-size="8px" font-family="monospace">LAC LÉMAN (GENFER SEE)</text>
 
-   <!-- French-Swiss Border (dashed line cutting diagonally) -->
-   <path class="geo-element" d="M 0,220 L 700,120" stroke="rgba(255,255,255,0.06)" stroke-width="1.2" stroke-dasharray="6,6" />
-   <text class="geo-element" x="80" y="200" fill="rgba(255,255,255,0.12)" font-size="7.5px" font-family="monospace" transform="rotate(-8, 80, 200)">STAATSGRENZE SCHWEIZ (CH) - FRANKREICH (FR)</text>
+   <!-- French-Swiss Border: aus der offiziellen CERN-Karte digitalisiert + projiziert (Ost-/Schweizer Seite, schneidet den Ring im SE) -->
+   <path class="geo-element" d="M 541,48 Q 518,147 521,204 Q 524,261 511,292 Q 498,322 479,344 Q 459,366 444,379 L 428,392" stroke="rgba(255,255,255,0.20)" stroke-width="1.2" stroke-dasharray="6,6" fill="none" />
+   <text class="geo-element" x="538" y="120" fill="rgba(255,255,255,0.30)" font-size="7px" font-family="monospace" text-anchor="middle" transform="rotate(76, 538, 120)">STAATSGRENZE</text>
+   <text class="geo-element" x="120" y="170" fill="rgba(255,255,255,0.24)" font-size="8.5px" font-family="monospace" text-anchor="middle">FRANKREICH (FR)</text>
+   <text class="geo-element" x="630" y="225" fill="rgba(255,255,255,0.24)" font-size="8.5px" font-family="monospace" text-anchor="middle">SCHWEIZ (CH)</text>
 
    <!-- Jura Mountain Ridge in the top-left -->
-   <path class="geo-element" d="M 0,50 Q 80,80 150,50 T 250,20" stroke="rgba(255,255,255,0.04)" stroke-width="1.5" stroke-dasharray="3,6" fill="none" />
-   <text class="geo-element" x="60" y="40" fill="rgba(255,255,255,0.10)" font-size="7px" font-family="monospace">JURA-GEBIRGE (FR)</text>
+   <path class="geo-element" d="M 0,50 Q 80,80 150,50 T 250,20" stroke="rgba(255,255,255,0.088)" stroke-width="1.5" stroke-dasharray="3,6" fill="none" />
+   <text class="geo-element" x="60" y="40" fill="rgba(255,255,255,0.22)" font-size="7px" font-family="monospace">JURA-GEBIRGE (FR)</text>
 
    <!-- Geographic Town/Site Markers -->
-   <text class="geo-element" x="142" y="430" fill="rgba(255,255,255,0.18)" font-size="7.5px" font-family="monospace" text-anchor="middle">CERN Meyrin Campus (CH)</text>
-   <text class="geo-element" x="430" y="90" fill="rgba(255,255,255,0.18)" font-size="7.5px" font-family="monospace" text-anchor="middle">CERN Prévessin Campus (FR)</text>
-   <text class="geo-element" x="100" y="225" fill="rgba(255,255,255,0.18)" font-size="7.5px" font-family="monospace">St. Genis-Pouilly (FR)</text>
-   <text class="geo-element" x="350" y="25" fill="rgba(255,255,255,0.18)" font-size="7.5px" font-family="monospace" text-anchor="middle">Ferney-Voltaire (FR)</text>
-   <path class="geo-element" d="M 590,320 L 670,290" stroke="rgba(255,255,255,0.08)" stroke-width="3" />
-   <text class="geo-element" x="630" y="332" fill="rgba(255,255,255,0.15)" font-size="7.5px" font-family="monospace" text-anchor="middle">Flughafen Genf (GVA)</text>
+   <text class="geo-element" x="142" y="430" fill="rgba(255,255,255,0.396)" font-size="7.5px" font-family="monospace" text-anchor="middle">CERN Meyrin Campus (CH)</text>
+   <text class="geo-element" x="430" y="90" fill="rgba(255,255,255,0.396)" font-size="7.5px" font-family="monospace" text-anchor="middle">CERN Prévessin Campus (FR)</text>
+   <text class="geo-element" x="100" y="225" fill="rgba(255,255,255,0.396)" font-size="7.5px" font-family="monospace">St. Genis-Pouilly (FR)</text>
+   <text class="geo-element" x="350" y="25" fill="rgba(255,255,255,0.396)" font-size="7.5px" font-family="monospace" text-anchor="middle">Ferney-Voltaire (FR)</text>
+   <path class="geo-element" d="M 590,320 L 670,290" stroke="rgba(255,255,255,0.176)" stroke-width="3" />
+   <text class="geo-element" x="630" y="332" fill="rgba(255,255,255,0.33)" font-size="7.5px" font-family="monospace" text-anchor="middle">Flughafen Genf (GVA)</text>
 
    <!-- REAL CERN TOP-VIEW ACCELERATOR STRUCTURE -->
    <!-- LINAC4: straight line injecting into PSB (cx=142, cy=385) -->
@@ -266,22 +277,22 @@ display(HTML(r'''<div id="cern-v4">
 
    <!-- PS ring cx=242 cy=332 r=38 -->
    <circle id="p-ps" cx="242" cy="332" r="38" class="svg-path"/>
-   <!-- Transfer PS→SPS -->
-   <path id="p-ps-sps" d="M 265.2,301.6 Q 312,248 356.8,198.6" class="svg-path"/>
+   <!-- Transfer PS→SPS (PS-Austritt → SPS-Eintritt) -->
+   <path id="p-ps-sps" d="M 279.4,338.5 Q 286,341 293.8,341.1" class="svg-path"/>
 
-   <!-- SPS ring: medium ring located SOUTH-EAST inside the LHC, near ALICE. cx=400 cy=148 r=65 -->
-   <circle id="p-sps" cx="400" cy="148" r="65" class="svg-path"/>
+   <!-- SPS ring: kleinerer Ring unten-mittig, tangential zum LHC nahe Punkt 1 (ATLAS) — wie reale Geografie. cx=345 cy=350 r=52 -->
+   <circle id="p-sps" cx="345" cy="350" r="52" class="svg-path"/>
 
-   <!-- TI 2: SPS → LHC injection near ALICE (Point 2, left) -->
-   <path id="p-ti2" d="M 339.5,173.7 Q 255,195 170,240" class="svg-path"/>
-   <!-- TI 8: SPS → LHC injection near LHCb (Point 8, right) -->
-   <path id="p-ti8" d="M 453.4,187.1 Q 495,215 530,240" class="svg-path"/>
+   <!-- TI 2: SPS → LHC Punkt 2 (unten-links). Kurze Strecke, Tunnel AUSSERHALB des Rings (südl. Bogen, meidet PS). -->
+   <path id="p-ti2" d="M 293.5,343.0 Q 225,425 193.9,329.6" class="svg-path"/>
+   <!-- TI 8: SPS → LHC Punkt 8 (unten-rechts). Kurze Strecke, Tunnel INNERHALB des Rings. -->
+   <path id="p-ti8" d="M 394.9,364.5 Q 425,360 459.0,383.2" class="svg-path"/>
 
    <!-- Modulated crossover beam vacuum tubes inside the LHC arcs (Double-bore design) -->
     <!-- Beam 1 tube: starts outer at 45°, crosses in detectors -->
-    <path id="lhc-pipe1" class="geo-element" d="M 530.00,240.00 L 530.27,246.30 L 530.33,252.61 L 530.15,258.93 L 529.75,265.26 L 529.12,271.58 L 528.25,277.89 L 527.16,284.17 L 525.83,290.42 L 524.26,296.62 L 522.47,302.77 L 520.44,308.86 L 518.17,314.88 L 515.68,320.81 L 512.96,326.65 L 510.01,332.38 L 506.84,338.01 L 503.45,343.51 L 499.85,348.88 L 496.05,354.10 L 492.04,359.18 L 487.83,364.10 L 483.44,368.86 L 478.86,373.44 L 474.10,377.83 L 469.18,382.04 L 464.10,386.05 L 458.88,389.85 L 453.51,393.45 L 448.01,396.84 L 442.38,400.01 L 436.65,402.96 L 430.81,405.68 L 424.88,408.17 L 418.86,410.44 L 412.77,412.47 L 406.62,414.26 L 400.42,415.83 L 394.17,417.16 L 387.89,418.25 L 381.58,419.12 L 375.26,419.75 L 368.93,420.15 L 362.61,420.33 L 356.30,420.27 L 350.00,420.00 L 343.73,419.51 L 337.50,418.80 L 331.30,417.88 L 325.16,416.75 L 319.07,415.41 L 313.04,413.88 L 307.08,412.15 L 301.19,410.23 L 295.38,408.12 L 289.65,405.82 L 284.00,403.35 L 278.45,400.70 L 272.99,397.89 L 267.64,394.90 L 262.38,391.76 L 257.23,388.46 L 252.20,385.00 L 247.27,381.39 L 242.47,377.64 L 237.78,373.74 L 233.22,369.70 L 228.78,365.53 L 224.47,361.22 L 220.30,356.78 L 216.26,352.22 L 212.36,347.53 L 208.61,342.73 L 205.00,337.80 L 201.54,332.77 L 198.24,327.62 L 195.10,322.36 L 192.11,317.01 L 189.30,311.55 L 186.65,306.00 L 184.18,300.35 L 181.88,294.62 L 179.77,288.81 L 177.85,282.92 L 176.12,276.96 L 174.59,270.93 L 173.25,264.84 L 172.12,258.70 L 171.20,252.50 L 170.49,246.27 L 170.00,240.00 L 169.73,233.70 L 169.67,227.39 L 169.85,221.07 L 170.25,214.74 L 170.88,208.42 L 171.75,202.11 L 172.84,195.83 L 174.17,189.58 L 175.74,183.38 L 177.53,177.23 L 179.56,171.14 L 181.83,165.12 L 184.32,159.19 L 187.04,153.35 L 189.99,147.62 L 193.16,141.99 L 196.55,136.49 L 200.15,131.12 L 203.95,125.90 L 207.96,120.82 L 212.17,115.90 L 216.56,111.14 L 221.14,106.56 L 225.90,102.17 L 230.82,97.96 L 235.90,93.95 L 241.12,90.15 L 246.49,86.55 L 251.99,83.16 L 257.62,79.99 L 263.35,77.04 L 269.19,74.32 L 275.12,71.83 L 281.14,69.56 L 287.23,67.53 L 293.38,65.74 L 299.58,64.17 L 305.83,62.84 L 312.11,61.75 L 318.42,60.88 L 324.74,60.25 L 331.07,59.85 L 337.39,59.67 L 343.70,59.73 L 350.00,60.00 L 356.27,60.49 L 362.50,61.20 L 368.70,62.12 L 374.84,63.25 L 380.93,64.59 L 386.96,66.12 L 392.92,67.85 L 398.81,69.77 L 404.62,71.88 L 410.35,74.18 L 416.00,76.65 L 421.55,79.30 L 427.01,82.11 L 432.36,85.10 L 437.62,88.24 L 442.77,91.54 L 447.80,95.00 L 452.73,98.61 L 457.53,102.36 L 462.22,106.26 L 466.78,110.30 L 471.22,114.47 L 475.53,118.78 L 479.70,123.22 L 483.74,127.78 L 487.64,132.47 L 491.39,137.27 L 495.00,142.20 L 498.46,147.23 L 501.76,152.38 L 504.90,157.64 L 507.89,162.99 L 510.70,168.45 L 513.35,174.00 L 515.82,179.65 L 518.12,185.38 L 520.23,191.19 L 522.15,197.08 L 523.88,203.04 L 525.41,209.07 L 526.75,215.16 L 527.88,221.30 L 528.80,227.50 L 529.51,233.73 L 530.00,240.00" stroke="rgba(88,166,255,0.22)" stroke-width="1.2" fill="none" stroke-dasharray="3,3" style="transition: opacity 0.3s;" />
+    <path id="lhc-pipe1" class="geo-element" d="M 530.00,240.00 L 530.27,246.30 L 530.33,252.61 L 530.15,258.93 L 529.75,265.26 L 529.12,271.58 L 528.25,277.89 L 527.16,284.17 L 525.83,290.42 L 524.26,296.62 L 522.47,302.77 L 520.44,308.86 L 518.17,314.88 L 515.68,320.81 L 512.96,326.65 L 510.01,332.38 L 506.84,338.01 L 503.45,343.51 L 499.85,348.88 L 496.05,354.10 L 492.04,359.18 L 487.83,364.10 L 483.44,368.86 L 478.86,373.44 L 474.10,377.83 L 469.18,382.04 L 464.10,386.05 L 458.88,389.85 L 453.51,393.45 L 448.01,396.84 L 442.38,400.01 L 436.65,402.96 L 430.81,405.68 L 424.88,408.17 L 418.86,410.44 L 412.77,412.47 L 406.62,414.26 L 400.42,415.83 L 394.17,417.16 L 387.89,418.25 L 381.58,419.12 L 375.26,419.75 L 368.93,420.15 L 362.61,420.33 L 356.30,420.27 L 350.00,420.00 L 343.73,419.51 L 337.50,418.80 L 331.30,417.88 L 325.16,416.75 L 319.07,415.41 L 313.04,413.88 L 307.08,412.15 L 301.19,410.23 L 295.38,408.12 L 289.65,405.82 L 284.00,403.35 L 278.45,400.70 L 272.99,397.89 L 267.64,394.90 L 262.38,391.76 L 257.23,388.46 L 252.20,385.00 L 247.27,381.39 L 242.47,377.64 L 237.78,373.74 L 233.22,369.70 L 228.78,365.53 L 224.47,361.22 L 220.30,356.78 L 216.26,352.22 L 212.36,347.53 L 208.61,342.73 L 205.00,337.80 L 201.54,332.77 L 198.24,327.62 L 195.10,322.36 L 192.11,317.01 L 189.30,311.55 L 186.65,306.00 L 184.18,300.35 L 181.88,294.62 L 179.77,288.81 L 177.85,282.92 L 176.12,276.96 L 174.59,270.93 L 173.25,264.84 L 172.12,258.70 L 171.20,252.50 L 170.49,246.27 L 170.00,240.00 L 169.73,233.70 L 169.67,227.39 L 169.85,221.07 L 170.25,214.74 L 170.88,208.42 L 171.75,202.11 L 172.84,195.83 L 174.17,189.58 L 175.74,183.38 L 177.53,177.23 L 179.56,171.14 L 181.83,165.12 L 184.32,159.19 L 187.04,153.35 L 189.99,147.62 L 193.16,141.99 L 196.55,136.49 L 200.15,131.12 L 203.95,125.90 L 207.96,120.82 L 212.17,115.90 L 216.56,111.14 L 221.14,106.56 L 225.90,102.17 L 230.82,97.96 L 235.90,93.95 L 241.12,90.15 L 246.49,86.55 L 251.99,83.16 L 257.62,79.99 L 263.35,77.04 L 269.19,74.32 L 275.12,71.83 L 281.14,69.56 L 287.23,67.53 L 293.38,65.74 L 299.58,64.17 L 305.83,62.84 L 312.11,61.75 L 318.42,60.88 L 324.74,60.25 L 331.07,59.85 L 337.39,59.67 L 343.70,59.73 L 350.00,60.00 L 356.27,60.49 L 362.50,61.20 L 368.70,62.12 L 374.84,63.25 L 380.93,64.59 L 386.96,66.12 L 392.92,67.85 L 398.81,69.77 L 404.62,71.88 L 410.35,74.18 L 416.00,76.65 L 421.55,79.30 L 427.01,82.11 L 432.36,85.10 L 437.62,88.24 L 442.77,91.54 L 447.80,95.00 L 452.73,98.61 L 457.53,102.36 L 462.22,106.26 L 466.78,110.30 L 471.22,114.47 L 475.53,118.78 L 479.70,123.22 L 483.74,127.78 L 487.64,132.47 L 491.39,137.27 L 495.00,142.20 L 498.46,147.23 L 501.76,152.38 L 504.90,157.64 L 507.89,162.99 L 510.70,168.45 L 513.35,174.00 L 515.82,179.65 L 518.12,185.38 L 520.23,191.19 L 522.15,197.08 L 523.88,203.04 L 525.41,209.07 L 526.75,215.16 L 527.88,221.30 L 528.80,227.50 L 529.51,233.73 L 530.00,240.00" stroke="rgba(88,166,255,0.484)" stroke-width="1.2" fill="none" stroke-dasharray="3,3" style="transition: opacity 0.3s;" />
     <!-- Beam 2 tube: starts inner at 45°, crosses in detectors -->
-    <path id="lhc-pipe2" class="geo-element" d="M 530.00,240.00 L 529.51,246.27 L 528.80,252.50 L 527.88,258.70 L 526.75,264.84 L 525.41,270.93 L 523.88,276.96 L 522.15,282.92 L 520.23,288.81 L 518.12,294.62 L 515.82,300.35 L 513.35,306.00 L 510.70,311.55 L 507.89,317.01 L 504.90,322.36 L 501.76,327.62 L 498.46,332.77 L 495.00,337.80 L 491.39,342.73 L 487.64,347.53 L 483.74,352.22 L 479.70,356.78 L 475.53,361.22 L 471.22,365.53 L 466.78,369.70 L 462.22,373.74 L 457.53,377.64 L 452.73,381.39 L 447.80,385.00 L 442.77,388.46 L 437.62,391.76 L 432.36,394.90 L 427.01,397.89 L 421.55,400.70 L 416.00,403.35 L 410.35,405.82 L 404.62,408.12 L 398.81,410.23 L 392.92,412.15 L 386.96,413.88 L 380.93,415.41 L 374.84,416.75 L 368.70,417.88 L 362.50,418.80 L 356.27,419.51 L 350.00,420.00 L 343.70,420.27 L 337.39,420.33 L 331.07,420.15 L 324.74,419.75 L 318.42,419.12 L 312.11,418.25 L 305.83,417.16 L 299.58,415.83 L 293.38,414.26 L 287.23,412.47 L 281.14,410.44 L 275.12,408.17 L 269.19,405.68 L 263.35,402.96 L 257.62,400.01 L 251.99,396.84 L 246.49,393.45 L 241.12,389.85 L 235.90,386.05 L 230.82,382.04 L 225.90,377.83 L 221.14,373.44 L 216.56,368.86 L 212.17,364.10 L 207.96,359.18 L 203.95,354.10 L 200.15,348.88 L 196.55,343.51 L 193.16,338.01 L 189.99,332.38 L 187.04,326.65 L 184.32,320.81 L 181.83,314.88 L 179.56,308.86 L 177.53,302.77 L 175.74,296.62 L 174.17,290.42 L 172.84,284.17 L 171.75,277.89 L 170.88,271.58 L 170.25,265.26 L 169.85,258.93 L 169.67,252.61 L 169.73,246.30 L 170.00,240.00 L 170.49,233.73 L 171.20,227.50 L 172.12,221.30 L 173.25,215.16 L 174.59,209.07 L 176.12,203.04 L 177.85,197.08 L 179.77,191.19 L 181.88,185.38 L 184.18,179.65 L 186.65,174.00 L 189.30,168.45 L 192.11,162.99 L 195.10,157.64 L 198.24,152.38 L 201.54,147.23 L 205.00,142.20 L 208.61,137.27 L 212.36,132.47 L 216.26,127.78 L 220.30,123.22 L 224.47,118.78 L 228.78,114.47 L 233.22,110.30 L 237.78,106.26 L 242.47,102.36 L 247.27,98.61 L 252.20,95.00 L 257.23,91.54 L 262.38,88.24 L 267.64,85.10 L 272.99,82.11 L 278.45,79.30 L 284.00,76.65 L 289.65,74.18 L 295.38,71.88 L 301.19,69.77 L 307.08,67.85 L 313.04,66.12 L 319.07,64.59 L 325.16,63.25 L 331.30,62.12 L 337.50,61.20 L 343.73,60.49 L 350.00,60.00 L 356.30,59.73 L 362.61,59.67 L 368.93,59.85 L 375.26,60.25 L 381.58,60.88 L 387.89,61.75 L 394.17,62.84 L 400.42,64.17 L 406.62,65.74 L 412.77,67.53 L 418.86,69.56 L 424.88,71.83 L 430.81,74.32 L 436.65,77.04 L 442.38,79.99 L 448.01,83.16 L 453.51,86.55 L 458.88,90.15 L 464.10,93.95 L 469.18,97.96 L 474.10,102.17 L 478.86,106.56 L 483.44,111.14 L 487.83,115.90 L 492.04,120.82 L 496.05,125.90 L 499.85,131.12 L 503.45,136.49 L 506.84,141.99 L 510.01,147.62 L 512.96,153.35 L 515.68,159.19 L 518.17,165.12 L 520.44,171.14 L 522.47,177.23 L 524.26,183.38 L 525.83,189.58 L 527.16,195.83 L 528.25,202.11 L 529.12,208.42 L 529.75,214.74 L 530.15,221.07 L 530.33,227.39 L 530.27,233.70 L 530.00,240.00" stroke="rgba(255,127,14,0.22)" stroke-width="1.2" fill="none" stroke-dasharray="3,3" style="transition: opacity 0.3s;" />
+    <path id="lhc-pipe2" class="geo-element" d="M 530.00,240.00 L 529.51,246.27 L 528.80,252.50 L 527.88,258.70 L 526.75,264.84 L 525.41,270.93 L 523.88,276.96 L 522.15,282.92 L 520.23,288.81 L 518.12,294.62 L 515.82,300.35 L 513.35,306.00 L 510.70,311.55 L 507.89,317.01 L 504.90,322.36 L 501.76,327.62 L 498.46,332.77 L 495.00,337.80 L 491.39,342.73 L 487.64,347.53 L 483.74,352.22 L 479.70,356.78 L 475.53,361.22 L 471.22,365.53 L 466.78,369.70 L 462.22,373.74 L 457.53,377.64 L 452.73,381.39 L 447.80,385.00 L 442.77,388.46 L 437.62,391.76 L 432.36,394.90 L 427.01,397.89 L 421.55,400.70 L 416.00,403.35 L 410.35,405.82 L 404.62,408.12 L 398.81,410.23 L 392.92,412.15 L 386.96,413.88 L 380.93,415.41 L 374.84,416.75 L 368.70,417.88 L 362.50,418.80 L 356.27,419.51 L 350.00,420.00 L 343.70,420.27 L 337.39,420.33 L 331.07,420.15 L 324.74,419.75 L 318.42,419.12 L 312.11,418.25 L 305.83,417.16 L 299.58,415.83 L 293.38,414.26 L 287.23,412.47 L 281.14,410.44 L 275.12,408.17 L 269.19,405.68 L 263.35,402.96 L 257.62,400.01 L 251.99,396.84 L 246.49,393.45 L 241.12,389.85 L 235.90,386.05 L 230.82,382.04 L 225.90,377.83 L 221.14,373.44 L 216.56,368.86 L 212.17,364.10 L 207.96,359.18 L 203.95,354.10 L 200.15,348.88 L 196.55,343.51 L 193.16,338.01 L 189.99,332.38 L 187.04,326.65 L 184.32,320.81 L 181.83,314.88 L 179.56,308.86 L 177.53,302.77 L 175.74,296.62 L 174.17,290.42 L 172.84,284.17 L 171.75,277.89 L 170.88,271.58 L 170.25,265.26 L 169.85,258.93 L 169.67,252.61 L 169.73,246.30 L 170.00,240.00 L 170.49,233.73 L 171.20,227.50 L 172.12,221.30 L 173.25,215.16 L 174.59,209.07 L 176.12,203.04 L 177.85,197.08 L 179.77,191.19 L 181.88,185.38 L 184.18,179.65 L 186.65,174.00 L 189.30,168.45 L 192.11,162.99 L 195.10,157.64 L 198.24,152.38 L 201.54,147.23 L 205.00,142.20 L 208.61,137.27 L 212.36,132.47 L 216.26,127.78 L 220.30,123.22 L 224.47,118.78 L 228.78,114.47 L 233.22,110.30 L 237.78,106.26 L 242.47,102.36 L 247.27,98.61 L 252.20,95.00 L 257.23,91.54 L 262.38,88.24 L 267.64,85.10 L 272.99,82.11 L 278.45,79.30 L 284.00,76.65 L 289.65,74.18 L 295.38,71.88 L 301.19,69.77 L 307.08,67.85 L 313.04,66.12 L 319.07,64.59 L 325.16,63.25 L 331.30,62.12 L 337.50,61.20 L 343.73,60.49 L 350.00,60.00 L 356.30,59.73 L 362.61,59.67 L 368.93,59.85 L 375.26,60.25 L 381.58,60.88 L 387.89,61.75 L 394.17,62.84 L 400.42,64.17 L 406.62,65.74 L 412.77,67.53 L 418.86,69.56 L 424.88,71.83 L 430.81,74.32 L 436.65,77.04 L 442.38,79.99 L 448.01,83.16 L 453.51,86.55 L 458.88,90.15 L 464.10,93.95 L 469.18,97.96 L 474.10,102.17 L 478.86,106.56 L 483.44,111.14 L 487.83,115.90 L 492.04,120.82 L 496.05,125.90 L 499.85,131.12 L 503.45,136.49 L 506.84,141.99 L 510.01,147.62 L 512.96,153.35 L 515.68,159.19 L 518.17,165.12 L 520.44,171.14 L 522.47,177.23 L 524.26,183.38 L 525.83,189.58 L 527.16,195.83 L 528.25,202.11 L 529.12,208.42 L 529.75,214.74 L 530.15,221.07 L 530.33,227.39 L 530.27,233.70 L 530.00,240.00" stroke="rgba(255,127,14,0.484)" stroke-width="1.2" fill="none" stroke-dasharray="3,3" style="transition: opacity 0.3s;" />
 
    <!-- LHC tunnel (massive average ring cx=350 cy=240 r=180) -->
    <circle id="p-lhc" cx="350" cy="240" r="180" class="svg-path svg-lhc"/>
@@ -311,8 +322,8 @@ display(HTML(r'''<div id="cern-v4">
 
    <circle id="n-ps" cx="242" cy="332" r="8" class="svg-node"/>
    <text x="242" y="383" class="svg-lbl">PS</text>
-   <circle id="n-sps" cx="400" cy="148" r="10" class="svg-node"/>
-   <text x="400" y="230" class="svg-lbl">SPS</text>
+   <circle id="n-sps" cx="345" cy="350" r="10" class="svg-node"/>
+   <text x="345" y="291" class="svg-lbl" text-anchor="middle">SPS</text>
 
    <!-- LHC Detector Groups for interactive zoom -->
    <g id="grp-atlas" style="cursor:pointer">
@@ -333,12 +344,12 @@ display(HTML(r'''<div id="cern-v4">
    </g>
 
    <!-- TI labels -->
-   <text x="248" y="186" class="svg-lbl" style="font-size:8px">TI 2</text>
-   <text x="485" y="205" class="svg-lbl" style="font-size:8px">TI 8</text>
+   <text x="206" y="392" class="svg-lbl" style="font-size:8px">TI 2</text>
+   <text x="436" y="356" class="svg-lbl" style="font-size:8px">TI 8</text>
 
    <!-- INFO HIT TARGETS — transparent click zones; order = innermost last (highest z in SVG) -->
    <circle id="hit-lhc" cx="350" cy="240" r="180" fill="none" stroke="rgba(88,166,255,0.01)" stroke-width="22" pointer-events="stroke" class="info-hit-ring"/>
-   <circle id="hit-sps" cx="400" cy="148" r="73" fill="rgba(0,0,0,0.01)" class="info-hit"/>
+   <circle id="hit-sps" cx="345" cy="350" r="58" fill="rgba(0,0,0,0.01)" class="info-hit"/>
    <circle id="hit-ps"  cx="242" cy="332" r="48" fill="rgba(0,0,0,0.01)" class="info-hit"/>
    <circle id="hit-psb" cx="142" cy="390" r="24" fill="rgba(0,0,0,0.01)" class="info-hit"/>
    <circle id="hit-leir" cx="142" cy="265" r="24" fill="rgba(0,0,0,0.01)" class="info-hit"/>
@@ -351,10 +362,10 @@ display(HTML(r'''<div id="cern-v4">
   <div>
    <div class="cv4-ptitle">🔬 EXPERIMENT-PRESETS (SCHNELLWAHL)</div>
    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px">
-    <button class="cv4-btn" id="btn-pre-higgs" style="background:rgba(88,166,255,.10);border-color:#58a6ff;color:#58a6ff;font-size:9.5px;padding:6px 2px">Higgs-Suche (ATLAS/CMS)</button>
-    <button class="cv4-btn" id="btn-pre-qgp" style="background:rgba(227,119,194,.10);border-color:#e377c2;color:#e377c2;font-size:9.5px;padding:6px 2px">QGP-Erzeugung (ALICE)</button>
-    <button class="cv4-btn" id="btn-pre-lhcb" style="background:rgba(255,127,14,.10);border-color:#ff7f0e;color:#ff7f0e;font-size:9.5px;padding:6px 2px">CP-Verletzung (LHCb)</button>
-    <button class="cv4-btn" id="btn-pre-pilot" style="background:rgba(23,190,207,.10);border-color:#17becf;color:#17becf;font-size:9.5px;padding:6px 2px">Pilot-Strahl (Testrun)</button>
+    <div><button class="cv4-btn" id="btn-pre-higgs" style="background:rgba(88,166,255,.10);border-color:#58a6ff;color:#58a6ff;font-size:9.5px;padding:6px 2px;width:100%">Higgs-Suche (ATLAS/CMS) <span class="cv4-pi-btn" data-pi="preHiggs">ⓘ</span></button><div class="cv4-param-info" id="pi-preHiggs"></div></div>
+    <div><button class="cv4-btn" id="btn-pre-qgp" style="background:rgba(227,119,194,.10);border-color:#e377c2;color:#e377c2;font-size:9.5px;padding:6px 2px;width:100%">QGP-Erzeugung (ALICE) <span class="cv4-pi-btn" data-pi="preQgp">ⓘ</span></button><div class="cv4-param-info" id="pi-preQgp"></div></div>
+    <div><button class="cv4-btn" id="btn-pre-lhcb" style="background:rgba(255,127,14,.10);border-color:#ff7f0e;color:#ff7f0e;font-size:9.5px;padding:6px 2px;width:100%">CP-Verletzung (LHCb) <span class="cv4-pi-btn" data-pi="preLhcb">ⓘ</span></button><div class="cv4-param-info" id="pi-preLhcb"></div></div>
+    <div><button class="cv4-btn" id="btn-pre-pilot" style="background:rgba(23,190,207,.10);border-color:#17becf;color:#17becf;font-size:9.5px;padding:6px 2px;width:100%">Pilot-Strahl (Testrun) <span class="cv4-pi-btn" data-pi="prePilot">ⓘ</span></button><div class="cv4-param-info" id="pi-prePilot"></div></div>
    </div>
   </div>
 
@@ -462,7 +473,7 @@ const svg=document.getElementById("svg");
 // ═══════════════════════════════════════════════════════════════════════════
 const R={
  PSB:{cx:142,cy:385,r:18}, LEIR:{cx:142,cy:275,r:18},
- PS:{cx:242,cy:332,r:38}, SPS:{cx:400,cy:148,r:65},
+ PS:{cx:242,cy:332,r:38}, SPS:{cx:345,cy:350,r:52},
  LHC:{cx:350,cy:240,r:180}
 };
 // Junction angles (radians, SVG coords: 0=right, positive=CW/downward)
@@ -473,10 +484,10 @@ const J={
  LEIR_EXIT: Math.atan2(R.PS.cy-R.LEIR.cy, R.PS.cx-R.LEIR.cx),  // toward PS ≈0.51
  PS_FROM_PSB: Math.atan2(R.PSB.cy-R.PS.cy, R.PSB.cx-R.PS.cx),   // from PSB ≈2.63
  PS_FROM_LEIR: Math.atan2(R.LEIR.cy-R.PS.cy, R.LEIR.cx-R.PS.cx),// from LEIR ≈-2.63→3.65
- PS_EXIT: Math.atan2(R.SPS.cy-R.PS.cy, R.SPS.cx-R.PS.cx),       // toward SPS ≈-0.84
- SPS_ENTRY: Math.atan2(R.PS.cy-R.SPS.cy, R.PS.cx-R.SPS.cx),     // from PS ≈2.30
- SPS_TI2: Math.atan2(240-R.SPS.cy, 170-R.SPS.cx),                // toward ALICE ≈2.77
- SPS_TI8: Math.atan2(240-R.SPS.cy, 530-R.SPS.cx),                // toward LHCb ≈0.61
+ PS_EXIT: Math.atan2(R.SPS.cy-R.PS.cy, R.SPS.cx-R.PS.cx),       // toward SPS ≈0.17
+ SPS_ENTRY: Math.atan2(R.PS.cy-R.SPS.cy, R.PS.cx-R.SPS.cx),     // from PS ≈-2.97
+ SPS_TI2: Math.atan2(329.6-R.SPS.cy, 193.9-R.SPS.cx),            // → LHC Punkt 2 (unten-links) ≈-3.01
+ SPS_TI8: Math.atan2(383.2-R.SPS.cy, 459.0-R.SPS.cx),            // → LHC Punkt 8 (unten-rechts) ≈0.28
  LHC_ALICE: Math.PI,   // ALICE at 180° (left)
  LHC_LHCB: 0           // LHCb at 0° (right)
 };
@@ -491,7 +502,10 @@ let lhcDots={b1:[],b2:[]};
 let lhcSpeed=0.0078; // rad/ms bei Injektionsenergie (Proton) – schneller als alle Vorbeschleuniger
 let lhcAngle=0, lhcRunning=false, lhcLastT=null;
 let lhcEnergy=450; // GeV
-let massData=[];
+// Per-Detektor-Datenspeicher: jeder Detektor akkumuliert NUR sein eigenes Spektrum.
+// So zeigt ein Detektorwechsel konsequent das physikalisch mögliche Spektrum dieses Detektors.
+let massStore = {ATLAS:[], CMS:[], ALICE:[], LHCB:[]};   // akkumulierte Massen je Detektor
+let collStore = {ATLAS:0,  CMS:0,  ALICE:0,  LHCB:0};    // Kollisionen je Detektor (für Signifikanz)
 let lastEvent=null;      // zuletzt gesampeltes physikalisches Event (Display==Histogramm)
 let goldenEvent=null;    // eingefrorenes "Golden Event" (Klick aufs Display)
 let higgsCands=0;        // Higgs→4ℓ-Kandidaten (Goldkanal, nur E>=4 TeV)
@@ -598,14 +612,7 @@ function resizeCanvases(){
  ctxHist.scale(dpr, dpr);
 }
 
-["atlas","cms","alice","lhcb"].forEach(d=>{
- $("dt-"+d).addEventListener("click",()=>{
-  document.querySelectorAll(".cv4-dtab").forEach(t=>t.classList.remove("act"));
-  $("dt-"+d).classList.add("act");
-  selDet=d.toUpperCase();
-  drawCollisionEvent(lastEvent);
- });
-});
+// Detektor-Tab-Klicks werden zentral in handlers.js (selectDetector) gebunden.
 
 selP.addEventListener("click",()=>{ if(filling)return; setMode(false); });
 selI.addEventListener("click",()=>{ if(filling)return; setMode(true); });
@@ -637,7 +644,7 @@ function resetLHC(){
  btnAuto.classList.remove("off");
  filling = false; clearIllum();
  lhcDots.b1.forEach(d=>d.el.remove()); lhcDots.b2.forEach(d=>d.el.remove());
- lhcDots={b1:[],b2:[]}; b1Count=0; b2Count=0; collisions=0; massData=[];
+ lhcDots={b1:[],b2:[]}; b1Count=0; b2Count=0; collisions=0; resetSpectrumData();
  ramped=false; squeezed=false; squeezing=false;
  lhcEnergy=isIon?177:450; lhcSpeed=isIon?0.0050:0.0078;
  paramBetaStar=1.5;
@@ -920,15 +927,16 @@ function setStatus(txt,cls){stxt.innerText=txt;sdot.className="cv4-dot "+cls;}
 // Lerninhalt: jede Teilchenart hinterlässt in den Detektorlagen eine andere Signatur.
 // ═══════════════════════════════════════════════════════════════════════════
 const DETKONFIG = {
- ATLAS: { typ:'barrel', farbe:'#58a6ff', rolle:'Allzweck · großes Toroid-Myon-System', bend:0.55,
+ // bend = visuelle Krümmungsstärke (skaliert mit B-Feld: CMS 3.8T > ATLAS 2T > ALICE 0.5T)
+ ATLAS: { typ:'barrel', farbe:'#58a6ff', rolle:'Allzweck · 2T Solenoid + Toroid-Myon-System', bend:0.80,
    lagen:[ {r:26,name:'Spur',kind:'track'}, {r:38,name:'EM',kind:'em'},
            {r:52,name:'HAD',kind:'had'}, {r:62,name:'Toroid',kind:'coil'},
            {r:86,name:'μ-Kammer',kind:'muon'} ] },
- CMS: { typ:'barrel', farbe:'#f85149', rolle:'kompakt · 3.8 T Solenoid · Kristall-ECAL', bend:1.0,
+ CMS: { typ:'barrel', farbe:'#f85149', rolle:'kompakt · 3.8 T Solenoid · Kristall-ECAL', bend:1.40,
    lagen:[ {r:30,name:'Tracker',kind:'track'}, {r:40,name:'ECAL',kind:'em'},
            {r:52,name:'HCAL',kind:'had'}, {r:60,name:'Solenoid',kind:'coil'},
            {r:86,name:'μ-Joch',kind:'muon'} ] },
- ALICE: { typ:'barrel', farbe:'#e377c2', rolle:'Schwerionen · TPC · hohe Multiplizität', bend:0.35,
+ ALICE: { typ:'barrel', farbe:'#e377c2', rolle:'Schwerionen · TPC · hohe Multiplizität · 0.5T', bend:0.60,
    lagen:[ {r:14,name:'ITS',kind:'track'}, {r:58,name:'TPC',kind:'track'},
            {r:70,name:'TOF',kind:'em'}, {r:86,name:'Außen',kind:'muon'} ] },
  LHCB: { typ:'forward', farbe:'#ff7f0e', rolle:'Vorwärtsspektrometer · Sekundärvertex',
@@ -945,12 +953,20 @@ function radii(D,sc){ const trk=(rKind(D,'track',true)||30), em=(rKind(D,'em')||
   had=(rKind(D,'had')||em+10), mu=(rKind(D,'muon')||had+20);
   return {Rtrk:trk*sc, Rem:em*sc, Rhad:had*sc, Rmu:mu*sc}; }
 
-function drawLegend(){ const items=[['μ','#2ea44f'],['e','#58a6ff'],['γ','#f1e05a'],['Had','#ff7f0e'],['ν','#8b949e']];
- const gap=Math.min(30,(evW-14)/items.length), y=evH-5;
- ctxEv.save(); ctxEv.font='7px sans-serif'; ctxEv.textAlign='left';
- items.forEach((it,i)=>{ const x=8+i*gap;
+function drawLegend(){
+ // Legende mit Kurzinfo: was jede Farbe/Signatur bedeutet
+ const items=[
+  ['μ (alle Lagen)','#2ea44f'],
+  ['e⁻ (→EM-Kal.)','#58a6ff'],
+  ['γ (→EM, kein Track)','#f1e05a'],
+  ['Had (→HAD-Kal.)','#ff7f0e'],
+  ['ν: fehl. E_T (MET)','#8b949e']
+ ];
+ const gap=Math.min(62,(evW-8)/items.length), y=evH-5;
+ ctxEv.save(); ctxEv.font='6px sans-serif'; ctxEv.textAlign='left';
+ items.forEach((it,i)=>{ const x=4+i*gap;
   ctxEv.fillStyle=it[1]; ctxEv.beginPath(); ctxEv.arc(x+2,y-2,2.3,0,2*Math.PI); ctxEv.fill();
-  ctxEv.fillStyle='rgba(225,230,238,0.92)'; ctxEv.fillText(it[0], x+7, y); });
+  ctxEv.fillStyle='rgba(205,215,230,0.85)'; ctxEv.fillText(it[0], x+7, y); });
  ctxEv.restore(); }
 
 function emCluster(cx,cy,ang,r0,r1,col){ ctxEv.save(); ctxEv.globalAlpha=0.6; ctxEv.fillStyle=col; ctxEv.beginPath();
@@ -966,22 +982,38 @@ function muonHit(p,ang){ const px=Math.cos(ang+Math.PI/2), py=Math.sin(ang+Math.
  ctxEv.strokeStyle='#2ea44f'; ctxEv.lineWidth=3; ctxEv.beginPath();
  ctxEv.moveTo(p[0]-4*px,p[1]-4*py); ctxEv.lineTo(p[0]+4*px,p[1]+4*py); ctxEv.stroke();
  ctxEv.fillStyle='#2ea44f'; ctxEv.beginPath(); ctxEv.arc(p[0],p[1],2.3,0,2*Math.PI); ctxEv.fill(); }
-function metArrow(cx,cy,ang,len){ ctxEv.save(); ctxEv.setLineDash([4,3]); ctxEv.strokeStyle='#8b949e'; ctxEv.lineWidth=1.5;
+function metArrow(cx,cy,ang,len){ ctxEv.save(); ctxEv.setLineDash([4,3]); ctxEv.strokeStyle='#8b949e'; ctxEv.lineWidth=1.8;
  const tx=cx+len*Math.cos(ang), ty=cy+len*Math.sin(ang);
  ctxEv.beginPath(); ctxEv.moveTo(cx,cy); ctxEv.lineTo(tx,ty); ctxEv.stroke(); ctxEv.setLineDash([]);
  ctxEv.fillStyle='#8b949e'; ctxEv.beginPath(); ctxEv.moveTo(tx,ty);
- ctxEv.lineTo(tx-6*Math.cos(ang-0.4),ty-6*Math.sin(ang-0.4)); ctxEv.lineTo(tx-6*Math.cos(ang+0.4),ty-6*Math.sin(ang+0.4));
- ctxEv.closePath(); ctxEv.fill(); ctxEv.restore(); }
+ ctxEv.lineTo(tx-7*Math.cos(ang-0.4),ty-7*Math.sin(ang-0.4)); ctxEv.lineTo(tx-7*Math.cos(ang+0.4),ty-7*Math.sin(ang+0.4));
+ ctxEv.closePath(); ctxEv.fill();
+ // Label: fehlende Transversalenergie
+ ctxEv.font='5.5px monospace'; ctxEv.fillStyle='rgba(139,148,158,0.8)';
+ ctxEv.fillText('E_T^miss',tx+4*Math.cos(ang+Math.PI/2),ty+4*Math.sin(ang+Math.PI/2));
+ ctxEv.restore(); }
 
 function drawParticleBarrel(cx,cy,ang,typ,pt,q,D,sc){
- const R=radii(D,sc); const curv=q*(D.bend||0.6)*Math.min(0.95,16/Math.max(4,pt));
- if(typ==='bg'){ drawTrack(cx,cy,ang,R.Rtrk*(0.7+Math.random()*0.5),curv,
-    isIon?'rgba(227,119,194,0.42)':'rgba(120,140,170,0.40)',0.7); return; }
- if(typ==='mu'){ let p=drawTrack(cx,cy,ang,R.Rmu,curv,'#2ea44f',2.0); muonHit(p,ang); }
+ const R=radii(D,sc);
+ // Krümmung ∝ q·B/p (Lorentzkraft): höheres pT → weniger Ablenkung
+ // Faktor 22 statt 16 → stärkere Sichtbarkeit bei didaktischen pT-Werten
+ const curv=q*(D.bend||0.6)*Math.min(0.75,22/Math.max(4,pt));
+ if(typ==='bg'){
+  // Untergrund: Spuren enden an TPC-/Tracker-Außenkante (nicht random gestutzt)
+  const bgLen = isIon ? R.Rtrk : R.Rtrk*(0.85+Math.random()*0.3);
+  drawTrack(cx,cy,ang,bgLen,curv,
+    isIon?'rgba(227,119,194,0.38)':'rgba(120,140,170,0.38)',0.7); return; }
+ if(typ==='mu'){
+  // Myon: durchquert ALLE Lagen (MIP = minimal ionisierendes Teilchen)
+  let p=drawTrack(cx,cy,ang,R.Rmu,curv,'#2ea44f',2.2); muonHit(p,ang);
+  // Kleine Markierung zeigt B-Feld-Ablenkung
+  const bx=cx+(R.Rtrk*1.1)*Math.cos(ang), by=cy+(R.Rtrk*1.1)*Math.sin(ang);
+  ctxEv.save(); ctxEv.fillStyle='rgba(46,164,79,0.55)'; ctxEv.font='5.5px monospace';
+  ctxEv.fillText('B↺',bx+3,by-2); ctxEv.restore(); }
  else if(typ==='e'){ drawTrack(cx,cy,ang,R.Rtrk,curv,'#58a6ff',2.0); emCluster(cx,cy,ang,R.Rtrk,R.Rem,'#58a6ff'); }
  else if(typ==='gamma'){ emCluster(cx,cy,ang,R.Rtrk,R.Rem,'#f1e05a'); }
  else if(typ==='had'){ drawTrack(cx,cy,ang,R.Rem,curv,'rgba(255,127,14,0.9)',1.4); hadShower(cx,cy,ang,R.Rem,R.Rhad); }
- else if(typ==='nu'){ metArrow(cx,cy,ang,R.Rtrk*1.3); }
+ else if(typ==='nu'){ metArrow(cx,cy,ang,R.Rtrk*1.6); }
 }
 function lhcbX(st){ const xs=evW-12; return 18+st/330*(xs-18); }
 function drawParticleForward(vx,vy,slope,typ,pt,q,bg){
@@ -1051,9 +1083,18 @@ function drawCollisionEvent(ev){
  } else {
   let nbg=Math.round((isIon?64:11)*Math.min(2.2,Math.max(.3,paramIntensity)));
   for(let i=0;i<nbg;i++) drawParticleBarrel(cx,cy,Math.random()*2*Math.PI,'bg',4+Math.random()*9,Math.random()<.5?1:-1,D,sc);
-  if(!isIon){ drawParticleBarrel(cx,cy,1.1+Math.random(),'gamma',20,0,D,sc);
-              drawParticleBarrel(cx,cy,3.6+Math.random(),'had',26,1,D,sc);
-              drawParticleBarrel(cx,cy,5.2+Math.random()*0.6,'nu',0,0,D,sc); }
+  if(!isIon){
+   drawParticleBarrel(cx,cy,1.1+Math.random()*0.5,'gamma',20,0,D,sc);
+   drawParticleBarrel(cx,cy,3.6+Math.random()*0.5,'had',26,1,D,sc);
+   // MET-Pfeil: zeigt entgegen dem vektoriellen pT-Summe der Leptonen (Impulserhaltung)
+   let metAng;
+   if(evd && evd.leptons && evd.leptons.length){
+    let sx=0,sy=0;
+    evd.leptons.forEach(L=>{ const phi=L.phi!=null?L.phi:0; sx+=(L.pt||10)*Math.cos(phi); sy+=(L.pt||10)*Math.sin(phi); });
+    metAng=Math.atan2(-sy,-sx); // entgegengesetzt = fehlende Energie
+   } else { metAng=5.2+Math.random()*0.6; }
+   drawParticleBarrel(cx,cy,metAng,'nu',0,0,D,sc);
+  }
   if(evd && evd.leptons) evd.leptons.forEach(L=>{
    drawParticleBarrel(cx,cy, L.phi!=null?L.phi:Math.random()*2*Math.PI, L.lep==='e'?'e':'mu', L.pt||10, L.q||1, D, sc); });
  }
@@ -1072,47 +1113,80 @@ function drawCollisionEvent(ev){
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// HISTOGRAM
+// HISTOGRAM / MASSENSPEKTRUM  — DETEKTOR-GETRIEBEN
 // ═══════════════════════════════════════════════════════════════════════════
-// ── Physik-gekoppeltes Sampling aus ECHTEN CMS-Open-Data (CERN_REAL) ──
-// Eine Kollision liefert EIN physikalisches Event, dessen invariante Masse
-// sowohl das Event-Display (Topologie) als auch das Histogramm speist.
+// Grundsatz: Das angezeigte Massenspektrum hängt AUSSCHLIESSLICH vom gewählten
+// Detektor (selDet) ab — jeder Detektor misst physikalisch andere Kanäle.
+// Presets setzen nur Maschinenparameter + wählen den passenden Detektor; das
+// Spektrum folgt konsequent. Jeder Detektor akkumuliert sein eigenes Spektrum
+// (massStore[selDet]) und seine eigene Signifikanz (collStore[selDet]).
+//
+// Daten: echte CMS-Open-Data (CERN_REAL); LHCb-B-Physik = kalibrierte Simulation
+// (CMS-Dimuon-Set enthält keine B-Mesonen).
 let _lhcbPool=null;
 function lhcbPool(){
  if(_lhcbPool) return _lhcbPool;
- // CMS-Dimuon-Set enthält keine B-Mesonen -> kalibrierte Simulation:
- // B⁰ bei 5.279 GeV (CPT-konform) auf flachem kombinatorischem Untergrund.
  _lhcbPool=[]; for(let i=0;i<1400;i++){
   _lhcbPool.push(Math.random()<0.45
-    ? 5.279+(Math.random()+Math.random()+Math.random()-1.5)*0.06
-    : 4.6+Math.random()*1.4);
+    ? 5.279+(Math.random()+Math.random()+Math.random()-1.5)*0.06   // B⁰ bei 5.279 GeV
+    : 4.6+Math.random()*1.4);                                        // komb. Untergrund
  }
  return _lhcbPool;
 }
-function currentPool(){
- switch(activePhysicsMode){
-  case "QGP":   return CERN_REAL.ion;   // Pb-Pb-äquiv.: J/ψ, Υ
-  case "PILOT": return CERN_REAL.low;   // Tiefmasse: ρ/ω, φ
-  case "LHCB":  return lhcbPool();      // B-Physik (kalibriert)
-  default:      return CERN_REAL.pp;    // HIGGS: Z⁰-Region
+
+const G=(v,m,s)=>Math.exp(-0.5*((v-m)/s)**2);
+
+// ── ZENTRALE DETEKTOR-SPEKTRUM-TABELLE ──────────────────────────────────────
+// Fit-Modelle wurden an die ECHTE Datenform angepasst (Peak-Lage stimmt mit den
+// CERN_REAL-Verteilungen überein → Fit-Kurve liegt auf den Daten).
+const DETSPEC = {
+ ATLAS: {                                  // Allzweck: Präzisions-EW, Z⁰→μμ
+  pool:()=>CERN_REAL.pp,  range:[50,150], bins:60, channel:"2mu",
+  minE:1.0, target:200,   col:"#58a6ff", fc:"rgba(88,166,255,0.38)",
+  markers:[[91.19,"Z⁰"]],
+  fit:(v)=> Math.exp(-(v-50)/30)*0.12 + G(v,91.19,3.0),
+  title:"ATLAS · Z⁰→μ⁺μ⁻ · Präzisions-Kalibrierkanal (echte CMS-Daten)",
+  sub:"Standardmodell-EW · Z⁰-Resonanz bei 91 GeV",
+  disco:"🌟 5σ: Z⁰-Resonanz präzise vermessen!"
+ },
+ CMS: {                                    // Allzweck: Higgs-Goldkanal H→ZZ*→4ℓ
+  pool:()=>CERN_REAL.higgs4l, range:[80,200], bins:60, channel:"4l",
+  minE:4.0, target:600,   col:"#2ea44f", fc:"rgba(46,164,79,0.38)",
+  markers:[[91.19,"Z⁰"],[125.09,"H 125"]],
+  // Fallendes ZZ*-Kontinuum + Higgs-Bump bei 124 (in 2-GeV-Bins knapp der höchste Peak)
+  fit:(v)=> Math.exp(-(v-80)/46) + 0.66*G(v,124,2.8),
+  title:"CMS · H→ZZ*→4ℓ · Goldkanal (Higgs bei 125 GeV)",
+  sub:"Kleines Signal auf großem ZZ*-Untergrund · braucht ≥ 4 TeV",
+  disco:"🌟 5σ: Higgs-Boson entdeckt!"
+ },
+ ALICE: {                                  // Schwerionen: Quarkonia (QGP)
+  pool:()=>CERN_REAL.ion, range:[1,12], bins:55, channel:"2mu",
+  minE:1.0, target:300,   col:"#e377c2", fc:"rgba(227,119,194,0.38)",
+  markers:[[3.097,"J/ψ"],[9.46,"Υ"]],
+  fit:(v)=> 0.27 + G(v,3.097,0.18)*0.73 + G(v,9.6,0.7)*0.16,
+  title:"ALICE · J/ψ + Υ → μ⁺μ⁻ · Quarkonia (echte CMS-Daten)",
+  sub:"Quark-Gluon-Plasma: Unterdrückung der Quarkonia-Zustände",
+  disco:"🌟 5σ: Quarkonia-Unterdrückung (QGP) nachgewiesen!"
+ },
+ LHCB: {                                   // B-Physik: CP-Verletzung
+  pool:()=>lhcbPool(), range:[4.6,6.0], bins:50, channel:"B",
+  minE:1.0, target:400,   col:"#ff7f0e", fc:"rgba(255,127,14,0.38)",
+  markers:[[5.279,"B⁰"]],
+  fit:(v)=> 0.25 + G(v,5.279,0.07)*0.75,
+  title:"LHCb · B⁰ → h⁺h⁻ · CP-Verletzung (kalibrierte Simulation)",
+  sub:"Materie-Antimaterie-Asymmetrie im B-Mesonen-Zerfall",
+  disco:"🌟 5σ: CP-Verletzung etabliert!"
  }
-}
-function getModeRange(){
- switch(activePhysicsMode){
-  case "QGP":   return [1,12];
-  case "LHCB":  return [4.6,6.0];
-  case "PILOT": return [0.4,2.0];
-  default:      return [50,150];        // HIGGS
- }
-}
+};
+function spec(){ return DETSPEC[selDet] || DETSPEC.ATLAS; }
 
 function classify(m){
  // ordnet eine reale Masse der nächstgelegenen Resonanz zu (sonst Untergrund)
  let best=null, bd=1e9;
  for(const k in CERN_REAL.reso){
-  if(k==="Higgs") continue;                  // anderer Kanal (4ℓ), nicht im Dimuon
+  if(k==="Higgs") continue;                  // anderer Kanal (4ℓ)
   let mm=CERN_REAL.reso[k][0], br=CERN_REAL.reso[k][1];
-  let tol=Math.max(0.15, br*1.5+0.035*mm);   // Fenster aus nat. Breite + Detektorauflösung
+  let tol=Math.max(0.15, br*1.5+0.035*mm);
   let d=Math.abs(m-mm);
   if(d<tol && d<bd){ bd=d; best=k; }
  }
@@ -1125,110 +1199,102 @@ function pickTopo(name){
  let arr = key ? CERN_REAL.topo[key] : null;
  if(arr && arr.length){ let t=arr[(Math.random()*arr.length)|0];
   return [{pt:t[0],eta:t[1],phi:t[2],q:t[3],lep:"μ"},{pt:t[4],eta:t[5],phi:t[6],q:t[7],lep:"μ"}]; }
- let pt=5+Math.random()*20, a=Math.random()*6.283;          // Fallback: 2 gegensätzliche Spuren
+ let pt=5+Math.random()*20, a=Math.random()*6.283;
  return [{pt:pt,eta:(Math.random()-.5)*3,phi:a,q:1,lep:"μ"},
          {pt:pt*(0.6+Math.random()*0.6),eta:(Math.random()-.5)*3,phi:a+Math.PI,q:-1,lep:"μ"}];
 }
 
 function sampleEvent(){
- // Higgs-Goldkanal: in p-p (kein LHCb) erst ab E>=4 TeV, selten ein H→ZZ*→4ℓ-Kandidat
- if(!isIon && selDet!=="LHCB" && paramEnergy>=4.0 && Math.random()<0.012){
-  let m=CERN_REAL.higgs4l[(Math.random()*CERN_REAL.higgs4l.length)|0];
+ const sp=spec();
+ let m=sp.pool()[(Math.random()*sp.pool().length)|0];
+ if(sp.channel==="4l"){
+  // Higgs-Goldkanal: 4-Lepton-Topologie (2 Z→ℓℓ-Paare)
   let leptons=[]; for(let i=0;i<4;i++) leptons.push({pt:8+Math.random()*40,
     eta:(Math.random()-.5)*4, phi:Math.random()*6.283, q:i%2?1:-1, lep:Math.random()<.5?"e":"μ"});
   let isSig=Math.abs(m-125)<5; if(isSig) higgsCands++;
   return {M:m, name:isSig?"Higgs":null, channel:"4l", leptons:leptons, signal:isSig};
  }
- let pool=currentPool();
- let m=pool[(Math.random()*pool.length)|0];
+ // Dimuon (ATLAS/ALICE) bzw. B-Vertex (LHCb) → 2-Spur-Topologie
  let name=classify(m);
- return {M:m, name:name, channel:"2mu", leptons:pickTopo(name), signal:!!name};
+ return {M:m, name:name, channel:sp.channel, leptons:pickTopo(name), signal:!!name};
+}
+
+function resetSpectrumData(){
+ massStore={ATLAS:[], CMS:[], ALICE:[], LHCB:[]};
+ collStore={ATLAS:0, CMS:0, ALICE:0, LHCB:0};
+ higgsCands=0;
 }
 
 function generateMassData(){
- // Datenrate ∝ Intensität² / β*  →  pro Kollision akkumuliert ein Schwung REALER Massen
+ const sp=spec();
+ // Datenrate ∝ Intensität² / β* (4ℓ-Goldkanal seltener → kleinerer Faktor)
  let rateFactor = Math.pow(paramIntensity, 2) / Math.max(0.3, paramBetaStar);
- let nBatch = Math.max(1, Math.round(rateFactor * 5));
- let pool = currentPool();
- for(let i=0;i<nBatch;i++) massData.push(pool[(Math.random()*pool.length)|0]);
+ let n = Math.max(1, Math.round(rateFactor * (sp.channel==="4l"?1.5:5)));
+ const store = massStore[selDet];
+ for(let i=0;i<n;i++) store.push(sp.pool()[(Math.random()*sp.pool().length)|0]);
+ collStore[selDet] += 1;
  lastEvent = sampleEvent();
- if(lastEvent.channel==="2mu") massData.push(lastEvent.M);  // nur Dimuon ins Spektrum (4ℓ = eigener Kanal)
+ store.push(lastEvent.M);   // das angezeigte Event landet immer im Spektrum des Detektors
  return lastEvent;
 }
 
-function getTargetDiscover() {
-  switch(activePhysicsMode){
-   case "QGP":   return 300;   // Quarkonia-Unterdrückung
-   case "LHCB":  return 400;   // CP-Asymmetrie
-   case "PILOT": return 1e9;   // Inbetriebnahme: praktisch keine Entdeckung
-   default:      return 500;   // HIGGS
-  }
-}
-
 function getSignificance() {
-  if (collisions === 0 || activePhysicsMode === "PILOT") return 0;
-  if (activePhysicsMode === "HIGGS" && paramEnergy < 4.0) return 0; // Higgs braucht E >= 4 TeV
-  return 5.0 * Math.sqrt(collisions / getTargetDiscover());
+  const sp=spec(), n=collStore[selDet];
+  if (n === 0) return 0;
+  if (paramEnergy < sp.minE) return 0;            // Energie zu gering (z. B. Pilot-Strahl)
+  return 5.0 * Math.sqrt(n / sp.target);
 }
 
 function drawHist(){
+  const sp=spec();
   let w=histW,h=histH;
   ctxHist.clearRect(0,0,w,h);
   ctxHist.strokeStyle="#30363d";ctxHist.lineWidth=1;
   ctxHist.beginPath();ctxHist.moveTo(30,8);ctxHist.lineTo(30,h-16);ctxHist.lineTo(w-8,h-16);ctxHist.stroke();
   ctxHist.fillStyle="#8b949e";ctxHist.font="7.5px sans-serif";
-  let [mn,mx]=getModeRange();
+  let [mn,mx]=sp.range;
   ctxHist.fillText(mn+" GeV",30,h-5);ctxHist.fillText(mx+" GeV",w-40,h-5);
-  
+
   let sig = getSignificance();
+  const lowE = paramEnergy < sp.minE;
   $("lbl-sig").innerText = sig.toFixed(2) + " σ";
-  
-  let sigBar = $("sig-bar");
-  let sigStatus = $("lbl-sig-status");
-  let target = getTargetDiscover();
-  let pct = (activePhysicsMode==="PILOT" || (activePhysicsMode==="HIGGS" && paramEnergy < 4.0)) ? 0 : Math.min(100, (sig/5.0)*100);
-  sigBar.style.width = pct + "%" ;
-  
+
+  let sigBar = $("sig-bar"), sigStatus = $("lbl-sig-status");
+  sigBar.style.width = (lowE ? 0 : Math.min(100,(sig/5.0)*100)) + "%";
+
   if (sig === 0) {
-    sigStatus.innerText = (activePhysicsMode==="PILOT") ? "Inbetriebnahme · Kalibrierung" : "Rauschen (Kein Signal)";
-    sigStatus.style.color = "#8b949e";
-    sigBar.style.background = "#30363d";
+    sigStatus.innerText = lowE ? "Inbetriebnahme · Energie zu gering" : "Rauschen (Kein Signal)";
+    sigStatus.style.color = "#8b949e"; sigBar.style.background = "#30363d";
   } else if (sig < 3.0) {
     sigStatus.innerText = "Rauschen (Keine Signifikanz)";
-    sigStatus.style.color = "#8b949e";
-    sigBar.style.background = "#58a6ff";
+    sigStatus.style.color = "#8b949e"; sigBar.style.background = "#58a6ff";
   } else if (sig < 5.0) {
     sigStatus.innerText = "⚠️ Signal-Hinweis (Evidence!)";
-    sigStatus.style.color = "#ff7f0e";
-    sigBar.style.background = "#ff7f0e";
+    sigStatus.style.color = "#ff7f0e"; sigBar.style.background = "#ff7f0e";
   } else {
-    sigStatus.innerText = {HIGGS:"🌟 5σ: Higgs-Boson entdeckt!", QGP:"🌟 5σ: Quarkonia-Unterdrückung (QGP)!", LHCB:"🌟 5σ: CP-Verletzung etabliert!"}[activePhysicsMode] || "🌟 5σ ENTDECKUNG!";
-    sigStatus.style.color = "#2ea44f";
-    sigBar.style.background = "#2ea44f";
+    sigStatus.innerText = sp.disco;
+    sigStatus.style.color = "#2ea44f"; sigBar.style.background = "#2ea44f";
   }
-  
-  if(!massData.length){
-    ctxHist.fillStyle="#8b949e";
-    ctxHist.font="10px monospace";
+
+  const activeData = massStore[selDet];
+  if(!activeData.length){
+    ctxHist.fillStyle="#8b949e"; ctxHist.font="10px monospace";
     ctxHist.fillText("WARTEN AUF KOLLISIONSDATEN...",w/2-90,h/2);
     return;
   }
-  
-  // Bin-Anzahl je Modus (breite Bereiche → mehr Bins)
-  let nb = activePhysicsMode==="HIGGS" ? 60 : activePhysicsMode==="QGP" ? 55 : 50;
-  let bins=Array(nb).fill(0);
-  massData.forEach(v=>{if(v>=mn&&v<mx){let i=Math.floor((v-mn)/(mx-mn)*nb);if(i>=0&&i<nb)bins[i]++;}});
+
+  // Histogramm
+  let nb=sp.bins, bins=Array(nb).fill(0);
+  activeData.forEach(v=>{if(v>=mn&&v<mx){let i=Math.floor((v-mn)/(mx-mn)*nb);if(i>=0&&i<nb)bins[i]++;}});
   let maxB=Math.max(...bins,1),bw=(w-40)/nb;
-  let fc=isIon?"rgba(227,119,194,0.38)":"rgba(88,166,255,0.38)";
-  let tc=isIon?"#e377c2":"#58a6ff";
-  // Balken
+  let fc=sp.fc, tc=sp.col;
   for(let i=0;i<nb;i++){
     let bh=bins[i]/maxB*(h-30);let x=30+i*bw,y=h-16-bh;
     ctxHist.fillStyle=fc;ctxHist.fillRect(x,y,bw-1,bh);ctxHist.fillStyle=tc;ctxHist.fillRect(x,y,bw-1,1.5);
   }
   // Fehlerbalken (±√N pro Bin) – Poisson-Statistik
-  if(massData.length>20){
-    ctxHist.strokeStyle=isIon?"rgba(227,119,194,0.75)":"rgba(88,166,255,0.75)"; ctxHist.lineWidth=0.9;
+  if(activeData.length>20){
+    ctxHist.strokeStyle=sp.col; ctxHist.globalAlpha=0.7; ctxHist.lineWidth=0.9;
     for(let i=0;i<nb;i++){
       if(bins[i]<3) continue;
       let bh=bins[i]/maxB*(h-30); let x=30+(i+0.5)*bw, y=h-16-bh;
@@ -1237,82 +1303,52 @@ function drawHist(){
       ctxHist.beginPath(); ctxHist.moveTo(x-2,y-err); ctxHist.lineTo(x+2,y-err); ctxHist.stroke();
       ctxHist.beginPath(); ctxHist.moveTo(x-2,y+err); ctxHist.lineTo(x+2,y+err); ctxHist.stroke();
     }
+    ctxHist.globalAlpha=1;
   }
-  // Resonanz-Marker: gestrichelte Linien bei den bekannten PDG-Massen
-  {const markers={HIGGS:[[91.19,"Z⁰"]], QGP:[[3.097,"J/ψ"],[9.46,"Υ"]],
-                  LHCB:[[5.279,"B⁰"]], PILOT:[[0.78,"ρ/ω"],[1.019,"φ"]]};
-   const mm=markers[activePhysicsMode]||[];
-   ctxHist.save(); ctxHist.setLineDash([3,3]); ctxHist.lineWidth=0.9;
-   mm.forEach(([m,lbl])=>{ if(m<mn||m>mx) return;
+  // Resonanz-Marker (gestrichelt) bei den PDG-Massen des Detektors
+  {ctxHist.save(); ctxHist.setLineDash([3,3]); ctxHist.lineWidth=0.9;
+   sp.markers.forEach(([m,lbl])=>{ if(m<mn||m>mx) return;
     const xm=30+(m-mn)/(mx-mn)*(w-40);
     ctxHist.strokeStyle="rgba(255,255,255,0.30)"; ctxHist.beginPath(); ctxHist.moveTo(xm,h-16); ctxHist.lineTo(xm,10); ctxHist.stroke();
     ctxHist.fillStyle="rgba(255,255,255,0.45)"; ctxHist.font="6.5px sans-serif";
     ctxHist.fillText(lbl, xm+2, 16); });
    ctxHist.restore(); }
-  
-  if (sig > 0.5) {
+
+  // Fit-Kurve (an die echte Datenform angepasst → liegt auf den Balken)
+  if (sig > 0.5 && !lowE) {
     let alpha = Math.min(1.0, Math.max(0, (sig - 0.5) / 3.5));
-    ctxHist.save();
-    ctxHist.globalAlpha = alpha;
-    
-        const G=(v,m,s)=>Math.exp(-0.5*((v-m)/s)**2);
-    // Analytisches Modell (normiert auf 1 am Peak)
+    ctxHist.save(); ctxHist.globalAlpha = alpha;
     let ys=[], ymax=1e-9;
     for(let xp=30;xp<w-8;xp++){
-      let v=mn+(xp-30)/(w-38)*(mx-mn), yv;
-      if(activePhysicsMode==="QGP")        yv=0.30+G(v,3.097,0.12)*1.0+G(v,9.46,0.25)*0.35;
-      else if(activePhysicsMode==="LHCB")  yv=0.15+G(v,5.279,0.06)*1.0;
-      else if(activePhysicsMode==="PILOT") yv=Math.exp(-(v-0.4)/0.5)*0.5+G(v,0.78,0.10)*1.0+G(v,1.019,0.03)*0.5;
-      else                                 yv=Math.exp(-(v-50)/25)*0.30+G(v,91.19,2.6)*1.0;
+      let v=mn+(xp-30)/(w-38)*(mx-mn), yv=sp.fit(v);
       ys.push(yv); if(yv>ymax)ymax=yv;
     }
-    // Skalierung: Kurven-Peak auf Daten-Peak ausrichten (nicht auf Canvas-Höhe)
-    // Dazu Kurven-Integral über alle Pixel berechnen und auf massData.length normieren.
-    // Einfacher Ankerpunkt: Kurve trifft maxB am höchsten Datenpunkt.
-    let yscale = maxB / ymax;          // 1 Kurven-Peak-Einheit = maxB Bin-Counts
-    ctxHist.strokeStyle="rgba(248,81,73,1)"; ctxHist.lineWidth=1.5; ctxHist.beginPath();
-    ys.forEach((yv,k)=>{
-      let yp=h-16-(yv*yscale/maxB)*(h-30); yp=Math.max(8,Math.min(h-16,yp));
+    ctxHist.strokeStyle=sp.col; ctxHist.lineWidth=1.7; ctxHist.beginPath();
+    ys.forEach((yv,k)=>{ let yp=h-16-(yv/ymax)*(h-30); yp=Math.max(8,Math.min(h-16,yp));
       k===0?ctxHist.moveTo(30+k,yp):ctxHist.lineTo(30+k,yp); });
     ctxHist.stroke();
-
-    ctxHist.fillStyle="#f0f6fc"; ctxHist.font="8.5px sans-serif";
-    if(activePhysicsMode==="HIGGS"){
-      ctxHist.fillText("Z⁰ → μ⁺μ⁻ (91 GeV) · echte CMS-Daten", w*.28, 22);
-      if(paramEnergy>=4.0){ ctxHist.fillStyle="#aec7e8";
-        ctxHist.fillText("Higgs→4ℓ-Kandidaten (Goldkanal): "+higgsCands, w*.50, 38); }
-      else{ ctxHist.fillStyle="rgba(248,81,73,0.7)";
-        ctxHist.fillText("Higgs-Produktion unterdrückt (E < 4 TeV)", w*.48, 38); }
-    } else if(activePhysicsMode==="QGP"){
-      ctxHist.fillText("J/ψ → μ⁺μ⁻ (3.1 GeV) · echte CMS-Daten", w*.10, 20);
-      ctxHist.fillText("Υ(1S,2S,3S) (9.5 GeV)", w*.60, 42);
-    } else if(activePhysicsMode==="LHCB"){
-      ctxHist.fillText("B⁰ → h⁺h⁻ (5.28 GeV) · kalibrierte Simulation", w*.18, 22);
-      ctxHist.fillText("CP-Asymmetrie Materie / Antimaterie", w*.28, 40);
-    } else { // PILOT
-      ctxHist.fillText("ρ⁰/ω (0.78) · φ (1.02 GeV) · Teststrahl", w*.16, 20);
-      ctxHist.fillText("unkalibriert – Detektor-Inbetriebnahme", w*.26, 40);
-    }
+    // Beschriftung
+    ctxHist.fillStyle=sp.col; ctxHist.font="8px sans-serif";
+    ctxHist.fillText(sp.title, 36, 22);
+    ctxHist.fillStyle="rgba(205,214,228,0.75)"; ctxHist.font="7px sans-serif";
+    ctxHist.fillText(sp.sub, 36, 35);
+    if(sp.channel==="4l"){ ctxHist.fillStyle="#aec7e8"; ctxHist.font="7px sans-serif";
+      ctxHist.fillText("Higgs-Fenster (120–130 GeV): "+higgsCands+" 4ℓ-Kandidaten", 36, 47); }
     ctxHist.restore();
   }
-  
+
+  // Status-Hinweise unter der Achse
   if (sig < 5.0) {
-    ctxHist.fillStyle="rgba(255,255,255,0.45)";
-    ctxHist.font="8.5px monospace";
-    if (sig === 0) {
-      if (activePhysicsMode==="PILOT") {
-        ctxHist.fillText("Pilot-Strahl: Detektor-Kalibrierung – keine Entdeckung angestrebt.", w/2 - 155, 12);
-      } else if (activePhysicsMode==="HIGGS" && paramEnergy < 4.0) {
-        ctxHist.fillText("⚠️ Strahlenergie zu gering für Higgs-Produktion (< 4.0 TeV)!", w/2 - 145, 12);
-      } else {
-        ctxHist.fillText("Keine Kollisionen akkumuliert. Starte Kollisionen!", w/2 - 120, 12);
-      }
+    ctxHist.fillStyle="rgba(255,255,255,0.45)"; ctxHist.font="8px monospace";
+    if (lowE) {
+      ctxHist.fillText("⚠️ Strahlenergie zu gering ("+paramEnergy.toFixed(2)+" < "+sp.minE.toFixed(1)+" TeV) — keine Entdeckung möglich.", 36, h-26);
+    } else if (sig === 0) {
+      ctxHist.fillText("Keine Kollisionen in "+selDet+". Starte Kollisionen!", 36, h-26);
     } else {
-      ctxHist.fillText("Sammle Statistik für Entdeckung (Signifikanz: " + sig.toFixed(1) + "σ / 5.0σ)", w/2 - 140, 12);
+      ctxHist.fillText("Sammle Statistik (Signifikanz: " + sig.toFixed(1) + "σ / 5.0σ)", 36, h-26);
     }
   }
 }
-
 // ═══════════════════════════════════════════════════════════════════════════
 // INFO PANELS — Wikipedia-Stil Overlay für Beschleuniger & Detektoren
 // Einheitliche Stat-Struktur: [Energie/Maße, β-Bereich / Kollisions-E., Gebaut/Gewicht]
@@ -1322,7 +1358,8 @@ const INFO_DB = {
   title: 'LINAC 4',
   sub: 'Linearbeschleuniger · Protonen (H⁻ → Stripping)',
   color: '#58a6ff',
-  hdr: `<div style="height:82px;background:linear-gradient(135deg,#0a1628 0%,#0d2b52 100%);display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 200 82" width="200" height="82" xmlns="http://www.w3.org/2000/svg"><defs><marker id="ah" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#58a6ff"/></marker></defs><line x1="18" y1="41" x2="172" y2="41" stroke="#58a6ff" stroke-width="2" marker-end="url(#ah)"/><circle cx="45" cy="41" r="5" fill="rgba(88,166,255,0.3)" stroke="#58a6ff" stroke-width="1.2"/><circle cx="85" cy="41" r="5" fill="rgba(88,166,255,0.3)" stroke="#58a6ff" stroke-width="1.2"/><circle cx="125" cy="41" r="5" fill="rgba(88,166,255,0.3)" stroke="#58a6ff" stroke-width="1.2"/><circle cx="162" cy="41" r="5" fill="rgba(88,166,255,0.3)" stroke="#58a6ff" stroke-width="1.2"/><text x="100" y="68" fill="rgba(88,166,255,0.45)" font-size="8" text-anchor="middle" font-family="monospace">H⁻ → 160 MeV → Stripping</text></svg></div>`,
+  img: 'Linac 4 at CERN.jpg',
+  cred: 'M. Brice/CERN · CC BY-SA 4.0',
   stats: [['Länge','86 m'],['β-Bereich','0 → 52 % c'],['Seit','2020']],
   text: 'LINAC4 ist der erste Schritt im Proton-Injektorkomplex. Er beschleunigt H⁻-Ionen (Protonen mit zwei Elektronen) mittels Hochfrequenz-Strukturen auf 160 MeV, entsprechend 52 % der Lichtgeschwindigkeit. Beim Transfer zum PSB entfernt eine Stripperfolie die Elektronen. Seit 2020 ersetzt er LINAC2 und verdoppelt die Strahlintensität für den LHC.'
  },
@@ -1330,7 +1367,8 @@ const INFO_DB = {
   title: 'LINAC 3',
   sub: 'Linearbeschleuniger · Blei-Ionen (ECR-Quelle)',
   color: '#e377c2',
-  hdr: `<div style="height:82px;background:linear-gradient(135deg,#1a0a28 0%,#380d52 100%);display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 200 82" width="200" height="82" xmlns="http://www.w3.org/2000/svg"><defs><marker id="ai" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#e377c2"/></marker></defs><line x1="18" y1="41" x2="172" y2="41" stroke="#e377c2" stroke-width="2" marker-end="url(#ai)"/><ellipse cx="48" cy="41" rx="7" ry="5" fill="rgba(227,119,194,0.3)" stroke="#e377c2" stroke-width="1.2"/><ellipse cx="95" cy="41" rx="7" ry="5" fill="rgba(227,119,194,0.3)" stroke="#e377c2" stroke-width="1.2"/><ellipse cx="142" cy="41" rx="7" ry="5" fill="rgba(227,119,194,0.3)" stroke="#e377c2" stroke-width="1.2"/><text x="100" y="68" fill="rgba(227,119,194,0.45)" font-size="8" text-anchor="middle" font-family="monospace">Pb²⁹⁺ → 4,2 MeV/u</text></svg></div>`,
+  img: 'Linac 3 at CERN.jpg',
+  cred: 'M. Brice/CERN · CC BY-SA 4.0',
   stats: [['Länge','~30 m'],['β-Bereich','0 → 9 % c'],['Seit','1994']],
   text: 'LINAC3 beschleunigt Blei-Ionen (Pb²⁹⁺) aus einer Elektronen-Zyklotron-Resonanz-Quelle (ECR) auf 4,2 MeV pro Nukleon – nur 9 % der Lichtgeschwindigkeit, da Blei-Kerne (A=208) viel schwerer sind als Protonen. Die Ionen werden danach in LEIR gestapelt und durch Elektronenkühlung komprimiert. LINAC3 ist seit 1994 in Betrieb.'
  },
@@ -1338,7 +1376,8 @@ const INFO_DB = {
   title: 'Proton Synchrotron Booster',
   sub: 'Synchrotron · 4 übereinander gestapelte Ringe',
   color: '#58a6ff',
-  hdr: `<div style="height:82px;background:linear-gradient(135deg,#0a1628 0%,#0d3a5c 100%);display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 200 82" width="200" height="82" xmlns="http://www.w3.org/2000/svg"><circle cx="100" cy="41" r="30" fill="none" stroke="#58a6ff" stroke-width="1.8" opacity="0.9"/><circle cx="100" cy="41" r="23" fill="none" stroke="#58a6ff" stroke-width="1.4" opacity="0.65"/><circle cx="100" cy="41" r="16" fill="none" stroke="#58a6ff" stroke-width="1" opacity="0.4"/><circle cx="100" cy="41" r="9" fill="none" stroke="#58a6ff" stroke-width="0.8" opacity="0.2"/><text x="100" y="72" fill="rgba(88,166,255,0.4)" font-size="7.5" text-anchor="middle" font-family="monospace">4 Ringe übereinander</text></svg></div>`,
+  img: 'The Proton Synchrotron Booster in its tunnel.jpg',
+  cred: 'Loïez, Brice/CERN · CC BY 4.0',
   stats: [['Umfang','4 × 157 m'],['β-Bereich','52 → 95 % c'],['Gebaut','1972']],
   text: 'Der PSB besteht aus vier übereinandergestapelten Synchrotron-Ringen und beschleunigt Protonen von 160 MeV (52 % c) auf 2 GeV (95 % c). Nach dem LHC-Injector-Upgrade (LIU, 2020) liefert er doppelt so hohe Strahlintensitäten. Die vier Ringe erlauben das gleichzeitige Beschleunigen mehrerer Pakete mit unterschiedlichem Timing.'
  },
@@ -1346,7 +1385,8 @@ const INFO_DB = {
   title: 'Low Energy Ion Ring',
   sub: 'Ionen-Synchrotron · Elektronenkühlung',
   color: '#e377c2',
-  hdr: `<div style="height:82px;background:linear-gradient(135deg,#1a0a28 0%,#2d1045 100%);display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 200 82" width="200" height="82" xmlns="http://www.w3.org/2000/svg"><circle cx="100" cy="41" r="28" fill="none" stroke="#e377c2" stroke-width="2.5" opacity="0.9"/><line x1="100" y1="13" x2="100" y2="69" stroke="rgba(23,190,207,0.5)" stroke-width="1.5" stroke-dasharray="3,3"/><text x="100" y="36" fill="#e377c2" font-size="10" text-anchor="middle" font-family="monospace" opacity="0.85">Pb⁸²⁺</text><text x="100" y="72" fill="rgba(227,119,194,0.4)" font-size="7.5" text-anchor="middle" font-family="monospace">Elektronenkühlung</text></svg></div>`,
+  img: 'Low Energy Ion Ring (LEIR).jpg',
+  cred: 'F. Stollberger · CC BY-SA 4.0',
   stats: [['Umfang','78 m'],['β-Bereich','9 → 37 % c'],['Aus LEAR','2005']],
   text: 'LEIR (Low Energy Ion Ring) wurde 2005 aus dem Antiproton-Ring LEAR umgebaut. Er akkumuliert Blei-Ionen von LINAC3 (9 % c) und kühlt sie per Elektronenkühlung: Ein Elektronenstrahl gleicher Mittelsgeschwindigkeit reduziert die Impulsstreuung dramatisch. Danach werden die Ionen auf 72 MeV/u (37 % c) beschleunigt und an den PS übergeben.'
  },
@@ -1354,7 +1394,8 @@ const INFO_DB = {
   title: 'Proton Synchrotron',
   sub: 'Synchrotron · Ältester noch aktiver CERN-Beschleuniger',
   color: '#2ea44f',
-  hdr: `<div style="height:82px;background:linear-gradient(135deg,#091a0f 0%,#0d3020 100%);display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 200 82" width="200" height="82" xmlns="http://www.w3.org/2000/svg"><circle cx="100" cy="41" r="32" fill="none" stroke="#2ea44f" stroke-width="2.5" opacity="0.85"/><circle cx="100" cy="41" r="3" fill="#2ea44f" opacity="0.6"/><text x="100" y="37" fill="#2ea44f" font-size="9" text-anchor="middle" font-family="monospace" opacity="0.85">PS</text><text x="100" y="50" fill="#2ea44f" font-size="8" text-anchor="middle" font-family="monospace" opacity="0.5">seit 1959</text><text x="100" y="72" fill="rgba(46,164,79,0.4)" font-size="7.5" text-anchor="middle" font-family="monospace">628 m · 26 GeV</text></svg></div>`,
+  img: 'Aerial view of PS at CERN in 1965.jpg',
+  cred: 'CERN · CC BY 4.0',
   stats: [['Umfang','628 m'],['β-Bereich','95 → 99,94 % c'],['Seit','1959']],
   text: 'Das Proton-Synchrotron (PS) ist seit 1959 ununterbrochen in Betrieb. Es beschleunigt Protonen von 2 GeV (95 % c) auf 26 GeV (99,94 % c) – ab hier ist der Geschwindigkeitsgewinn minimal, aber der Energiegewinn enorm (Relativität!). Das PS war früher Europas stärkster Beschleuniger und ist heute unverzichtbares Bindeglied in der LHC-Injektorkette.'
  },
@@ -1362,7 +1403,8 @@ const INFO_DB = {
   title: 'Super Proton Synchrotron',
   sub: 'Synchrotron · Nobelpreis-Beschleuniger (1984)',
   color: '#ff7f0e',
-  hdr: `<div style="height:82px;background:linear-gradient(135deg,#1a0e00 0%,#3d2200 100%);display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 200 82" width="200" height="82" xmlns="http://www.w3.org/2000/svg"><circle cx="100" cy="41" r="33" fill="none" stroke="#ff7f0e" stroke-width="2.5" opacity="0.85"/><text x="100" y="37" fill="#ff7f0e" font-size="9" text-anchor="middle" font-family="monospace" opacity="0.85">SPS</text><text x="100" y="50" fill="#ff7f0e" font-size="8" text-anchor="middle" font-family="monospace" opacity="0.5">W/Z 1983</text><text x="100" y="72" fill="rgba(255,127,14,0.4)" font-size="7.5" text-anchor="middle" font-family="monospace">6,9 km · 450 GeV</text></svg></div>`,
+  img: 'SPS 2015.JPG',
+  cred: 'Nazgul02 · CC BY-SA 4.0',
   stats: [['Umfang','6,9 km'],['β-Bereich','99,94 → 99,9998 % c'],['Gebaut','1976']],
   text: 'Das SPS (1976) beschleunigt auf 450 GeV – die Geschwindigkeit steigt dabei von 99,94 % auf 99,9998 % c, ein scheinbar kleiner Unterschied mit riesiger Energiewirkung. Berühmt durch die Entdeckung der W- und Z-Bosonen 1983 (Nobelpreis 1984). Als letzter Vorbeschleuniger liefert es beide LHC-Strahlen über TI 2 und TI 8.'
  },
@@ -1370,7 +1412,8 @@ const INFO_DB = {
   title: 'Large Hadron Collider',
   sub: 'Proton-Proton / Pb-Pb Kollider · Leistungsstärkster der Welt',
   color: '#58a6ff',
-  hdr: `<div style="height:82px;background:linear-gradient(135deg,#050d1a 0%,#0d2040 100%);display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 200 82" width="200" height="82" xmlns="http://www.w3.org/2000/svg"><circle cx="100" cy="41" r="30" fill="none" stroke="rgba(88,166,255,0.22)" stroke-width="8"/><circle cx="100" cy="41" r="30" fill="none" stroke="#58a6ff" stroke-width="1.2" stroke-dasharray="4,3"/><circle cx="130" cy="41" r="4" fill="#f85149" opacity="0.9"/><circle cx="70" cy="41" r="4" fill="#f85149" opacity="0.9"/><circle cx="100" cy="71" r="3.5" fill="#f85149" opacity="0.7"/><circle cx="100" cy="11" r="3.5" fill="#f85149" opacity="0.7"/><text x="100" y="44" fill="rgba(88,166,255,0.32)" font-size="8" text-anchor="middle" font-family="monospace">27 km</text></svg></div>`,
+  img: 'LHC dipole magnets.jpg',
+  cred: 'alpinethread · CC BY-SA 2.0',
   stats: [['Umfang','26 659 m'],['β bei 6,8 TeV','99,99999 % c'],['Temp.','1,9 K']],
   text: 'Im LHC sind Protonen mit 6,8 TeV nur noch 3 m/s langsamer als Licht (99,99999 % c). 1 232 supraleitende Dipolmagnete (8,33 T, NbTi bei 1,9 K) halten die Strahlen auf Kreisbahn. An vier Interaktionspunkten kollidieren Protonenpakete bei √s = 13,6 TeV – mehr Energie als je zuvor erreicht. 2012 führte der LHC zur Entdeckung des Higgs-Bosons.'
  },
@@ -1378,7 +1421,8 @@ const INFO_DB = {
   title: 'ATLAS Detektor',
   sub: 'A Toroidal LHC Apparatus · IP1 · Allzweck-Detektor',
   color: '#58a6ff',
-  hdr: `<div style="height:82px;background:linear-gradient(135deg,#0a1628 0%,#122040 100%);display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 200 82" width="200" height="82" xmlns="http://www.w3.org/2000/svg"><line x1="100" y1="4" x2="100" y2="78" stroke="rgba(248,81,73,0.5)" stroke-width="1.5"/><ellipse cx="100" cy="41" rx="58" ry="26" fill="none" stroke="#58a6ff" stroke-width="2" opacity="0.9"/><ellipse cx="100" cy="41" rx="44" ry="18" fill="rgba(88,166,255,0.04)" stroke="#58a6ff" stroke-width="1.5" opacity="0.65"/><ellipse cx="100" cy="41" rx="28" ry="11" fill="rgba(46,164,79,0.04)" stroke="#2ea44f" stroke-width="1.2" opacity="0.65"/><ellipse cx="100" cy="41" rx="14" ry="5.5" fill="rgba(255,127,14,0.04)" stroke="#ff7f0e" stroke-width="1" opacity="0.65"/><text x="100" y="76" fill="rgba(88,166,255,0.35)" font-size="7" text-anchor="middle" font-family="monospace">Toroid · LAr · Tile · Tracker</text></svg></div>`,
+  img: 'CERN LHC ATLAS Detector.jpg',
+  cred: 'S. Waldherr · CC BY-SA 4.0',
   stats: [['Maße','46 × 25 m'],['Kollisions-E.','√s ≤ 14 TeV'],['Gewicht','7 000 t']],
   text: 'ATLAS ist der größte Detektor am LHC. Kollisionen bei bis zu 99,99999 % c erzeugen Teilchenschauer, die alle Schichten durchqueren: Silizium-Pixel-Tracker (ab 5 mm vom Strahl), LAr-Kalorimeter, Tile-Kalorimeter und das Toroid-Magnetsystem (8 Spulen je 25 m). 2012 co-Entdecker des Higgs-Bosons bei mH = 125 GeV.'
  },
@@ -1386,7 +1430,8 @@ const INFO_DB = {
   title: 'CMS Detektor',
   sub: 'Compact Muon Solenoid · IP5 · Allzweck-Detektor',
   color: '#17becf',
-  hdr: `<div style="height:82px;background:linear-gradient(135deg,#051a1a 0%,#0d3535 100%);display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 200 82" width="200" height="82" xmlns="http://www.w3.org/2000/svg"><line x1="100" y1="4" x2="100" y2="78" stroke="rgba(248,81,73,0.5)" stroke-width="1.5"/><ellipse cx="100" cy="41" rx="52" ry="22" fill="none" stroke="#17becf" stroke-width="2.5" opacity="0.9"/><ellipse cx="100" cy="41" rx="38" ry="15" fill="rgba(23,190,207,0.05)" stroke="#17becf" stroke-width="1.5" opacity="0.65"/><ellipse cx="100" cy="41" rx="22" ry="8" fill="rgba(23,190,207,0.05)" stroke="#2ea44f" stroke-width="1.2" opacity="0.65"/><text x="100" y="76" fill="rgba(23,190,207,0.35)" font-size="7" text-anchor="middle" font-family="monospace">3,8 T Solenoid · PbWO₄ · Si-Tracker</text></svg></div>`,
+  img: 'CMS detector 2.jpg',
+  cred: 'T. Guignard · CC BY-SA 2.0',
   stats: [['Maße','21 × 15 m'],['Kollisions-E.','√s ≤ 14 TeV'],['Gewicht','14 000 t']],
   text: 'CMS ist mit 14 000 t der schwerste Detektor am LHC. Herzstück ist ein 3,8-Tesla-Solenoid (100 000× stärker als das Erdfeld). Teilchen aus 99,99999 % c schnellen Kollisionen werden durch Silizium-Tracker (200 m², 75 Mio. Pixel) und Bleiwolframat-Kristall-Kalorimeter (ECAL) gemessen. 2012 co-Entdecker des Higgs-Bosons.'
  },
@@ -1394,7 +1439,8 @@ const INFO_DB = {
   title: 'ALICE Detektor',
   sub: 'A Large Ion Collider Experiment · IP2 · Schwerionen-Physik',
   color: '#e377c2',
-  hdr: `<div style="height:82px;background:linear-gradient(135deg,#1a0a28 0%,#2d1045 100%);display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 200 82" width="200" height="82" xmlns="http://www.w3.org/2000/svg"><line x1="100" y1="4" x2="100" y2="78" stroke="rgba(248,81,73,0.5)" stroke-width="1.5"/><ellipse cx="100" cy="41" rx="55" ry="24" fill="none" stroke="#e377c2" stroke-width="2" opacity="0.9"/><ellipse cx="100" cy="41" rx="40" ry="16" fill="none" stroke="#e377c2" stroke-width="1.3" opacity="0.55"/><ellipse cx="100" cy="41" rx="24" ry="9" fill="none" stroke="#e377c2" stroke-width="1" opacity="0.35"/><text x="100" y="76" fill="rgba(227,119,194,0.35)" font-size="7" text-anchor="middle" font-family="monospace">TPC · ITS2 · TOF · QGP-Detektor</text></svg></div>`,
+  img: 'ALICE experiment at CERN.jpg',
+  cred: 'Andres T · CC BY-SA 2.0',
   stats: [['Maße','26 × 16 m'],['Pb-Pb √s_NN','≤ 5,5 TeV'],['Gewicht','10 000 t']],
   text: 'ALICE untersucht Pb-Pb-Kollisionen, bei denen Pb-Kerne mit ~99,999 % c aufeinanderprallen. Dabei entsteht Quark-Gluon-Plasma (QGP) – der Zustand der Materie microsekunden nach dem Urknall. Die TPC (90 m³) identifiziert tausende Teilchen gleichzeitig; der ITS2-Tracker hat 12,5 Mrd. Pixel auf 10 m² – höchste Pixeldichte am LHC.'
  },
@@ -1402,7 +1448,8 @@ const INFO_DB = {
   title: 'LHCb Detektor',
   sub: 'LHC beauty Experiment · IP8 · Vorwärtsspektrometer',
   color: '#ff7f0e',
-  hdr: `<div style="height:82px;background:linear-gradient(135deg,#1a0e00 0%,#302000 100%);display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 200 82" width="200" height="82" xmlns="http://www.w3.org/2000/svg"><circle cx="40" cy="41" r="4" fill="#f85149" opacity="0.9"/><line x1="40" y1="41" x2="185" y2="41" stroke="rgba(248,81,73,0.4)" stroke-width="1.5"/><line x1="40" y1="41" x2="185" y2="14" stroke="#ff7f0e" stroke-width="1.5" opacity="0.7"/><line x1="40" y1="41" x2="185" y2="68" stroke="#ff7f0e" stroke-width="1.5" opacity="0.7"/><line x1="40" y1="41" x2="185" y2="26" stroke="#ff7f0e" stroke-width="1" opacity="0.4"/><line x1="40" y1="41" x2="185" y2="56" stroke="#ff7f0e" stroke-width="1" opacity="0.4"/><rect x="62" y="32" width="8" height="18" fill="rgba(255,127,14,0.2)" stroke="#ff7f0e" stroke-width="0.8"/><rect x="92" y="27" width="8" height="28" fill="rgba(255,127,14,0.15)" stroke="#ff7f0e" stroke-width="0.8"/><rect x="132" y="21" width="8" height="40" fill="rgba(255,127,14,0.12)" stroke="#ff7f0e" stroke-width="0.8"/><text x="120" y="78" fill="rgba(255,127,14,0.35)" font-size="7" text-anchor="middle" font-family="monospace">VELO → RICH → MUON</text></svg></div>`,
+  img: 'The LHCb detector. Courtesy of Kathleen Yurkewicz. (10134715223).jpg',
+  cred: 'STFC · CC BY-SA 2.0',
   stats: [['Länge','21 m'],['Kollisions-E.','√s ≤ 14 TeV'],['Akzeptanz','2–5 mrad']],
   text: 'LHCb misst bei p-p-Kollisionen (99,99999 % c) nur in einem engen Vorwärtskegel, wo B-Mesonen bevorzugt entstehen. Der VELO-Detektor nähert sich dem Kollisionspunkt bis auf 5,1 mm. RICH-Detektoren identifizieren Teilchen über Cherenkov-Strahlung. Ziel: die CP-Verletzung und die Asymmetrie zwischen Materie und Antimaterie im Universum verstehen.'
  }
@@ -1417,14 +1464,32 @@ const PARAM_INFO = {
  beta: 'β* ist die Betatronfunktion am Interaktionspunkt – ein Maß für die Fokussierung in Metern. Kleines β* = kleiner Strahldurchmesser = hohe Luminosität. Bei β* = 0,30 m beträgt der Strahldurchmesser am IP nur ~13 μm – fünfmal dünner als ein Haar. Gesteuert durch supraleitende Quadrupol-Triplets 30 m vom Kollisionspunkt.',
  rampspeed: 'dB/dt bestimmt die Geschwindigkeit des Magnetfeldanstiegs. Zu schnelle Rampen erzeugen Wirbelströme in den Magnetkammern (Sextupol-Fehler) und verkleinern die dynamische Apertur. Die reale LHC-Rampe dauert ~22 min (≈ 0,008 T/s). ⚠ Werte über 0,10 T/s simulieren erhöhtes Quench-Risiko – ein Quench (Verlust der Supraleitung) stoppt den Betrieb für 2–12 Stunden.',
  ramp: 'Beim Ramping steigt der Dipolstrom von 763 A (0,45 TeV) auf bis zu 11 850 A (6,8 TeV). Die 1 232 supraleitenden NbTi-Magnete müssen dabei bei 1,9 K (unter dem λ-Punkt von ⁴He) bleiben. Gleichzeitig erhöhen die 400-MHz-HF-Hohlraumresonatoren ihre Spannung, um die Bunches per Phasenfokussierung synchron zu halten. Ein Quench erfordert Stunden der Regeneration.',
- squeeze: 'Nach dem Ramping werden die Strahlen am IP durch die innersten Quadrupol-Triplets (30 m vom Kollisionspunkt) von β* ≈ 11 m auf den Zielwert fokussiert. Bei β* = 0,3 m schrumpft der Strahldurchmesser von ~80 μm auf ~13 μm. Der Squeeze ist ein kritischer, langsamer Prozess: Zu schnelles Fokussieren überschreitet die dynamische Apertur – der Strahl geht verloren.'
+ squeeze: 'Nach dem Ramping werden die Strahlen am IP durch die innersten Quadrupol-Triplets (30 m vom Kollisionspunkt) von β* ≈ 11 m auf den Zielwert fokussiert. Bei β* = 0,3 m schrumpft der Strahldurchmesser von ~80 μm auf ~13 μm. Der Squeeze ist ein kritischer, langsamer Prozess: Zu schnelles Fokussieren überschreitet die dynamische Apertur – der Strahl geht verloren.',
+ preHiggs: 'Gesucht: das Higgs-Boson – das Teilchen, das erklärt, warum andere Teilchen Masse haben. 2012 von ATLAS und CMS bei je 8 TeV gleichzeitig entdeckt (Nobelpreis 2013). Man kann es nicht direkt sehen, denn es zerfällt sofort. Der „Goldkanal" H→ZZ*→4ℓ liefert vier Myonen/Elektronen aus einem Punkt – eine extrem seltene, aber saubere Signatur. CMS eignet sich dafür, weil sein starker Solenoid-Magnet (3,8 T) die Spuren dieser Leptonen sehr präzise vermisst. Im Massenspektrum erscheint das Higgs als kleiner Buckel bei 125 GeV.',
+ preQgp: 'Hier kollidieren keine Protonen, sondern ganze Blei-Kerne. In der Mini-Explosion entsteht für 10⁻²³ s das Quark-Gluon-Plasma: ein „Ur-Zustand" der Materie bei über 10¹² °C, in dem Quarks und Gluonen frei sind – wie wenige Millionstelsekunden nach dem Urknall. ALICE ist der Spezialdetektor dafür: Eine einzige Blei-Blei-Kollision erzeugt tausende Teilchen, und ALICE kann diese enorme Spurdichte einzeln auflösen, um Temperatur und Eigenschaften des Plasmas zu messen.',
+ preLhcb: 'Frage: Warum besteht das Universum aus Materie und fast nicht aus Antimaterie? Untersucht wird die CP-Verletzung – ein winziger Unterschied im Verhalten von Teilchen und Antiteilchen – an B-Mesonen (Teilchen mit einem schweren b-Quark). LHCb sieht anders aus als CMS/ATLAS: Es umschließt den Kollisionspunkt nicht, sondern misst nur nach vorne, denn die b-Quarks fliegen bei hoher Energie eng nach vorne. So kann LHCb deren kurze Flugstrecke und Zerfall extrem genau vermessen.',
+ prePilot: 'Kein Physik-Experiment, sondern die Inbetriebnahme. Der Strahl läuft nur mit Injektionsenergie (0,45 TeV, kein Hochfahren) und wenigen Protonen. Bei so geringer Energie kann nichts Neues entstehen – das ist Absicht: Mit einem „leichten" Strahl prüfen die Operateure gefahrlos die Strahlführung, Optik und Steuerung. Erst wenn alles stabil läuft, wird auf volle Energie und Intensität hochgefahren. So beginnt real jeder LHC-Betriebszyklus.'
 };
+
+// Echtes Foto (Wikimedia Commons, CC) als Panel-Kopf — mit Farbverlauf-Tint,
+// Quellen-Credit und Offline-Fallback (falls kein Internet, Gradient-Box).
+function buildPhotoHdr(d){
+ if(!d.img) return d.hdr || '';
+ const src = 'https://commons.wikimedia.org/wiki/Special:FilePath/' + encodeURIComponent(d.img) + '?width=640';
+ const fb = "this.style.display='none';this.parentNode.classList.add('cv4-hdr-noimg')";
+ return `<div class="cv4-hdr-photo" style="--accent:${d.color}">`
+  + `<img src="${src}" alt="${d.title}" loading="lazy" referrerpolicy="no-referrer" onerror="${fb}">`
+  + `<div class="cv4-hdr-shade"></div>`
+  + `<div class="cv4-hdr-cred">📷 ${d.cred}</div>`
+  + `<div class="cv4-hdr-fbtxt">${d.title}</div>`
+  + `</div>`;
+}
 
 function showInfo(key){
  const d = INFO_DB[key];
  if(!d) return;
  const panel = document.getElementById('info-panel');
- document.getElementById('info-hdr').innerHTML = d.hdr;
+ document.getElementById('info-hdr').innerHTML = buildPhotoHdr(d);
  document.getElementById('info-title').textContent = d.title;
  const sub = document.getElementById('info-sub');
  sub.textContent = d.sub;
@@ -1468,11 +1533,13 @@ btnSpeedToggle.addEventListener("click",()=>{
 });
 
 // GEO OVERLAY TOGGLE
+// Standard = volle Kontraststufe (normal/lesbar). Button graut das Overlay aus
+// (gedimmt + entsättigt) statt es ganz auszublenden.
 let geoVisible = true;
 btnToggleGeo.addEventListener("click",()=>{
  geoVisible = !geoVisible;
+ svg.classList.toggle("geo-dimmed", !geoVisible);
  document.querySelectorAll(".geo-element").forEach(el=>{
-  el.style.opacity = geoVisible ? "1" : "0";
   el.style.pointerEvents = geoVisible ? "auto" : "none";
  });
  btnToggleGeo.classList.toggle("act", geoVisible);
@@ -1499,9 +1566,18 @@ function animateViewBox(tx, ty, tw, th, dur=500){
  requestAnimationFrame(step);
 }
 
+// Detektorwahl ZENTRAL: setzt selDet, Tab-Highlight, Event-Display UND Spektrum.
+// Damit zeigt jeder Detektorwechsel (Tab, SVG, Preset) konsequent das passende Spektrum.
+function selectDetector(name){
+ document.querySelectorAll(".cv4-dtab").forEach(t=>t.classList.remove("act"));
+ const tab=$("dt-"+name.toLowerCase()); if(tab) tab.classList.add("act");
+ selDet=name;
+ drawDetBg(); drawHist();
+}
+
 function zoomToDetector(name){
  if(zoomTarget === name){
-  // Zoom out
+  // Zoom out (Detektor-Auswahl bleibt erhalten)
   zoomTarget = null;
   btnZoomOut.classList.add("off");
   animateViewBox(0, 0, 700, 480);
@@ -1514,14 +1590,14 @@ function zoomToDetector(name){
   else if(name === "ALICE") { tx = 90; ty = 180; }
   else if(name === "LHCB") { tx = 450; ty = 180; }
   animateViewBox(tx, ty, tw, th);
-  
-  // Update event display tabs too
-  document.querySelectorAll(".cv4-dtab").forEach(t=>t.classList.remove("act"));
-  $("dt-"+name.toLowerCase()).classList.add("act");
-  selDet=name;
-  drawDetBg();
+  selectDetector(name);
  }
 }
+
+// Event-Display-Tabs sind klickbar → wechseln Detektor + Spektrum (ohne Kamera-Zoom)
+["atlas","cms","alice","lhcb"].forEach(d=>{
+ const t=$("dt-"+d); if(t) t.addEventListener("click",()=>selectDetector(d.toUpperCase()));
+});
 
 btnZoomOut.addEventListener("click", () => {
  zoomTarget = null;
@@ -1567,10 +1643,8 @@ btnPreHiggs.addEventListener("click",()=>{
  sliBeta.value = 0.3; paramBetaStar = 0.3; lblBeta.innerText = "0.30 m";
  sliRampSpeed.value = 0.05; paramRampSpeed = 0.05; lblRampSpeed.innerText = "0.05 T/s (Sicher)"; lblRampSpeed.style.color = "#58a6ff";
  activePhysicsMode="HIGGS";
- document.querySelectorAll(".cv4-dtab").forEach(t=>t.classList.remove("act"));
- $("dt-atlas").classList.add("act"); selDet="ATLAS";
- updateReadouts(); drawDetBg(); drawHist();
- setStatus("PRESET GELADEN: Higgs-Boson-Suche (Standardmodell p-p Kollision bei 13.6 TeV)", "on");
+ updateReadouts(); selectDetector("CMS");   // CMS = Higgs-Goldkanal H→ZZ*→4ℓ
+ setStatus("PRESET GELADEN: Higgs-Boson-Suche (Goldkanal H→4ℓ in CMS · 13.6 TeV) — Tipp: ATLAS-Tab zeigt Z⁰-Kalibrierkanal", "on");
 });
 
 btnPreQgp.addEventListener("click",()=>{
@@ -1581,9 +1655,7 @@ btnPreQgp.addEventListener("click",()=>{
  sliBeta.value = 0.4; paramBetaStar = 0.4; lblBeta.innerText = "0.40 m";
  sliRampSpeed.value = 0.05; paramRampSpeed = 0.05; lblRampSpeed.innerText = "0.05 T/s (Sicher)"; lblRampSpeed.style.color = "#58a6ff";
  activePhysicsMode="QGP";
- document.querySelectorAll(".cv4-dtab").forEach(t=>t.classList.remove("act"));
- $("dt-alice").classList.add("act"); selDet="ALICE";
- updateReadouts(); drawDetBg(); drawHist();
+ updateReadouts(); selectDetector("ALICE");
  setStatus("PRESET GELADEN: Blei-Ionen-Kollision zur Erzeugung des Quark-Gluon-Plasmas in ALICE", "on");
 });
 
@@ -1595,9 +1667,7 @@ btnPreLhcb.addEventListener("click",()=>{
  sliBeta.value = 0.6; paramBetaStar = 0.6; lblBeta.innerText = "0.60 m";
  sliRampSpeed.value = 0.05; paramRampSpeed = 0.05; lblRampSpeed.innerText = "0.05 T/s (Sicher)"; lblRampSpeed.style.color = "#58a6ff";
  activePhysicsMode="LHCB";
- document.querySelectorAll(".cv4-dtab").forEach(t=>t.classList.remove("act"));
- $("dt-lhcb").classList.add("act"); selDet="LHCB";
- updateReadouts(); drawDetBg(); drawHist();
+ updateReadouts(); selectDetector("LHCB");
  setStatus("PRESET GELADEN: CP-Verletzung & Schönheit (B-Physik p-p Kollision bei 13 TeV in LHCb)", "on");
 });
 
@@ -1609,10 +1679,8 @@ btnPrePilot.addEventListener("click",()=>{
  sliBeta.value = 1.5; paramBetaStar = 1.5; lblBeta.innerText = "1.50 m";
  sliRampSpeed.value = 0.02; paramRampSpeed = 0.02; lblRampSpeed.innerText = "0.02 T/s (Sicher)"; lblRampSpeed.style.color = "#58a6ff";
  activePhysicsMode="PILOT";
- document.querySelectorAll(".cv4-dtab").forEach(t=>t.classList.remove("act"));
- $("dt-atlas").classList.add("act"); selDet="ATLAS";
- updateReadouts(); drawDetBg(); drawHist();
- setStatus("PRESET GELADEN: Pilot-Strahl (Inbetriebnahme des LHC auf Injektionsniveau)", "on");
+ updateReadouts(); selectDetector("ATLAS");
+ setStatus("PRESET GELADEN: Pilot-Strahl (Inbetriebnahme · 0.45 TeV — zu wenig Energie für Entdeckungen)", "on");
 });
 
 btnAutoColl.addEventListener("click", toggleAutoCollide);
@@ -1918,11 +1986,11 @@ Zf = np.array([signifikanz(MASSEN[rng.choice(MASSEN.size, int(f*MASSEN.size), re
 Nv = frac * MASSEN.size
 
 fig, (axA, axB) = plt.subplots(1, 2, figsize=(14, 6))
-axA.scatter(np.sqrt(Nv), Zf, color='#58a6ff', s=28, zorder=3, label='Z⁰-Signifikanz (Subsample)')
+axA.scatter(Nv, Zf, color='#58a6ff', s=28, zorder=3, label='Z⁰-Signifikanz (Subsample)')
 k = np.sum(Zf*np.sqrt(Nv))/np.sum(Nv)                 # Ursprungsgerade Z = k·√N
-axA.plot(np.sqrt(Nv), k*np.sqrt(Nv), color='#f85149', lw=2, label='Z ∝ √N (Fit)')
+axA.plot(Nv, k*np.sqrt(Nv), color='#f85149', lw=2, label='Z = k·√N  (Fit)')
 axA.axhline(5, color='#2ea44f', ls='--', lw=1.2, label='5σ – Entdeckung')
-axA.set_xlabel('√N   (N = Anzahl Ereignisse)'); axA.set_ylabel('Signifikanz Z [σ]')
+axA.set_xlabel('N  (Anzahl Ereignisse)'); axA.set_ylabel('Signifikanz Z [σ]')
 axA.set_title('Das √N-Gesetz: mehr Daten → mehr Signifikanz', color='#58a6ff', fontweight='bold')
 axA.legend(loc='upper left', framealpha=.85)
 

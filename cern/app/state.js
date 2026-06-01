@@ -8,7 +8,10 @@ let lhcDots={b1:[],b2:[]};
 let lhcSpeed=0.0078; // rad/ms bei Injektionsenergie (Proton) – schneller als alle Vorbeschleuniger
 let lhcAngle=0, lhcRunning=false, lhcLastT=null;
 let lhcEnergy=450; // GeV
-let massData=[];
+// Per-Detektor-Datenspeicher: jeder Detektor akkumuliert NUR sein eigenes Spektrum.
+// So zeigt ein Detektorwechsel konsequent das physikalisch mögliche Spektrum dieses Detektors.
+let massStore = {ATLAS:[], CMS:[], ALICE:[], LHCB:[]};   // akkumulierte Massen je Detektor
+let collStore = {ATLAS:0,  CMS:0,  ALICE:0,  LHCB:0};    // Kollisionen je Detektor (für Signifikanz)
 let lastEvent=null;      // zuletzt gesampeltes physikalisches Event (Display==Histogramm)
 let goldenEvent=null;    // eingefrorenes "Golden Event" (Klick aufs Display)
 let higgsCands=0;        // Higgs→4ℓ-Kandidaten (Goldkanal, nur E>=4 TeV)

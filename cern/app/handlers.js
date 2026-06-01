@@ -19,11 +19,13 @@ btnSpeedToggle.addEventListener("click",()=>{
 });
 
 // GEO OVERLAY TOGGLE
+// Standard = volle Kontraststufe (normal/lesbar). Button graut das Overlay aus
+// (gedimmt + entsättigt) statt es ganz auszublenden.
 let geoVisible = true;
 btnToggleGeo.addEventListener("click",()=>{
  geoVisible = !geoVisible;
+ svg.classList.toggle("geo-dimmed", !geoVisible);
  document.querySelectorAll(".geo-element").forEach(el=>{
-  el.style.opacity = geoVisible ? "1" : "0";
   el.style.pointerEvents = geoVisible ? "auto" : "none";
  });
  btnToggleGeo.classList.toggle("act", geoVisible);
@@ -50,9 +52,18 @@ function animateViewBox(tx, ty, tw, th, dur=500){
  requestAnimationFrame(step);
 }
 
+// Detektorwahl ZENTRAL: setzt selDet, Tab-Highlight, Event-Display UND Spektrum.
+// Damit zeigt jeder Detektorwechsel (Tab, SVG, Preset) konsequent das passende Spektrum.
+function selectDetector(name){
+ document.querySelectorAll(".cv4-dtab").forEach(t=>t.classList.remove("act"));
+ const tab=$("dt-"+name.toLowerCase()); if(tab) tab.classList.add("act");
+ selDet=name;
+ drawDetBg(); drawHist();
+}
+
 function zoomToDetector(name){
  if(zoomTarget === name){
-  // Zoom out
+  // Zoom out (Detektor-Auswahl bleibt erhalten)
   zoomTarget = null;
   btnZoomOut.classList.add("off");
   animateViewBox(0, 0, 700, 480);
@@ -65,14 +76,14 @@ function zoomToDetector(name){
   else if(name === "ALICE") { tx = 90; ty = 180; }
   else if(name === "LHCB") { tx = 450; ty = 180; }
   animateViewBox(tx, ty, tw, th);
-  
-  // Update event display tabs too
-  document.querySelectorAll(".cv4-dtab").forEach(t=>t.classList.remove("act"));
-  $("dt-"+name.toLowerCase()).classList.add("act");
-  selDet=name;
-  drawDetBg();
+  selectDetector(name);
  }
 }
+
+// Event-Display-Tabs sind klickbar → wechseln Detektor + Spektrum (ohne Kamera-Zoom)
+["atlas","cms","alice","lhcb"].forEach(d=>{
+ const t=$("dt-"+d); if(t) t.addEventListener("click",()=>selectDetector(d.toUpperCase()));
+});
 
 btnZoomOut.addEventListener("click", () => {
  zoomTarget = null;
@@ -118,10 +129,8 @@ btnPreHiggs.addEventListener("click",()=>{
  sliBeta.value = 0.3; paramBetaStar = 0.3; lblBeta.innerText = "0.30 m";
  sliRampSpeed.value = 0.05; paramRampSpeed = 0.05; lblRampSpeed.innerText = "0.05 T/s (Sicher)"; lblRampSpeed.style.color = "#58a6ff";
  activePhysicsMode="HIGGS";
- document.querySelectorAll(".cv4-dtab").forEach(t=>t.classList.remove("act"));
- $("dt-atlas").classList.add("act"); selDet="ATLAS";
- updateReadouts(); drawDetBg(); drawHist();
- setStatus("PRESET GELADEN: Higgs-Boson-Suche (Standardmodell p-p Kollision bei 13.6 TeV)", "on");
+ updateReadouts(); selectDetector("CMS");   // CMS = Higgs-Goldkanal H→ZZ*→4ℓ
+ setStatus("PRESET GELADEN: Higgs-Boson-Suche (Goldkanal H→4ℓ in CMS · 13.6 TeV) — Tipp: ATLAS-Tab zeigt Z⁰-Kalibrierkanal", "on");
 });
 
 btnPreQgp.addEventListener("click",()=>{
@@ -132,9 +141,7 @@ btnPreQgp.addEventListener("click",()=>{
  sliBeta.value = 0.4; paramBetaStar = 0.4; lblBeta.innerText = "0.40 m";
  sliRampSpeed.value = 0.05; paramRampSpeed = 0.05; lblRampSpeed.innerText = "0.05 T/s (Sicher)"; lblRampSpeed.style.color = "#58a6ff";
  activePhysicsMode="QGP";
- document.querySelectorAll(".cv4-dtab").forEach(t=>t.classList.remove("act"));
- $("dt-alice").classList.add("act"); selDet="ALICE";
- updateReadouts(); drawDetBg(); drawHist();
+ updateReadouts(); selectDetector("ALICE");
  setStatus("PRESET GELADEN: Blei-Ionen-Kollision zur Erzeugung des Quark-Gluon-Plasmas in ALICE", "on");
 });
 
@@ -146,9 +153,7 @@ btnPreLhcb.addEventListener("click",()=>{
  sliBeta.value = 0.6; paramBetaStar = 0.6; lblBeta.innerText = "0.60 m";
  sliRampSpeed.value = 0.05; paramRampSpeed = 0.05; lblRampSpeed.innerText = "0.05 T/s (Sicher)"; lblRampSpeed.style.color = "#58a6ff";
  activePhysicsMode="LHCB";
- document.querySelectorAll(".cv4-dtab").forEach(t=>t.classList.remove("act"));
- $("dt-lhcb").classList.add("act"); selDet="LHCB";
- updateReadouts(); drawDetBg(); drawHist();
+ updateReadouts(); selectDetector("LHCB");
  setStatus("PRESET GELADEN: CP-Verletzung & Schönheit (B-Physik p-p Kollision bei 13 TeV in LHCb)", "on");
 });
 
@@ -160,10 +165,8 @@ btnPrePilot.addEventListener("click",()=>{
  sliBeta.value = 1.5; paramBetaStar = 1.5; lblBeta.innerText = "1.50 m";
  sliRampSpeed.value = 0.02; paramRampSpeed = 0.02; lblRampSpeed.innerText = "0.02 T/s (Sicher)"; lblRampSpeed.style.color = "#58a6ff";
  activePhysicsMode="PILOT";
- document.querySelectorAll(".cv4-dtab").forEach(t=>t.classList.remove("act"));
- $("dt-atlas").classList.add("act"); selDet="ATLAS";
- updateReadouts(); drawDetBg(); drawHist();
- setStatus("PRESET GELADEN: Pilot-Strahl (Inbetriebnahme des LHC auf Injektionsniveau)", "on");
+ updateReadouts(); selectDetector("ATLAS");
+ setStatus("PRESET GELADEN: Pilot-Strahl (Inbetriebnahme · 0.45 TeV — zu wenig Energie für Entdeckungen)", "on");
 });
 
 btnAutoColl.addEventListener("click", toggleAutoCollide);
