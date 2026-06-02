@@ -50,7 +50,10 @@ Zelle 4 oder `cern/app/index.html` von Hand editieren (beide generiert).
 - Build/Sync: `npm run build` → `build/app.bundle.js` (esbuild, IIFE). `scripts/sync_widget.py`
   baut das Bundle und injiziert es in Notebook-Zelle 4 (self-contained) + `build/widget_bundle.html`
   + `cern/app/index.html` (Standalone). `main.js` bootet idempotent bei DOM-Ready (löst die Jupyter-Race).
-- Headless-Tests: `tests/app-boot.test.mjs` (esbuild-Bundle) + `tests/widget-boot.test.mjs`.
+- Headless-Tests (30, alle grün): `tests/physics.test.mjs` (importiert `src/`-Module direkt:
+  Signifikanz ∝ √N, Rate ∝ I²/β*, PDG-Klassifikation), `tests/interactions.test.mjs`
+  (Tabs/SVG-Hits/Info-Panel/Slider/Presets im esbuild-Bundle) + Boot-Sonden
+  `app-boot.test.mjs`/`widget-boot.test.mjs`.
 
 ## Standard-Befehle
 ```

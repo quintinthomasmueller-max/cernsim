@@ -9,27 +9,27 @@
 
 ## 🟢 STATUS / RESUME HERE
 
-- **Aktive Phase:** Phase 3 (Headless-Test-Suite als Default) — **offen**.
+- **Aktive Phase:** Phase 4 (Curriculum-Visualisierungen → App-Komponenten) — **offen**.
 - **Entscheidungen:** gelockt (siehe „Gelockte Entscheidungen"). Modul-Modell = **leichter Namespace** (`App`-Objekt).
-- **Zuletzt erledigt (Phase 2 ABGESCHLOSSEN):** Notebook-Zelle 4 ist jetzt ein **Mini-Loader**:
-  `sync_widget.py#build_iframe_cell` bettet die gebaute App als **`<iframe srcdoc="…">`** ein
-  (eigener DOM/Origin → Jupyter-Race & getElementById-Kollisionen prinzipiell weg). Höhe via
-  **postMessage-Auto-Resizer** (`RESIZE_REPORTER` im iframe meldet `cernV4Height` → Loader skaliert;
-  Fallback `FALLBACK_H=1040px`, falls Umgebung das blockiert — App läuft trotzdem, da srcdoc-Scripts
-  ausführen). `srcdoc`-Escaping nur `&`/`"`; `id="cern-v4"`-Marker bleibt (escaped) erhalten →
-  Zellen-Finder + Re-Sync idempotent. `check.sh` komplett grün; `.ipynb`-Diff jetzt Mini-Loader
-  statt ~1700 Zeilen Inline-Widget.
-  **Phase-1-Rest weiterhin offen:** einmalige **visuelle** Jupyter-Kontrolle (Boot, Klicks, iframe-
-  Höhe) — nur headless verifiziert; auf Nutzer-Anfrage durchführen.
-- **Nächster Schritt (Phase 3):** Interaktions-/Physik-Logik-Tests ausbauen (alle Buttons/Tabs/
-  SVG-Hits + `getSignificance ∝ √N`, Rate `∝ Intensität²/β*`, Klassifikation trifft PDG-Fenster);
-  `check.sh` macht Browser endgültig zur Ausnahme.
+- **Zuletzt erledigt (Phase 3 ABGESCHLOSSEN):** Headless-Test-Suite ausgebaut → **30 Tests / 4 Dateien**,
+  alle grün: `tests/physics.test.mjs` (importiert `src/`-Module direkt; Signifikanz ∝ √N inkl.
+  5·√(N/target) & Energie-Schwelle, Rate ∝ I²/β* deterministisch, Klassifikation Z⁰/J-ψ/Υ/Untergrund/
+  Higgs-Kanal), `tests/interactions.test.mjs` (Tabs, SVG-Hits grp-*/hit-*, Info-Panel auf/zu,
+  Param-Info-Akkordeon, Tempo-Toggle, Slider inkl. Quench-Warnung, Pilot/Higgs-Presets) plus die
+  bestehenden Boot-Sonden. `check.sh` (esbuild+sync+node --check+nbformat/ast+vitest) grün.
+- **Visuelle Kontrolle Phase 1+2 DURCHGEFÜHRT (✅):** Standalone `index.html` bootet
+  (`__cernBooted`, 62 SVG-Kinder, keine Konsolenfehler), Presets/Tabs/Geo-Toggle reagieren;
+  iframe-srcdoc-Simulation bootet **im iframe** isoliert und der postMessage-Auto-Resizer skaliert
+  die Höhe korrekt (Screenshots gesichtet). Damit sind Phase 1 & 2 auch visuell bestätigt.
+- **Nächster Schritt (Phase 4):** erste Curriculum-Visualisierung als App-Komponente
+  (Vorschlag: **geo-korrektes Overlay** als risikoarmer Einstieg, siehe Anhang
+  „🗺️ Karten-Geo-Genauigkeit"); inkrementell, je Komponente Tests + 1× visuell.
 
 **Fortschritt:**
 - [x] Phase 0 — Headless-Sonde (risikolos, kein Architekturwechsel) ✅
-- [x] Phase 1 — Toolchain (esbuild+Vitest) + Modul-Isolation (ES-Module) ✅ (visueller Check noch offen)
-- [x] Phase 2 — Notebook bettet die gebaute App per `<iframe srcdoc>` ein ✅ (visueller Check noch offen)
-- [ ] Phase 3 — Headless-Test-Suite (Interaktion + Physik-Logik) als Default-Verifikation
+- [x] Phase 1 — Toolchain (esbuild+Vitest) + Modul-Isolation (ES-Module) ✅ (visuell bestätigt)
+- [x] Phase 2 — Notebook bettet die gebaute App per `<iframe srcdoc>` ein ✅ (visuell bestätigt)
+- [x] Phase 3 — Headless-Test-Suite (Interaktion + Physik-Logik) als Default-Verifikation ✅
 - [ ] Phase 4 — Curriculum-Visualisierungen → App-Komponenten
 - [ ] Phase 5 — Cleanups (Pfade generieren, `.py`-Spiegel ohne Widget, Legacy entfernen)
 
@@ -143,10 +143,12 @@ umstellen (Zelle 4/Standalone/iframe) und die alten `cern/app/*.js` entfernen.
 - **Verifikation:** headless grün (`check.sh`, Finder/Re-Sync idempotent); **1× visuell in Jupyter
   noch offen** (Boot/Klicks/iframe-Höhe) — auf Nutzer-Anfrage.
 
-### Phase 3 — Headless-Test-Suite als Default
-- Interaktionstests (jsdom) für alle Buttons/Tabs/SVG-Hits **+ Physik-Logik-Tests**:
-  `getSignificance ∝ √N`, Rate `∝ Intensität²/β*`, Klassifikation trifft PDG-Fenster.
-- `check.sh` ruft `npm run build && npm test`. Browser nur noch Ausnahme (Pixel/Layout).
+### Phase 3 — Headless-Test-Suite als Default ✅
+- ~~Interaktionstests (jsdom) für alle Buttons/Tabs/SVG-Hits **+ Physik-Logik-Tests**:
+  `getSignificance ∝ √N`, Rate `∝ Intensität²/β*`, Klassifikation trifft PDG-Fenster.~~
+  **Erledigt:** `tests/physics.test.mjs` (importiert `src/`-Module direkt) +
+  `tests/interactions.test.mjs` (esbuild-Bundle in jsdom) + Boot-Sonden = **30 Tests**.
+- `check.sh` baut (via `sync_widget.py`→esbuild) und läuft `vitest`. Browser nur noch Ausnahme.
 
 ### Phase 4 — Curriculum-Visualisierungen → App
 - Interaktive/visuelle Teile der Python-Zellen (Z⁰-Fit, Higgs→4ℓ, Spektren …) als
