@@ -9,26 +9,26 @@
 
 ## 🟢 STATUS / RESUME HERE
 
-- **Aktive Phase:** Phase 2 (Notebook bettet App per `<iframe srcdoc>` ein) — **offen**.
+- **Aktive Phase:** Phase 3 (Headless-Test-Suite als Default) — **offen**.
 - **Entscheidungen:** gelockt (siehe „Gelockte Entscheidungen"). Modul-Modell = **leichter Namespace** (`App`-Objekt).
-- **Zuletzt erledigt (Phase 1 ABGESCHLOSSEN):** ALLE Module nach `cern/app/src/` als echte
-  ES-Module konvertiert (`core/geometry/state/engine/display/spectrum/info/handlers` + neuer Entry
-  `src/main.js` mit `initDom()` + idempotentem Bootstrap; ersetzt `__cernInit`). `npm run build`
-  → `build/app.bundle.js` (esbuild IIFE). `sync_widget.py` baut jetzt das esbuild-Bundle und
-  injiziert es in Zelle 4 / `index.html` / `widget_bundle.html` (alte IIFE-Slice-Konkatenation weg).
-  **Legacy `cern/app/{geometry,state,engine,display,spectrum,info,handlers}.js` entfernt.**
-  Neuer Test `tests/app-boot.test.mjs` (esbuild-Bundle) + bestehender `widget-boot.test.mjs` grün.
-  `bash scripts/check.sh` (esbuild+sync+node --check+nbformat/ast+vitest) komplett grün.
-  **Noch offen aus Phase 1:** einmalige **visuelle** Browser-Kontrolle (Refactor war riskant) —
-  bisher nur headless verifiziert; auf Nutzer-Anfrage durchführen.
-- **Nächster Schritt (Phase 2):** `sync_widget.py` so umstellen, dass Zelle 4 ein **Mini-Loader**
-  wird, der `build/app.bundle.js`+CSS+Markup als `<iframe srcdoc="…">` einbettet (Höhe/Resize,
-  `id="cern-v4"`-Marker behalten). Folge: Jupyter-Race endgültig weg + Mini-Diffs im `.ipynb`.
+- **Zuletzt erledigt (Phase 2 ABGESCHLOSSEN):** Notebook-Zelle 4 ist jetzt ein **Mini-Loader**:
+  `sync_widget.py#build_iframe_cell` bettet die gebaute App als **`<iframe srcdoc="…">`** ein
+  (eigener DOM/Origin → Jupyter-Race & getElementById-Kollisionen prinzipiell weg). Höhe via
+  **postMessage-Auto-Resizer** (`RESIZE_REPORTER` im iframe meldet `cernV4Height` → Loader skaliert;
+  Fallback `FALLBACK_H=1040px`, falls Umgebung das blockiert — App läuft trotzdem, da srcdoc-Scripts
+  ausführen). `srcdoc`-Escaping nur `&`/`"`; `id="cern-v4"`-Marker bleibt (escaped) erhalten →
+  Zellen-Finder + Re-Sync idempotent. `check.sh` komplett grün; `.ipynb`-Diff jetzt Mini-Loader
+  statt ~1700 Zeilen Inline-Widget.
+  **Phase-1-Rest weiterhin offen:** einmalige **visuelle** Jupyter-Kontrolle (Boot, Klicks, iframe-
+  Höhe) — nur headless verifiziert; auf Nutzer-Anfrage durchführen.
+- **Nächster Schritt (Phase 3):** Interaktions-/Physik-Logik-Tests ausbauen (alle Buttons/Tabs/
+  SVG-Hits + `getSignificance ∝ √N`, Rate `∝ Intensität²/β*`, Klassifikation trifft PDG-Fenster);
+  `check.sh` macht Browser endgültig zur Ausnahme.
 
 **Fortschritt:**
 - [x] Phase 0 — Headless-Sonde (risikolos, kein Architekturwechsel) ✅
 - [x] Phase 1 — Toolchain (esbuild+Vitest) + Modul-Isolation (ES-Module) ✅ (visueller Check noch offen)
-- [ ] Phase 2 — Notebook bettet die gebaute App per `<iframe srcdoc>` ein
+- [x] Phase 2 — Notebook bettet die gebaute App per `<iframe srcdoc>` ein ✅ (visueller Check noch offen)
 - [ ] Phase 3 — Headless-Test-Suite (Interaktion + Physik-Logik) als Default-Verifikation
 - [ ] Phase 4 — Curriculum-Visualisierungen → App-Komponenten
 - [ ] Phase 5 — Cleanups (Pfade generieren, `.py`-Spiegel ohne Widget, Legacy entfernen)
@@ -134,12 +134,14 @@ das Bundle + `shell.html`-Markup laufen lassen; bei grün `sync_widget.py` auf d
 umstellen (Zelle 4/Standalone/iframe) und die alten `cern/app/*.js` entfernen.
 - **Verifikation:** `npm test` grün **+ einmalig visuell** (Refactor ist riskant).
 
-### Phase 2 — iframe-Einbettung
-- `sync_widget.py` umstellen: Notebook-Zelle(n) werden **Mini-Loader**, die `dist/` als
+### Phase 2 — iframe-Einbettung ✅
+- ~~`sync_widget.py` umstellen: Notebook-Zelle(n) werden **Mini-Loader**, die die App als
   `<iframe srcdoc="…">` einbetten (Höhe/Resize beachten). `id="cern-v4"`-Marker beibehalten,
-  damit der Zellen-Finder greift.
+  damit der Zellen-Finder greift.~~ **Erledigt:** `build_iframe_cell()` + `RESIZE_REPORTER`
+  (postMessage-Auto-Höhe, Fallback `FALLBACK_H`); `esc_srcdoc` escapet nur `&`/`"`.
 - Folge: Jupyter-Race weg; **Mini-Diffs** im `.ipynb` (nur Loader, nicht 1700 Zeilen).
-- **Verifikation:** einmal in Jupyter öffnen + klicken; danach headless.
+- **Verifikation:** headless grün (`check.sh`, Finder/Re-Sync idempotent); **1× visuell in Jupyter
+  noch offen** (Boot/Klicks/iframe-Höhe) — auf Nutzer-Anfrage.
 
 ### Phase 3 — Headless-Test-Suite als Default
 - Interaktionstests (jsdom) für alle Buttons/Tabs/SVG-Hits **+ Physik-Logik-Tests**:
@@ -150,9 +152,13 @@ umstellen (Zelle 4/Standalone/iframe) und die alten `cern/app/*.js` entfernen.
 - Interaktive/visuelle Teile der Python-Zellen (Z⁰-Fit, Higgs→4ℓ, Spektren …) als
   App-Komponenten nachbauen; Notebook behält Narrativ + bettet Komponenten per iframe ein.
 - **Inkrementell**: eine Komponente nach der anderen, jeweils Tests + 1× visuell.
+- **Geo-Overlay als eigene Komponente** (geringes Risiko, hoher didaktischer Wert): das
+  handdigitalisierte Overlay (Lac Léman/Grenze/Jura) durch ein **offline geo-projiziertes**
+  Overlay ersetzen. Vollständiger Befund + Plan: Anhang **„🗺️ Karten-Geo-Genauigkeit"**.
 
 ### Phase 5 — Cleanups
-- Hardcodierte SVG-Pfade (`lhc-pipe1/2`, je ~4 KB) zur Laufzeit aus `R.LHC` **generieren**.
+- Hardcodierte SVG-Pfade (`lhc-pipe1/2`, je ~4 KB) zur Laufzeit aus `R.LHC` **generieren**;
+  für den **geo-genauen** Ring-Umriss siehe Anhang „🗺️ Karten-Geo-Genauigkeit".
 - Widget aus dem `.py`-Spiegel ausnehmen (jupytext nur fürs Curriculum) → keine 166-KB-Dublette.
 - Legacy entfernen (`cern/scripts/create_notebook.py`?), Docs final, `AGENTS.md`/`CLAUDE.md` glätten.
 
@@ -178,3 +184,59 @@ umstellen (Zelle 4/Standalone/iframe) und die alten `cern/app/*.js` entfernen.
 4. Bei Unklarheit über Scope: erst fragen, nicht raten. Entscheidungen oben sind gelockt.
 
 *Vorgeschichte/Detaildiagnose: `docs/agent-workflow-plan.md` (älter, durch dieses Dokument abgelöst).*
+
+---
+
+## 🗺️ Karten-Geo-Genauigkeit (Befund + Plan, gehört zu Phase 4/5)
+
+**Auslöser:** Vorschlag, die Beschleuniger-Karte über echte OSM-Daten (Overpass API) +
+Web-Mercator-Projektion (EPSG:3857) geografisch korrekt zu machen (LHC/SPS/PS/PSB + Lac Léman
++ CH/FR-Grenze).
+
+### Kernbefund: Geo-Treue ⟂ Didaktik (bei den Beschleunigern)
+Maßstabsgetreue Größenverhältnisse machen die Injektoren unsichtbar und damit den Füll-/Flow-
+Effekt (wandernde Bunches) unmöglich:
+
+| Ring | reale Ø | Verhältnis zum LHC | heute (r, SVG) | Verhältnis |
+|---|---|---|---|---|
+| LHC | 8 486 m | 1,0 | 180 | 1,0 |
+| SPS | 2 200 m | **0,26** | 52 | 0,29 ✓ (zufällig ok) |
+| PS | 200 m | **0,024** | 38 | 0,21 (~9× zu groß) |
+| PSB/LEIR | ~50 m | **0,006** | 18 | 0,10 (~17× zu groß) |
+
+Maßstäblich wäre der PS ein ~4-px-Punkt, der Booster praktisch unsichtbar. Zudem liegen
+PS/SPS/Booster real **nicht konzentrisch im LHC**, sondern als kleiner Cluster **tangential am
+Rand** (Meyrin, CH-Seite). Die heutige „verschachtelte Ringe"-Darstellung ist also bewusst
+schematisch — didaktisch korrekt, geografisch falsch. **Fazit: nicht maßstabsgetreu beibehalten,
+aber ehrlich labeln** (Invariante „Physik/Geometrie ehrlich").
+
+### Bug im vorgeschlagenen Referenz-Code (wichtig)
+Die Mercator-Formeln sind richtig (konform → Kreise bleiben Kreise; Verzerrung über ~10 km
+vernachlässigbar). **Aber** die Beispiel-`to_svg_coords` skaliert X und Y **unabhängig**
+(`(x-minx)/Δx*width` bzw. `…*height`) → zerstört das Seitenverhältnis und macht aus dem runden
+LHC eine Ellipse, sobald `width/height ≠ Δx/Δy`. **Korrekt:** *uniformer* Faktor
+`s = min(width/Δx, height/Δy)` + Zentrierung — genau das tut `d3.geoMercator().fitSize()`.
+Über 0,2° Breite ist EPSG:3857 ohnehin Overkill; lokale equirektanguläre Projektion
+(`x=lon·cos(lat₀)`, `y=lat`) wäre visuell identisch.
+
+Weitere Risiken: feste OSM-IDs (`way(310046324)` …) sind **nicht versionsstabil** (LHC ist in
+OSM eher eine *relation*); und das Widget läuft **offline im Notebook-iframe** → Overpass darf
+**nur zur Build-/Preprocessing-Zeit** laufen, **nie** zur Laufzeit.
+
+### Empfehlung: zwei Ebenen mit unterschiedlichem Wahrheitsanspruch
+- **Ebene A — Geo-Overlay „Wo steht der LHC?" (echte Projektion lohnt sich):** Lac Léman,
+  Staatsgrenze, Jura, FR/CH, Campusse **und LHC-Ring-Umriss** in *einer* gemeinsamen Projektion
+  mit **uniformer** Skalierung. Macht die relative Lage See/Grenze ↔ Ring ehrlich; der echte
+  achteckige Ringverlauf (8 Bögen + 8 Geraden) kommt gratis mit. → **Phase 4** als Komponente.
+- **Ebene B — operatives Schema (bleibt nicht maßstäblich):** Kette PSB→PS→SPS→LHC + wandernde
+  Bunches, Injektoren bewusst 10–40× vergrößert. Bester Kompromiss: **Topologie/Orientierung
+  korrekt, Größe falsch** (Detektoren IP1/2/5/8 + Injektor-Einspeisung relativ zu See/Grenze in
+  die richtige Himmelsrichtung). Klar labeln: „schematisch, nicht maßstabsgetreu".
+
+### Pipeline (offline, ohne Laufzeit-Netz)
+Overpass-Query → `d3.geoMercator().fitSize()` (oder GeoPandas `.to_crs(3857)`) **offline** →
+projizierte Polylines als **statische** SVG-`<path>` in `shell.html` backen (wie `lhc-pipe1/2`
+schon gebacken sind). Passt zur `geo-element`-Struktur und zur Phase-5-Idee „Pfade generieren".
+
+**Einordnung:** kein Phase-1/2/3-Thema. Erster risikoarmer Schritt = Ebene A (geo-korrektes
+Overlay) in Phase 4; maßstäbliche Beschleuniger-Größen werden **bewusst nicht** übernommen.

@@ -50,6 +50,41 @@ def build_standalone():
             '<link rel="stylesheet" href="styles.css"></head><body>'
             + body + '</body></html>')
 
+# Höhen-Reporter (läuft IM iframe-Dokument): meldet die tatsächliche Inhaltshöhe
+# per postMessage an die Notebook-Seite, damit der Loader das iframe exakt skaliert.
+RESIZE_REPORTER = (
+    "<script>(function(){function r(){try{var h=Math.ceil("
+    "document.getElementById('cern-v4')?document.getElementById('cern-v4').getBoundingClientRect().height"
+    ":document.documentElement.scrollHeight);"
+    "parent.postMessage({cernV4Height:h},'*');}catch(e){}}"
+    "window.addEventListener('load',r);setTimeout(r,250);setTimeout(r,1200);"
+    "if(window.ResizeObserver){new ResizeObserver(r).observe(document.body);}})();</script>"
+)
+
+FALLBACK_H = 1040  # px – greift, falls postMessage in einer Umgebung blockiert ist
+
+def esc_srcdoc(s):
+    """Für das srcdoc-Attribut nur & und das Anführungszeichen escapen
+    (< und > sind in Attributwerten zulässig und bleiben unangetastet)."""
+    return s.replace('&', '&amp;').replace('"', '&quot;')
+
+def build_iframe_cell(inner):
+    """Notebook-Zelle als Mini-Loader: bettet die gebaute App per <iframe srcdoc> ein.
+    Eigener DOM/Origin → keine Jupyter-Script-Race, keine getElementById-Kollisionen.
+    Der `cern-v4`-Marker bleibt im (escapeten) srcdoc enthalten → Zellen-Finder greift."""
+    doc = ('<!doctype html><html><head><meta charset="utf-8">'
+           '<style>html,body{margin:0;background:#0d1117}</style></head><body>'
+           + inner + RESIZE_REPORTER + '</body></html>')
+    iframe = ('<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no" '
+              'style="width:100%;height:' + str(FALLBACK_H) + 'px;border:0;display:block;'
+              'overflow:hidden;background:#0d1117" '
+              'srcdoc="' + esc_srcdoc(doc) + '"></iframe>')
+    listener = ("<script>(function(){var f=document.getElementById('cern-v4-frame');"
+                "if(!f)return;window.addEventListener('message',function(e){"
+                "if(e.source===f.contentWindow&&e.data&&e.data.cernV4Height){"
+                "f.style.height=(e.data.cernV4Height+6)+'px';}});})();</script>")
+    return iframe + listener
+
 def main():
     # Resonanztabelle aus physics.json in data.js.reso spiegeln (Single Source of Truth),
     # damit das gebündelte Widget garantiert dieselben Werte wie Python nutzt.
@@ -64,12 +99,14 @@ def main():
     esbuild()
 
     inner = build_inner()
-    assert "'''" not in inner, "Inhalt enthält ''' — bricht den Python-Rohstring!"
 
-    # 1) Notebook-Zelle 4
+    # 1) Notebook-Zelle 4 = Mini-Loader (iframe srcdoc). Phase 2 der Migration:
+    #    die App lebt in einem isolierten iframe-Dokument (eigener DOM/Origin).
+    payload = build_iframe_cell(inner)
+    assert "'''" not in payload, "Inhalt enthält ''' — bricht den Python-Rohstring!"
     nb = json.load(open(NB))
     wi = next(i for i, c in enumerate(nb['cells']) if "cern-v4" in ''.join(c['source']))
-    cell = "display(HTML(r'''" + inner + "'''))\n"
+    cell = "display(HTML(r'''" + payload + "'''))\n"
     nb['cells'][wi]['source'] = cell.splitlines(keepends=True)
     nb['cells'][wi]['outputs'] = []
     nb['cells'][wi]['execution_count'] = None
@@ -84,7 +121,7 @@ def main():
     # 3) cern/app/index.html
     open(os.path.join(APP, 'index.html'), 'w').write(build_standalone())
 
-    print(f"sync OK | Zelle 4: {len(inner):,} B | JS: {len(build_js()):,} B")
+    print(f"sync OK | Zelle 4 (iframe): {len(payload):,} B | App-Doc: {len(inner):,} B | JS: {len(build_js()):,} B")
     # optionaler Byte-Vergleich gegen Referenz
     ref = sys.argv[1] if len(sys.argv) > 1 else None
     if ref and os.path.exists(ref):
