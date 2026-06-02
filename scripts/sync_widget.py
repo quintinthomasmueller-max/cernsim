@@ -36,10 +36,14 @@ def build_inner():
                  .replace('{{SCRIPT}}', '<script>' + js + '</script>'))
 
 def build_standalone():
-    """Standalone-App mit VERLINKTEN Dateien (für cern/app/index.html)."""
+    """Standalone-App für cern/app/index.html.
+    WICHTIG: Das JS MUSS als EIN <script> gebündelt werden — die Module sind Slices
+    EINER gemeinsamen Funktion (geometry.js öffnet __cernInit, handlers.js schließt
+    + Bootstrap). Als getrennte <script src> wäre jede Datei für sich ein Syntaxfehler
+    (unbalancierte Klammern) → es würde NICHTS initialisiert. CSS bleibt verlinkt."""
     shell = read('shell.html')
     body  = (shell.replace('{{STYLES}}', '')
-                  .replace('{{SCRIPT}}', ''.join(f'<script src="{m}"></script>' for m in JS_MODULES)))
+                  .replace('{{SCRIPT}}', '<script>' + build_js() + '</script>'))
     return ('<!doctype html><html><head><meta charset="utf-8">'
             '<link rel="stylesheet" href="styles.css"></head><body>'
             + body + '</body></html>')

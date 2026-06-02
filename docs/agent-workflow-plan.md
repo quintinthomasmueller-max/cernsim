@@ -1,5 +1,10 @@
 # Plan: Agent-Workflow-Optimierung (Token & Zeit)
 
+> ⚠️ **Abgelöst durch [`docs/MIGRATION.md`](MIGRATION.md)** (App-First-Architektur, gelockte
+> Entscheidungen, Phasen + Status). Dieses Dokument bleibt als historische Diagnose erhalten.
+> Teil A (Modularisierung von `cern/app/`) ist umgesetzt; Teil B (Headless-Tests/Debug-Hook)
+> ist in die Migration übernommen.
+
 Ziel: kleine Features/Fixes am CERN-Notebook deutlich billiger & schneller machen.
 Drei Hebel: **Architektur** (editierbare Dateien), **Verifikation** (headless-default),
 **Doku** (`AGENTS.md`, bereits erstellt).

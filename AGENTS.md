@@ -60,4 +60,13 @@ Vor jedem Commit oder jeder Antwort an den User muss der Agent folgende Fragen p
 2.  **Ist das Design premium?** Sieht die UI aus wie ein echtes Kontrollzentrum oder wie ein langweiliges MVP? (Glow-Effekte aktiv? Keine Standard-HTML-Buttons!)
 3.  **Ist die Modularität gewahrt?** Werden mathematische Berechnungen über `cern_utils.py` ausgeführt, anstatt sie redundant in den Notebooks zu implementieren?
 4.  **Ist der Code agentenfreundlich?** Wurden neue Funktionen und Geometrien sofort in der `TOOLS.md` dokumentiert, damit der nächste Agent darauf aufbauen kann?
->>>>>>> 8406760 (add missing files)
+
+---
+
+## 🧭 Aktiver Architektur-Umbau
+
+Das Projekt migriert auf eine **App-First-Architektur** (Web-App = primäres Artefakt,
+`esbuild`+`Vitest` Headless-Tests, Notebook bettet per `<iframe srcdoc>` ein).
+**Autoritativer, fortsetzbarer Plan inkl. Status: [`docs/MIGRATION.md`](docs/MIGRATION.md)** —
+dort `STATUS / RESUME HERE` lesen, bevor du am Widget/Notebook arbeitest. Praktische Karte +
+Befehle stehen in `CLAUDE.md`.

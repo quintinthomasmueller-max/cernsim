@@ -243,4 +243,37 @@ window.addEventListener("resize", ()=>{
  resizeCanvases(); drawDetBg(); drawHist();
 });
 
+}; // Ende __cernInit
+
+// ═══════════════════════════════════════════════════════════════════════════
+// BOOTSTRAP — robust gegen Jupyter-Timing.
+// Problem: display(HTML(...)) führt das <script> häufig aus, BEVOR der Widget-DOM
+// im Dokument hängt. Dann ist getElementById(...) = null und die komplette
+// Initialisierung (alle Buttons/SVG-Klicks/Tabs) scheitert lautlos — nur die
+// nativen <input type=range>-Regler "funktionieren" scheinbar (Browser-Eigenleben).
+// Lösung: erst initialisieren, wenn der Widget-Root + Schlüssel-Elemente da sind;
+// idempotent pro DOM-Knoten (kein Doppel-Listener bei Re-Render).
+// ═══════════════════════════════════════════════════════════════════════════
+(function(){
+ function ready(){
+  return document.getElementById("cern-v4")
+      && document.getElementById("svg")
+      && document.getElementById("btn-auto");
+ }
+ function boot(){
+  var root = document.getElementById("cern-v4");
+  if(!root || root.__cernBooted || !ready()) return !!(root && root.__cernBooted);
+  root.__cernBooted = true;
+  try { __cernInit(); }
+  catch(e){ try { console.error("[CERN-Widget] Init fehlgeschlagen:", e); } catch(_){} }
+  return true;
+ }
+ if(!boot()){
+  // DOM noch nicht bereit → kurz pollen (bis ~5 s), dann aufgeben.
+  var n = 0, iv = setInterval(function(){ if(boot() || ++n > 200) clearInterval(iv); }, 25);
+  // Zusätzlich an den üblichen Ready-Signalen aufhängen.
+  if(document.readyState === "loading"){
+   document.addEventListener("DOMContentLoaded", boot);
+  }
+ }
 })();

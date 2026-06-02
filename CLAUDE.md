@@ -4,6 +4,12 @@ Didaktisches Jupyter-Notebook (Begabtenkurs Teilchenphysik): 7-teiliges Curricul
 CMS-Open-Data + eingebettetem interaktivem „Stellwerk"-Widget (HTML/JS-Canvas).
 Hauptdatei: `cern/notebooks/CERN_Beschleuniger_Schaltzentrale.ipynb`.
 
+> 🧭 **AKTIVER UMBAU — zuerst `docs/MIGRATION.md` lesen (Abschnitt STATUS / RESUME HERE).**
+> Wir migrieren auf eine App-First-Architektur (Web-App als primäres Artefakt, esbuild+Vitest
+> headless-Tests, Notebook bettet per `<iframe srcdoc>` ein). Der fortsetzbare Plan + Status
+> leben in `docs/MIGRATION.md` — der Chat kann gecleart werden, ohne dass der Plan verloren geht.
+> Die untenstehende „Karte"/„Widget editieren" beschreibt den **Ist-Zustand** bis zum Umbau.
+
 ## ⚡ Verifikations-Politik (WICHTIG — spart Quota)
 - **Standard = headless.** Pro Änderung nur:
   1. `node --check` auf das extrahierte/gebündelte JS,
@@ -37,8 +43,11 @@ Quelle der Wahrheit: `cern/app/`. **Niemals** Zelle 4 von Hand editieren.
 - Danach **immer**: `bash scripts/check.sh` (führt sync aus + node --check + nbformat/ast).
 - `scripts/sync_widget.py` bündelt `cern/app/*` → Notebook-Zelle 4 (self-contained) +
   `build/widget_bundle.html` + `cern/app/index.html` (Standalone-App).
-- Hinweis: Module sind geordnete Slices EINER IIFE (gemeinsame Closure). Einzeln nicht
-  node-prüfbar — `node --check` läuft auf dem gebündelten `build/widget.js` (via check.sh).
+- Hinweis: Module sind geordnete Slices EINER Funktion `__cernInit` (gemeinsame Closure;
+  `geometry.js` öffnet, `handlers.js` schließt + ruft sie via Bootstrap erst bei DOM-Ready auf).
+  Einzeln **nicht** node-prüfbar (Syntaxfehler je Datei) — `node --check` läuft auf dem
+  gebündelten `build/widget.js` (via check.sh). `index.html` bündelt das JS als EIN inline-`<script>`
+  (getrennte `<script src>` wären kaputt). **Phase 1 der Migration löst genau diese Fragilität auf.**
 
 ## Standard-Befehle
 ```

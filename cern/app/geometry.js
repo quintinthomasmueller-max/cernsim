@@ -1,4 +1,8 @@
-(function(){
+// Gesamte Widget-Logik als benannte Funktion (NICHT sofort ausführen!).
+// Der Bootstrap am Ende von handlers.js ruft sie erst auf, wenn der Widget-DOM
+// wirklich im Dokument hängt — sonst liefert getElementById(…) in Jupyter null
+// (Script läuft oft vor dem DOM) und die ganze Initialisierung bricht ab.
+var __cernInit = function(){
 const SVG_NS="http://www.w3.org/2000/svg";
 const svg=document.getElementById("svg");
 
