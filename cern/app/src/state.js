@@ -25,6 +25,10 @@ Object.assign(App.state, {
   paramRampSpeed: 0.05,      // Magnetfeld-Ramp-Rate (T/s)
   squeezing: false, squeezed: false, cryoRecovery: false,
   autoCollInterval: null,
+  // Ablaufsteuerung (vormals implizite Globals im IIFE-Closure)
+  resetFlag: false, autopilotActive: false,
+  // Canvas-Maße / High-DPI (dpr bei Boot aus window.devicePixelRatio gesetzt)
+  dpr: 1, evW: 340, evH: 180, histW: 340, histH: 130,
 });
 
 // Didaktisches Geschwindigkeitsmodell: visuelle Bahngeschwindigkeit steigt monoton

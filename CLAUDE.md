@@ -32,27 +32,32 @@ Hauptdatei: `cern/notebooks/CERN_Beschleuniger_Schaltzentrale.ipynb`.
   `lade_dimuon_4vektoren`, `dimuon_invariante_masse`, `lade_higgs_4l`).
 - **Echte Daten**: `cern/data/cms_dimuon_subset.csv` (12 000 Events — **nie ganz lesen**).
 
-## Widget editieren (NEU — modular)
-Quelle der Wahrheit: `cern/app/`. **Niemals** Zelle 4 von Hand editieren.
-- Relevante Datei direkt mit dem **Edit-Tool** bearbeiten:
-  - `engine.js` — timeScale, getDurations, injectBunch, flowStep, fuellProtokoll, Ramp, LHC-Loop
+## Widget editieren (ES-Module — Phase 1 abgeschlossen)
+Quelle der Wahrheit: `cern/app/src/` (echte ES-Module, einzeln node-prüfbar). **Niemals**
+Zelle 4 oder `cern/app/index.html` von Hand editieren (beide generiert).
+- Geteilter Namespace `App` (`src/core.js`): `App.state` (Querschnittsvariablen), `App.els`
+  (DOM-Refs, bei Boot via `main.js#initDom` befüllt), `App.g` (SVG-Geometrie R/J/paths/nodes),
+  registrierte Funktionen `App.drawHist` usw. Module mutieren `App.*`-Properties (kein Reassign).
+- Relevante Datei in `src/` direkt mit dem **Edit-Tool** bearbeiten:
+  - `engine.js` — timeScale, injectBunch, flowStep, Ramp, Squeeze, LHC-Loop, Readouts (+ `wireEngine`)
   - `display.js` — DETKONFIG, drawDetBg, drawParticle*, drawCollisionEvent, Legende
   - `spectrum.js` — sampleEvent, generateMassData, classify, getSignificance, drawHist
-  - `geometry.js` (SVG/Ringe), `state.js`, `handlers.js` (Listener/Init), `styles.css`, `shell.html`
-  - `data.js` = CERN_REAL-Blob (~37 KB) — **nicht lesen/editieren**, außer Daten ändern sich.
-- Danach **immer**: `bash scripts/check.sh` (führt sync aus + node --check + nbformat/ast).
-- `scripts/sync_widget.py` bündelt `cern/app/*` → Notebook-Zelle 4 (self-contained) +
-  `build/widget_bundle.html` + `cern/app/index.html` (Standalone-App).
-- Hinweis: Module sind geordnete Slices EINER Funktion `__cernInit` (gemeinsame Closure;
-  `geometry.js` öffnet, `handlers.js` schließt + ruft sie via Bootstrap erst bei DOM-Ready auf).
-  Einzeln **nicht** node-prüfbar (Syntaxfehler je Datei) — `node --check` läuft auf dem
-  gebündelten `build/widget.js` (via check.sh). `index.html` bündelt das JS als EIN inline-`<script>`
-  (getrennte `<script src>` wären kaputt). **Phase 1 der Migration löst genau diese Fragilität auf.**
+  - `geometry.js` (R/J → App.g), `state.js` (App.state + getDurations), `info.js` (INFO_DB/PARAM_INFO),
+    `handlers.js` (Listener-Verdrahtung `wireHandlers` + Presets + Füllprotokoll), `main.js` (Boot/initDom)
+  - `../styles.css`, `../shell.html` (CSS/Markup), `../data.js` = CERN_REAL-Blob (~37 KB) —
+    **nicht lesen/editieren**, außer Daten ändern sich (Build spiegelt es nach `src/data.gen.js`).
+- Danach **immer**: `bash scripts/check.sh` (esbuild-Build + sync + node --check + nbformat/ast + vitest).
+- Build/Sync: `npm run build` → `build/app.bundle.js` (esbuild, IIFE). `scripts/sync_widget.py`
+  baut das Bundle und injiziert es in Notebook-Zelle 4 (self-contained) + `build/widget_bundle.html`
+  + `cern/app/index.html` (Standalone). `main.js` bootet idempotent bei DOM-Ready (löst die Jupyter-Race).
+- Headless-Tests: `tests/app-boot.test.mjs` (esbuild-Bundle) + `tests/widget-boot.test.mjs`.
 
 ## Standard-Befehle
 ```
-bash scripts/check.sh          # sync + node --check + jupytext --sync + nbformat.validate + ast.parse (headless)
-python3 scripts/sync_widget.py # nur neu bündeln (Zelle 4 + build/ + index.html)
+bash scripts/check.sh          # esbuild + sync + node --check + jupytext --sync + nbformat/ast + vitest (headless)
+npm run build                  # nur esbuild: cern/app/src/* → build/app.bundle.js
+python3 scripts/sync_widget.py # baut Bundle + injiziert (Zelle 4 + build/ + index.html)
+npx vitest run                 # nur Headless-Tests (jsdom)
 ```
 Standalone-App im Browser (nur bei Layout/Render-Fragen): `cern/app/index.html` öffnen.
 

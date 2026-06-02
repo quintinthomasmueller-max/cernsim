@@ -11,21 +11,27 @@ Erzeugt:
 Nach jeder Änderung an cern/app/*: `python3 scripts/sync_widget.py` ausführen.
 Headless-Verifikation: `bash scripts/check.sh`.
 """
-import json, os, sys
+import json, os, sys, shutil, subprocess
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 APP  = os.path.join(ROOT, 'cern', 'app')
 NB   = os.path.join(ROOT, 'cern', 'notebooks', 'CERN_Beschleuniger_Schaltzentrale.ipynb')
 BUILD= os.path.join(ROOT, 'build')
-
-# Reihenfolge der JS-Module ist BINDEND (gemeinsame IIFE-Closure, kein Hoisting für const).
-JS_MODULES = ['data.js', 'geometry.js', 'state.js', 'engine.js',
-              'display.js', 'spectrum.js', 'info.js', 'handlers.js']
+BUNDLE = os.path.join(BUILD, 'app.bundle.js')   # esbuild-Ausgabe (cern/app/src/* → IIFE)
 
 def read(p): return open(os.path.join(APP, p)).read()
 
+def esbuild():
+    """cern/app/src/* → build/app.bundle.js (ein self-contained IIFE).
+    Ersetzt die alte IIFE-Slice-Konkatenation (Phase 1 der Migration)."""
+    node = shutil.which('node')
+    if not node:
+        raise RuntimeError('node nicht gefunden – für esbuild-Bundle nötig')
+    subprocess.run([node, os.path.join(APP, 'esbuild.mjs')], cwd=ROOT, check=True,
+                   stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+
 def build_js():
-    return ''.join(read(m) for m in JS_MODULES)
+    return open(BUNDLE).read()
 
 def build_inner():
     """Inhalt für die Notebook-Zelle: CSS+JS inline (self-contained)."""
@@ -36,11 +42,7 @@ def build_inner():
                  .replace('{{SCRIPT}}', '<script>' + js + '</script>'))
 
 def build_standalone():
-    """Standalone-App für cern/app/index.html.
-    WICHTIG: Das JS MUSS als EIN <script> gebündelt werden — die Module sind Slices
-    EINER gemeinsamen Funktion (geometry.js öffnet __cernInit, handlers.js schließt
-    + Bootstrap). Als getrennte <script src> wäre jede Datei für sich ein Syntaxfehler
-    (unbalancierte Klammern) → es würde NICHTS initialisiert. CSS bleibt verlinkt."""
+    """Standalone-App für cern/app/index.html: esbuild-Bundle inline, CSS verlinkt."""
     shell = read('shell.html')
     body  = (shell.replace('{{STYLES}}', '')
                   .replace('{{SCRIPT}}', '<script>' + build_js() + '</script>'))
@@ -57,6 +59,9 @@ def main():
         gen_constants.write()
     except Exception as e:
         print(f"⚠ gen_constants übersprungen ({e}) – data.js.reso evtl. nicht synchron")
+
+    # Bundle frisch bauen (liest cern/app/src/* + spiegelt data.js → src/data.gen.js).
+    esbuild()
 
     inner = build_inner()
     assert "'''" not in inner, "Inhalt enthält ''' — bricht den Python-Rohstring!"

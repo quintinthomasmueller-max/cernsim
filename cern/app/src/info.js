@@ -1,7 +1,10 @@
 // ═══════════════════════════════════════════════════════════════════════════
 // INFO PANELS — Wikipedia-Stil Overlay für Beschleuniger & Detektoren
 // Einheitliche Stat-Struktur: [Energie/Maße, β-Bereich / Kollisions-E., Gebaut/Gewicht]
+// Self-contained: greift den DOM zur Klick-Zeit per document.getElementById.
 // ═══════════════════════════════════════════════════════════════════════════
+import { App } from './core.js';
+
 const INFO_DB = {
  LINAC4: {
   title: 'LINAC 4',
@@ -161,3 +164,8 @@ function toggleParamInfo(id){
  document.querySelectorAll('.cv4-param-info.open').forEach(x => x.classList.remove('open'));
  if(!isOpen) el.classList.add('open');
 }
+
+App.PARAM_INFO = PARAM_INFO;
+App.showInfo = showInfo;
+App.hideInfo = hideInfo;
+App.toggleParamInfo = toggleParamInfo;

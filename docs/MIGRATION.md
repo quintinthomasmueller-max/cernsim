@@ -9,19 +9,25 @@
 
 ## 🟢 STATUS / RESUME HERE
 
-- **Aktive Phase:** Phase 1 (Toolchain + Modul-Isolation) — **in Arbeit** (Parallel-Spur in `cern/app/src/`).
+- **Aktive Phase:** Phase 2 (Notebook bettet App per `<iframe srcdoc>` ein) — **offen**.
 - **Entscheidungen:** gelockt (siehe „Gelockte Entscheidungen"). Modul-Modell = **leichter Namespace** (`App`-Objekt).
-- **Zuletzt erledigt:** Phase-1-Infra steht: `esbuild` installiert + `cern/app/esbuild.mjs`
-  (baut `src/main.js` → `build/app.bundle.js`, spiegelt Datenblob ESM-fähig nach `src/data.gen.js`).
-  Geteilter Kern `src/core.js` (App.state/els/g + `$`). **Konvertiert:** `src/geometry.js`,
-  `src/state.js`. Alte `cern/app/*.js` bleiben unangetastet (Notebook läuft weiter).
-- **Nächster Schritt:** restliche Module nach `src/` konvertieren (siehe Checkliste in „Phase 1"),
-  dann `src/main.js` (Entry+Boot), `npm run build`, neuen Bundle gegen die Vitest-Tests prüfen,
-  schließlich `sync_widget.py` umstellen + alte Dateien entfernen.
+- **Zuletzt erledigt (Phase 1 ABGESCHLOSSEN):** ALLE Module nach `cern/app/src/` als echte
+  ES-Module konvertiert (`core/geometry/state/engine/display/spectrum/info/handlers` + neuer Entry
+  `src/main.js` mit `initDom()` + idempotentem Bootstrap; ersetzt `__cernInit`). `npm run build`
+  → `build/app.bundle.js` (esbuild IIFE). `sync_widget.py` baut jetzt das esbuild-Bundle und
+  injiziert es in Zelle 4 / `index.html` / `widget_bundle.html` (alte IIFE-Slice-Konkatenation weg).
+  **Legacy `cern/app/{geometry,state,engine,display,spectrum,info,handlers}.js` entfernt.**
+  Neuer Test `tests/app-boot.test.mjs` (esbuild-Bundle) + bestehender `widget-boot.test.mjs` grün.
+  `bash scripts/check.sh` (esbuild+sync+node --check+nbformat/ast+vitest) komplett grün.
+  **Noch offen aus Phase 1:** einmalige **visuelle** Browser-Kontrolle (Refactor war riskant) —
+  bisher nur headless verifiziert; auf Nutzer-Anfrage durchführen.
+- **Nächster Schritt (Phase 2):** `sync_widget.py` so umstellen, dass Zelle 4 ein **Mini-Loader**
+  wird, der `build/app.bundle.js`+CSS+Markup als `<iframe srcdoc="…">` einbettet (Höhe/Resize,
+  `id="cern-v4"`-Marker behalten). Folge: Jupyter-Race endgültig weg + Mini-Diffs im `.ipynb`.
 
 **Fortschritt:**
 - [x] Phase 0 — Headless-Sonde (risikolos, kein Architekturwechsel) ✅
-- [ ] Phase 1 — Toolchain (esbuild+Vitest) + Modul-Isolation (ES-Module)
+- [x] Phase 1 — Toolchain (esbuild+Vitest) + Modul-Isolation (ES-Module) ✅ (visueller Check noch offen)
 - [ ] Phase 2 — Notebook bettet die gebaute App per `<iframe srcdoc>` ein
 - [ ] Phase 3 — Headless-Test-Suite (Interaktion + Physik-Logik) als Default-Verifikation
 - [ ] Phase 4 — Curriculum-Visualisierungen → App-Komponenten
@@ -110,18 +116,18 @@ Properties modulübergreifend gelesen/mutiert werden (kein Reassign importierter
 7. Logik/Reihenfolge sonst 1:1 erhalten.
 
 **Modul-Checkliste:**
-- [x] `core.js` (neu: App/state/els/g + `$`)
+- [x] `core.js` (neu: App/state/els/g + `$`, `SVG_NS`, `sleep`)
 - [x] `esbuild.mjs` (Build + Datenblob-Spiegel `src/data.gen.js`)
 - [x] `geometry.js` (R, J → App.g)
-- [x] `state.js` (App.state + getDurations)
-- [ ] `data.gen.js` (auto-generiert vom Build; CERN_REAL export)
-- [ ] `engine.js` (timeScale, getDurations-Nutzung, injectBunch, flowStep, fuellProtokoll, Ramp, LHC-Loop)
-- [ ] `display.js` (DETKONFIG, drawDetBg, drawParticle*, drawCollisionEvent, Legende)
-- [ ] `spectrum.js` (sampleEvent, generateMassData, classify, getSignificance, drawHist)
-- [ ] `info.js` (INFO_DB, PARAM_INFO, showInfo, buildPhotoHdr)
-- [ ] `handlers.js` (alle Listener; Init-Block → in main.js)
-- [ ] `main.js` (Entry: `initDom()` grabbt alle DOM-/SVG-Refs in App.els/App.g, dann Listener
-  attachen + Init-Draw; **booten bei DOM-Ready**, idempotent — ersetzt `__cernInit`/Bootstrap)
+- [x] `state.js` (App.state + getDurations; + resetFlag/autopilotActive/Canvas-Maße)
+- [x] `data.gen.js` (auto-generiert vom Build; CERN_REAL export)
+- [x] `engine.js` (timeScale, injectBunch, flowStep, Ramp, Squeeze, LHC-Loop; Listener in `wireEngine`)
+- [x] `display.js` (DETKONFIG, drawDetBg, drawParticle*, drawCollisionEvent, Legende)
+- [x] `spectrum.js` (sampleEvent, generateMassData, classify, getSignificance, drawHist)
+- [x] `info.js` (INFO_DB, PARAM_INFO, showInfo, buildPhotoHdr)
+- [x] `handlers.js` (Listener-Verdrahtung `wireHandlers` + Presets + Füllprotokoll)
+- [x] `main.js` (Entry: `initDom()` grabbt alle DOM-/SVG-Refs in App.els/App.g, dann
+  `wireEngine`/`wireHandlers` + Init-Draw; **bootet bei DOM-Ready**, idempotent — ersetzt `__cernInit`/Bootstrap)
 
 Danach: `npm run build` → `build/app.bundle.js`; neuen Test (oder bestehenden umhängen) gegen
 das Bundle + `shell.html`-Markup laufen lassen; bei grün `sync_widget.py` auf das esbuild-Bundle

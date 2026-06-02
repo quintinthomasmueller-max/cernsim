@@ -2,13 +2,18 @@
 // HISTOGRAM / MASSENSPEKTRUM  — DETEKTOR-GETRIEBEN
 // ═══════════════════════════════════════════════════════════════════════════
 // Grundsatz: Das angezeigte Massenspektrum hängt AUSSCHLIESSLICH vom gewählten
-// Detektor (selDet) ab — jeder Detektor misst physikalisch andere Kanäle.
+// Detektor (s.selDet) ab — jeder Detektor misst physikalisch andere Kanäle.
 // Presets setzen nur Maschinenparameter + wählen den passenden Detektor; das
 // Spektrum folgt konsequent. Jeder Detektor akkumuliert sein eigenes Spektrum
-// (massStore[selDet]) und seine eigene Signifikanz (collStore[selDet]).
+// (s.massStore[selDet]) und seine eigene Signifikanz (s.collStore[selDet]).
 //
 // Daten: echte CMS-Open-Data (CERN_REAL); LHCb-B-Physik = kalibrierte Simulation
 // (CMS-Dimuon-Set enthält keine B-Mesonen).
+import { App, $ } from './core.js';
+import { CERN_REAL } from './data.gen.js';
+
+const s = App.state, E = App.els;
+
 let _lhcbPool=null;
 function lhcbPool(){
  if(_lhcbPool) return _lhcbPool;
@@ -20,7 +25,7 @@ function lhcbPool(){
  return _lhcbPool;
 }
 
-const G=(v,m,s)=>Math.exp(-0.5*((v-m)/s)**2);
+const G=(v,m,sg)=>Math.exp(-0.5*((v-m)/sg)**2);
 
 // ── ZENTRALE DETEKTOR-SPEKTRUM-TABELLE ──────────────────────────────────────
 // Fit-Modelle wurden an die ECHTE Datenform angepasst (Peak-Lage stimmt mit den
@@ -64,7 +69,7 @@ const DETSPEC = {
   disco:"🌟 5σ: CP-Verletzung etabliert!"
  }
 };
-function spec(){ return DETSPEC[selDet] || DETSPEC.ATLAS; }
+function spec(){ return DETSPEC[s.selDet] || DETSPEC.ATLAS; }
 
 function classify(m){
  // ordnet eine reale Masse der nächstgelegenen Resonanz zu (sonst Untergrund)
@@ -97,7 +102,7 @@ function sampleEvent(){
   // Higgs-Goldkanal: 4-Lepton-Topologie (2 Z→ℓℓ-Paare)
   let leptons=[]; for(let i=0;i<4;i++) leptons.push({pt:8+Math.random()*40,
     eta:(Math.random()-.5)*4, phi:Math.random()*6.283, q:i%2?1:-1, lep:Math.random()<.5?"e":"μ"});
-  let isSig=Math.abs(m-125)<5; if(isSig) higgsCands++;
+  let isSig=Math.abs(m-125)<5; if(isSig) s.higgsCands++;
   return {M:m, name:isSig?"Higgs":null, channel:"4l", leptons:leptons, signal:isSig};
  }
  // Dimuon (ATLAS/ALICE) bzw. B-Vertex (LHCb) → 2-Spur-Topologie
@@ -106,34 +111,35 @@ function sampleEvent(){
 }
 
 function resetSpectrumData(){
- massStore={ATLAS:[], CMS:[], ALICE:[], LHCB:[]};
- collStore={ATLAS:0, CMS:0, ALICE:0, LHCB:0};
- higgsCands=0;
+ s.massStore={ATLAS:[], CMS:[], ALICE:[], LHCB:[]};
+ s.collStore={ATLAS:0, CMS:0, ALICE:0, LHCB:0};
+ s.higgsCands=0;
 }
 
 function generateMassData(){
  const sp=spec();
  // Datenrate ∝ Intensität² / β* (4ℓ-Goldkanal seltener → kleinerer Faktor)
- let rateFactor = Math.pow(paramIntensity, 2) / Math.max(0.3, paramBetaStar);
+ let rateFactor = Math.pow(s.paramIntensity, 2) / Math.max(0.3, s.paramBetaStar);
  let n = Math.max(1, Math.round(rateFactor * (sp.channel==="4l"?1.5:5)));
- const store = massStore[selDet];
+ const store = s.massStore[s.selDet];
  for(let i=0;i<n;i++) store.push(sp.pool()[(Math.random()*sp.pool().length)|0]);
- collStore[selDet] += 1;
- lastEvent = sampleEvent();
- store.push(lastEvent.M);   // das angezeigte Event landet immer im Spektrum des Detektors
- return lastEvent;
+ s.collStore[s.selDet] += 1;
+ s.lastEvent = sampleEvent();
+ store.push(s.lastEvent.M);   // das angezeigte Event landet immer im Spektrum des Detektors
+ return s.lastEvent;
 }
 
 function getSignificance() {
-  const sp=spec(), n=collStore[selDet];
+  const sp=spec(), n=s.collStore[s.selDet];
   if (n === 0) return 0;
-  if (paramEnergy < sp.minE) return 0;            // Energie zu gering (z. B. Pilot-Strahl)
+  if (s.paramEnergy < sp.minE) return 0;            // Energie zu gering (z. B. Pilot-Strahl)
   return 5.0 * Math.sqrt(n / sp.target);
 }
 
 function drawHist(){
   const sp=spec();
-  let w=histW,h=histH;
+  const ctxHist=E.ctxHist;
+  let w=s.histW,h=s.histH;
   ctxHist.clearRect(0,0,w,h);
   ctxHist.strokeStyle="#30363d";ctxHist.lineWidth=1;
   ctxHist.beginPath();ctxHist.moveTo(30,8);ctxHist.lineTo(30,h-16);ctxHist.lineTo(w-8,h-16);ctxHist.stroke();
@@ -142,7 +148,7 @@ function drawHist(){
   ctxHist.fillText(mn+" GeV",30,h-5);ctxHist.fillText(mx+" GeV",w-40,h-5);
 
   let sig = getSignificance();
-  const lowE = paramEnergy < sp.minE;
+  const lowE = s.paramEnergy < sp.minE;
   $("lbl-sig").innerText = sig.toFixed(2) + " σ";
 
   let sigBar = $("sig-bar"), sigStatus = $("lbl-sig-status");
@@ -162,7 +168,7 @@ function drawHist(){
     sigStatus.style.color = "#2ea44f"; sigBar.style.background = "#2ea44f";
   }
 
-  const activeData = massStore[selDet];
+  const activeData = s.massStore[s.selDet];
   if(!activeData.length){
     ctxHist.fillStyle="#8b949e"; ctxHist.font="10px monospace";
     ctxHist.fillText("WARTEN AUF KOLLISIONSDATEN...",w/2-90,h/2);
@@ -219,7 +225,7 @@ function drawHist(){
     ctxHist.fillStyle="rgba(205,214,228,0.75)"; ctxHist.font="7px sans-serif";
     ctxHist.fillText(sp.sub, 36, 35);
     if(sp.channel==="4l"){ ctxHist.fillStyle="#aec7e8"; ctxHist.font="7px sans-serif";
-      ctxHist.fillText("Higgs-Fenster (120–130 GeV): "+higgsCands+" 4ℓ-Kandidaten", 36, 47); }
+      ctxHist.fillText("Higgs-Fenster (120–130 GeV): "+s.higgsCands+" 4ℓ-Kandidaten", 36, 47); }
     ctxHist.restore();
   }
 
@@ -227,11 +233,18 @@ function drawHist(){
   if (sig < 5.0) {
     ctxHist.fillStyle="rgba(255,255,255,0.45)"; ctxHist.font="8px monospace";
     if (lowE) {
-      ctxHist.fillText("⚠️ Strahlenergie zu gering ("+paramEnergy.toFixed(2)+" < "+sp.minE.toFixed(1)+" TeV) — keine Entdeckung möglich.", 36, h-26);
+      ctxHist.fillText("⚠️ Strahlenergie zu gering ("+s.paramEnergy.toFixed(2)+" < "+sp.minE.toFixed(1)+" TeV) — keine Entdeckung möglich.", 36, h-26);
     } else if (sig === 0) {
-      ctxHist.fillText("Keine Kollisionen in "+selDet+". Starte Kollisionen!", 36, h-26);
+      ctxHist.fillText("Keine Kollisionen in "+s.selDet+". Starte Kollisionen!", 36, h-26);
     } else {
       ctxHist.fillText("Sammle Statistik (Signifikanz: " + sig.toFixed(1) + "σ / 5.0σ)", 36, h-26);
     }
   }
 }
+
+App.classify = classify;
+App.sampleEvent = sampleEvent;
+App.resetSpectrumData = resetSpectrumData;
+App.generateMassData = generateMassData;
+App.getSignificance = getSignificance;
+App.drawHist = drawHist;
