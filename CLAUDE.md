@@ -22,11 +22,14 @@ Hauptdatei: `cern/notebooks/CERN_Beschleuniger_Schaltzentrale.ipynb`.
 - Kein `nbconvert --execute` für reine Widget-Änderungen (Python-Zellen sind unberührt).
 
 ## Karte (wo liegt was)
-- **Notebook-Zellen 0–15**: Curriculum (Markdown + Python). **Zelle 4 = Widget**.
-- **Widget** (`display(HTML(r'''…'''))` in Zelle 4, ~108 KB HTML+CSS+JS+Datenblob):
+- **Notebook-Zellen 0–15**: Curriculum (Markdown + Python). **Zelle 4 = Widget-Loader**
+  (`display(HTML(r'''<iframe srcdoc=…>'''))`, Phase 2 — bettet das esbuild-Bundle isoliert ein).
+- **Widget** (esbuild-Bundle aus `cern/app/src/`, im iframe):
   - Physik-Engine: `timeScale`, `getDurations`, `injectBunch`, `flowStep`, `fuellProtokoll`, `startLHCLoop`, Ramp.
   - Event-Display: `DETKONFIG`, `drawDetBg`, `drawParticleBarrel/Forward`, `drawCollisionEvent`, `drawLegend`.
   - Spektrum/Signifikanz: `sampleEvent`, `generateMassData`, `classify`, `getSignificance`, `drawHist`.
+  - Geo-Overlay (Phase 4): `geo.js#drawGeo` zeichnet `geo.gen.js` (geo-genau, generiert von
+    `scripts/geo_build.py` aus OSM/Overpass; Web-Mercator, ODbL) in `#geo-layer`.
   - Daten: `CERN_REAL` (echte CMS-Massen/Topologien, ~37 KB) — eingebettet.
 - **Python-Datenschicht**: `cern/scripts/cern_utils.py` (`RESONANZEN`, `HISTORIE`, `lade_cms_dimuon`,
   `lade_dimuon_4vektoren`, `dimuon_invariante_masse`, `lade_higgs_4l`).

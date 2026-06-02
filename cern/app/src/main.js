@@ -17,6 +17,7 @@ import { wireEngine } from './engine.js';
 import './display.js';
 import './spectrum.js';
 import './info.js';
+import './geo.js';
 import { wireHandlers } from './handlers.js';
 
 // Alle DOM-/SVG-/Canvas-Refs EINMALIG bei Boot grabben (nicht beim Modul-Laden).
@@ -38,6 +39,7 @@ function initDom(){
  E.btnZoomOut=$("btn-zoom-out");
  E.grpAtlas=$("grp-atlas"); E.grpCms=$("grp-cms"); E.grpAlice=$("grp-alice"); E.grpLhcb=$("grp-lhcb");
  E.svg=$("svg");
+ E.geoLayer=$("geo-layer");
 
  // SVG-Pfade & Knoten + Stufen-Tracker → App.g
  g.trSteps=["tr-src","tr-inj","tr-ps","tr-sps","tr-lhc"].map($);
@@ -63,6 +65,7 @@ function start(){
  initDom();
  wireEngine();
  wireHandlers();
+ App.drawGeo();
  App.resizeCanvases();
  App.updateReadouts(); App.drawDetBg(); App.drawHist();
  App.setStatus("BEREIT — Wähle Teilchenart und starte Injektion","on");

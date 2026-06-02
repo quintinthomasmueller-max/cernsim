@@ -9,9 +9,19 @@
 
 ## 🟢 STATUS / RESUME HERE
 
-- **Aktive Phase:** Phase 4 (Curriculum-Visualisierungen → App-Komponenten) — **offen**.
+- **Aktive Phase:** Phase 4 (Curriculum-Visualisierungen → App-Komponenten) — **in Arbeit**
+  (1. Komponente „Geo-Overlay" ✅; weitere offen).
 - **Entscheidungen:** gelockt (siehe „Gelockte Entscheidungen"). Modul-Modell = **leichter Namespace** (`App`-Objekt).
-- **Zuletzt erledigt (Phase 3 ABGESCHLOSSEN):** Headless-Test-Suite ausgebaut → **30 Tests / 4 Dateien**,
+- **Zuletzt erledigt (Phase 4, Komponente 1 — Geo-Overlay):** Das handdigitalisierte Karten-Overlay
+  ist durch ein **geo-genaues** ersetzt. `scripts/geo_build.py` (`--fetch` lädt OSM via Overpass →
+  `scratch/geo_raw.json`; Build projiziert **Web-Mercator + uniform** am echten LHC-Ring ausgerichtet)
+  generiert `cern/app/src/geo.gen.js` (LHC-Footprint 16 Pfade, Lac Léman 43, CH/FR-Grenze 19 Pfade,
+  projizierte POI + Labels). `src/geo.js#drawGeo` zeichnet das beim Boot in `#geo-layer` (shell.html),
+  Nord=oben, ODbL-Attribution im Bild. **Visuell verifiziert** (Screenshot): realer Footprint deckt
+  sich mit dem Schema, See/Flughafen SE (korrekt), Grenze/POIs plausibel. Tests +2 (Geo-Layer befüllt,
+  Toggle dimmt) → **32 Tests grün**; `check.sh` grün. Reale Größen der Injektoren bleiben **bewusst
+  schematisch** (Ebene B), nur das Overlay (Ebene A) ist geo-ehrlich.
+- **Zuvor erledigt (Phase 3 ABGESCHLOSSEN):** Headless-Test-Suite ausgebaut → **30 Tests / 4 Dateien**,
   alle grün: `tests/physics.test.mjs` (importiert `src/`-Module direkt; Signifikanz ∝ √N inkl.
   5·√(N/target) & Energie-Schwelle, Rate ∝ I²/β* deterministisch, Klassifikation Z⁰/J-ψ/Υ/Untergrund/
   Higgs-Kanal), `tests/interactions.test.mjs` (Tabs, SVG-Hits grp-*/hit-*, Info-Panel auf/zu,
@@ -21,9 +31,9 @@
   (`__cernBooted`, 62 SVG-Kinder, keine Konsolenfehler), Presets/Tabs/Geo-Toggle reagieren;
   iframe-srcdoc-Simulation bootet **im iframe** isoliert und der postMessage-Auto-Resizer skaliert
   die Höhe korrekt (Screenshots gesichtet). Damit sind Phase 1 & 2 auch visuell bestätigt.
-- **Nächster Schritt (Phase 4):** erste Curriculum-Visualisierung als App-Komponente
-  (Vorschlag: **geo-korrektes Overlay** als risikoarmer Einstieg, siehe Anhang
-  „🗺️ Karten-Geo-Genauigkeit"); inkrementell, je Komponente Tests + 1× visuell.
+- **Nächster Schritt (Phase 4):** nächste Komponente migrieren — Kandidaten: Dimuon-„Teilchen-Zoo"-
+  Spektrum (Vollspektrum mit allen Resonanzen) oder Z⁰-Fit (Gauss+Untergrund). Je Komponente
+  Tests + 1× visuell. (Geo-Overlay ✅ erledigt.)
 
 **Fortschritt:**
 - [x] Phase 0 — Headless-Sonde (risikolos, kein Architekturwechsel) ✅
@@ -154,9 +164,9 @@ umstellen (Zelle 4/Standalone/iframe) und die alten `cern/app/*.js` entfernen.
 - Interaktive/visuelle Teile der Python-Zellen (Z⁰-Fit, Higgs→4ℓ, Spektren …) als
   App-Komponenten nachbauen; Notebook behält Narrativ + bettet Komponenten per iframe ein.
 - **Inkrementell**: eine Komponente nach der anderen, jeweils Tests + 1× visuell.
-- **Geo-Overlay als eigene Komponente** (geringes Risiko, hoher didaktischer Wert): das
-  handdigitalisierte Overlay (Lac Léman/Grenze/Jura) durch ein **offline geo-projiziertes**
-  Overlay ersetzen. Vollständiger Befund + Plan: Anhang **„🗺️ Karten-Geo-Genauigkeit"**.
+- **Geo-Overlay als eigene Komponente** ✅ **erledigt** (Komponente 1): handdigitalisiertes
+  Overlay durch offline geo-projiziertes ersetzt (`geo_build.py` → `geo.gen.js` → `geo.js`).
+  Vollständiger Befund + Plan: Anhang **„🗺️ Karten-Geo-Genauigkeit"**.
 
 ### Phase 5 — Cleanups
 - Hardcodierte SVG-Pfade (`lhc-pipe1/2`, je ~4 KB) zur Laufzeit aus `R.LHC` **generieren**;

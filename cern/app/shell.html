@@ -40,28 +40,11 @@
    </defs>
    <rect width="100%" height="100%" fill="url(#arch-grid)" />
 
-   <!-- GEOGRAPHICAL FEATURES (Toggleable via .geo-element) -->
-   <!-- Geneva Lake (Lac Léman) in top-right -->
-   <path class="geo-element" d="M 520,0 Q 560,50 620,60 T 700,75 L 700,0 Z" fill="rgba(88,166,255,0.088)" stroke="rgba(88,166,255,0.264)" stroke-width="1.5" />
-   <text class="geo-element" x="610" y="30" fill="rgba(88,166,255,0.484)" font-size="8px" font-family="monospace">LAC LÉMAN (GENFER SEE)</text>
-
-   <!-- French-Swiss Border: aus der offiziellen CERN-Karte digitalisiert + projiziert (Ost-/Schweizer Seite, schneidet den Ring im SE) -->
-   <path class="geo-element" d="M 541,48 Q 518,147 521,204 Q 524,261 511,292 Q 498,322 479,344 Q 459,366 444,379 L 428,392" stroke="rgba(255,255,255,0.20)" stroke-width="1.2" stroke-dasharray="6,6" fill="none" />
-   <text class="geo-element" x="538" y="120" fill="rgba(255,255,255,0.30)" font-size="7px" font-family="monospace" text-anchor="middle" transform="rotate(76, 538, 120)">STAATSGRENZE</text>
-   <text class="geo-element" x="120" y="170" fill="rgba(255,255,255,0.24)" font-size="8.5px" font-family="monospace" text-anchor="middle">FRANKREICH (FR)</text>
-   <text class="geo-element" x="630" y="225" fill="rgba(255,255,255,0.24)" font-size="8.5px" font-family="monospace" text-anchor="middle">SCHWEIZ (CH)</text>
-
-   <!-- Jura Mountain Ridge in the top-left -->
-   <path class="geo-element" d="M 0,50 Q 80,80 150,50 T 250,20" stroke="rgba(255,255,255,0.088)" stroke-width="1.5" stroke-dasharray="3,6" fill="none" />
-   <text class="geo-element" x="60" y="40" fill="rgba(255,255,255,0.22)" font-size="7px" font-family="monospace">JURA-GEBIRGE (FR)</text>
-
-   <!-- Geographic Town/Site Markers -->
-   <text class="geo-element" x="142" y="430" fill="rgba(255,255,255,0.396)" font-size="7.5px" font-family="monospace" text-anchor="middle">CERN Meyrin Campus (CH)</text>
-   <text class="geo-element" x="430" y="90" fill="rgba(255,255,255,0.396)" font-size="7.5px" font-family="monospace" text-anchor="middle">CERN Prévessin Campus (FR)</text>
-   <text class="geo-element" x="100" y="225" fill="rgba(255,255,255,0.396)" font-size="7.5px" font-family="monospace">St. Genis-Pouilly (FR)</text>
-   <text class="geo-element" x="350" y="25" fill="rgba(255,255,255,0.396)" font-size="7.5px" font-family="monospace" text-anchor="middle">Ferney-Voltaire (FR)</text>
-   <path class="geo-element" d="M 590,320 L 670,290" stroke="rgba(255,255,255,0.176)" stroke-width="3" />
-   <text class="geo-element" x="630" y="332" fill="rgba(255,255,255,0.33)" font-size="7.5px" font-family="monospace" text-anchor="middle">Flughafen Genf (GVA)</text>
+   <!-- GEO-OVERLAY (geo-genau, generiert): geo.js füllt #geo-layer beim Boot aus
+        cern/app/src/geo.gen.js (reale OSM-Geometrie, Web-Mercator, am LHC-Ring
+        ausgerichtet). Toggle/Dimmen via .geo-element. Nord = oben.
+        © OpenStreetMap-Mitwirkende (ODbL). -->
+   <g id="geo-layer"></g>
 
    <!-- REAL CERN TOP-VIEW ACCELERATOR STRUCTURE -->
    <!-- LINAC4: straight line injecting into PSB (cx=142, cy=385) -->

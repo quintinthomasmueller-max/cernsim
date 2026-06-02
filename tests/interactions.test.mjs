@@ -84,4 +84,20 @@ describe('Interaktionen (esbuild-Bundle, jsdom)', () => {
     expect($('lbl-energy').textContent).toMatch(/6[.,]8/);
     expect($('dt-cms').classList.contains('act')).toBe(true);
   });
+
+  it('Geo-Overlay (generiert) wird beim Boot in #geo-layer gezeichnet', () => {
+    const layer = $('geo-layer');
+    expect(layer).toBeTruthy();
+    expect(layer.childElementCount).toBeGreaterThan(20);       // Pfade + POI + Labels
+    expect(layer.querySelectorAll('path').length).toBeGreaterThan(10);
+    // alle Kinder tragen .geo-element → reagieren auf den Dim-Toggle
+    expect([...layer.children].every(c => c.classList.contains('geo-element'))).toBe(true);
+  });
+
+  it('Geo-Toggle dimmt auch das injizierte Overlay', () => {
+    $('btn-toggle-geo').click();
+    expect($('svg').classList.contains('geo-dimmed')).toBe(true);
+    $('btn-toggle-geo').click();
+    expect($('svg').classList.contains('geo-dimmed')).toBe(false);
+  });
 });
