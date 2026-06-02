@@ -11,6 +11,7 @@ venv/
 # Node (Test-/Build-Toolchain — siehe docs/MIGRATION.md)
 node_modules/
 .vitest/
+cern/app/src/data.gen.js
 
 # macOS
 .DS_Store
