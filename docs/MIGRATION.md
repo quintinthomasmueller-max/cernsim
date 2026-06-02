@@ -9,18 +9,21 @@
 
 ## 🟢 STATUS / RESUME HERE
 
-- **Aktive Phase:** Phase 0 (noch nicht begonnen).
+- **Aktive Phase:** Phase 1 (Toolchain + Modul-Isolation) — als Nächstes.
 - **Entscheidungen:** gelockt (siehe „Gelockte Entscheidungen"). Nicht erneut hinterfragen.
-- **Zuletzt erledigt (Vorsession):** Interaktions-Bug gefixt — die ganze Widget-Logik lag
-  in *einer* sofort ausgeführten IIFE ohne DOM-Ready-Guard → in Jupyter lief das `<script>`
-  oft vor dem DOM → `getElementById`=null → komplette Init brach ab (nur native Slider
-  „funktionierten" scheinbar). Fix: IIFE → benannte `__cernInit` + Bootstrap (`handlers.js`),
-  der erst bei vorhandenem DOM bootet (idempotent pro Knoten). Außerdem: kaputter Standalone
-  repariert (`sync_widget.py` bündelt JS jetzt als EIN inline-`<script>`).
-- **Nächster Schritt:** Phase 0 — jsdom-Smoke-Test gegen das aktuelle `build/widget.js`.
+- **Zuletzt erledigt:** **Phase 0 ✅** — Vitest+jsdom-Toolchain steht (`package.json`,
+  `vitest.config.mjs`, `tests/helpers/boot.mjs`, `tests/widget-boot.test.mjs`). 5 Headless-
+  Interaktionstests grün in ~0,6 s (Boot, Geo-Toggle, Preset, Detektor-Tab, Füll-Button).
+  `check.sh` ruft jetzt `npx vitest run` mit. Mocks im Boot-Helper: Canvas-2D-Stub, SVG-Geom,
+  `requestAnimationFrame`, `innerText`→`textContent`.
+  (Davor: Jupyter-Init-Race gefixt — IIFE → `__cernInit`+Bootstrap; Standalone als ein inline-`<script>`.)
+- **Nächster Schritt:** Phase 1 — `cern/app/*.js` von „IIFE-Slices" auf **echte ES-Module**
+  (`import/export`) umstellen, mit **esbuild** zu einem Bundle bauen; `sync_widget.py` auf das
+  esbuild-Artefakt umstellen; `__cernInit`/Bootstrap durch sauberen Entry (`src/main.js`) ersetzen.
+  Tests müssen grün bleiben (jetzt als Sicherheitsnetz!).
 
 **Fortschritt:**
-- [ ] Phase 0 — Headless-Sonde (risikolos, kein Architekturwechsel)
+- [x] Phase 0 — Headless-Sonde (risikolos, kein Architekturwechsel) ✅
 - [ ] Phase 1 — Toolchain (esbuild+Vitest) + Modul-Isolation (ES-Module)
 - [ ] Phase 2 — Notebook bettet die gebaute App per `<iframe srcdoc>` ein
 - [ ] Phase 3 — Headless-Test-Suite (Interaktion + Physik-Logik) als Default-Verifikation

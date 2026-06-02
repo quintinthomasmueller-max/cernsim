@@ -26,4 +26,13 @@ for c in nb['cells']:
         ast.parse(''.join(c['source']))
 print("✓ nbformat valid + alle Code-Zellen geparst")
 PY
+
+# Headless-Interaktions-/Logik-Tests (Vitest + jsdom). Bundle ist oben bereits gesynct.
+if [ -d node_modules ] && command -v npx >/dev/null 2>&1; then
+  npx vitest run >/dev/null 2>&1 && echo "✓ vitest headless tests (jsdom)" \
+    || { echo "✗ vitest headless tests FEHLGESCHLAGEN — Details: npx vitest run"; exit 1; }
+else
+  echo "⚠ vitest übersprungen (npm install ausführen, um Headless-Tests zu aktivieren)"
+fi
+
 echo "✓ check.sh OK"

@@ -8,6 +8,10 @@ __pycache__/
 .venv/
 venv/
 
+# Node (Test-/Build-Toolchain — siehe docs/MIGRATION.md)
+node_modules/
+.vitest/
+
 # macOS
 .DS_Store
 */.DS_Store
