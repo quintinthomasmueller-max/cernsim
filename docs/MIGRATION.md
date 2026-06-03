@@ -23,11 +23,13 @@
     ⟷ „🎬 Didaktik-Modus". Bunches werden in `#schematic` gehängt → im Real-Modus mit ausgeblendet.
   - **Reale Ansicht = komplett OSM-Geodaten, echte Größen:** echter LHC-Ring, **SPS ≈ ¼ LHC, PS/PSB
     winzig** (reale Größenverteilung), Detektoren an echten IP-Positionen (Insertion-Zentroide),
-    Lac Léman/Grenze/POI, Nord oben. `geo_build.py` holt SPS/PS/PSB + die 4 Insertions; **TI 2/TI 8
-    gekrümmt** (quadratische Bézier; echte Endpunkte SPS↔IP, Bogen approximiert — **OSM hat die
-    SPS→LHC-Tunnel nicht**, nur interne TT2/TT10/TT60; im Bild als „TI 2/8 approx." gekennzeichnet).
-  - **Datenlücke offen:** LINAC3/4 + LEIR nicht in der Real-Ansicht (in OSM nicht/kaum als Geometrie;
-    Standort über POI „CERN Meyrin" angedeutet). Bei Bedarf später ergänzen.
+    Lac Léman/Grenze/POI, Nord oben. `geo_build.py` holt SPS/PS/PSB + die 4 Insertions.
+  - **TI 2/TI 8 = echte gekrümmte OSM-Trassen** (Datenlücke geschlossen): in OSM als `way(317804188)`
+    „Tl2" und `way(317804189)` „Tl-8" (l statt I!). Trasse SPS-Ende→IP; letztes Stück bindet an den
+    echten Injektionspunkt an (TI8 12 px, TI2 50 px Rest) → **Einlauf aus realer Richtung**.
+  - **Datenlücke (Rest):** LINAC3/4 + LEIR nicht in OSM (Standort via POI „CERN Meyrin").
+  - **LHC nicht perfekt rund** ist KORREKT (real 8 Bögen + 8 Geraden, OSM-Rel. 9512017 bestätigt es) —
+    echte Form bleibt im Real-Modus. Didaktik-Detektoren sitzen auf den Strahlrohr-Crossovern.
   - **Visuell verifiziert** (Screenshots beide Modi) + Perf gemessen. Tests → **35 grün**; `check.sh` grün.
 - **Zuvor erledigt (Phase 3 ABGESCHLOSSEN):** Headless-Test-Suite ausgebaut → **30 Tests / 4 Dateien**,
   alle grün: `tests/physics.test.mjs` (importiert `src/`-Module direkt; Signifikanz ∝ √N inkl.

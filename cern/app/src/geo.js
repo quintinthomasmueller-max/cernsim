@@ -60,12 +60,13 @@ function drawGeo() {
   // Beschleuniger-Labels (Zentroide)
   (GEO.accelLabels || []).forEach(p => g.appendChild(label(p.x, p.y, p.t, {
     fill: 'rgba(205,214,228,0.7)', 'font-size': '7px', 'font-family': 'monospace', 'text-anchor': 'middle' })));
-  // TI-Labels am Bogen-Scheitel (Kontrollpunkt der Bézier)
+  // TI-Labels an der Trassen-Mitte (Polylinie M..L..L..)
   if (GEO.ti) ['ti2', 'ti8'].forEach(k => {
     const d = GEO.ti[k]; if (!d) return;
-    const pr = d.split(' '); const ctrl = (pr[3] || '').split(',').map(Number);
-    if (ctrl.length === 2) g.appendChild(label(ctrl[0], ctrl[1], k.toUpperCase().replace('TI', 'TI '), {
-      fill: 'rgba(46,164,79,0.85)', 'font-size': '7px', 'font-family': 'monospace', 'text-anchor': 'middle' }));
+    const cs = d.replace('M ', '').split(' L ').map(s => s.split(',').map(Number));
+    const m = cs[Math.floor(cs.length / 2)];
+    if (m && m.length === 2) g.appendChild(label(m[0], m[1] - 3, k.toUpperCase().replace('TI', 'TI '), {
+      fill: 'rgba(46,164,79,0.9)', 'font-size': '7px', 'font-family': 'monospace', 'text-anchor': 'middle' }));
   });
 
   // POI (projizierte reale Standorte)
@@ -81,7 +82,7 @@ function drawGeo() {
   g.appendChild(label(110, 150, 'FRANKREICH (FR)', { fill: 'rgba(255,255,255,0.3)', 'font-size': '8.5px', 'font-family': 'monospace', 'text-anchor': 'middle' }));
   g.appendChild(label(610, 150, 'SCHWEIZ (CH)', { fill: 'rgba(255,255,255,0.3)', 'font-size': '8.5px', 'font-family': 'monospace', 'text-anchor': 'middle' }));
   g.appendChild(label(64, 38, 'JURA (FR)', { fill: 'rgba(255,255,255,0.24)', 'font-size': '7px', 'font-family': 'monospace' }));
-  g.appendChild(label(6, 474, '© OpenStreetMap-Mitwirkende (ODbL) · Web-Mercator · TI 2/8 approx.', {
+  g.appendChild(label(6, 474, '© OpenStreetMap-Mitwirkende (ODbL) · Web-Mercator', {
     fill: 'rgba(255,255,255,0.3)', 'font-size': '6px', 'font-family': 'monospace' }));
 }
 

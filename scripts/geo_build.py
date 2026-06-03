@@ -46,6 +46,9 @@ QUERIES = {
  # Detektor-Insertions = echte IP-Positionen auf dem Ring (ATLAS/CMS/ALICE/LHCb).
  # Union-Klammern PFLICHT, sonst behält Overpass nur das letzte way() im Ergebnis.
  'ip':    '[out:json][timeout:120];(way(685422600);way(685422592);way(685422602);way(685422598););out geom;',
+ # Echte Transfertunnel SPS→LHC (in OSM als „Tl2"/„Tl-8" geschrieben):
+ 'ti2':   '[out:json][timeout:120];way(317804188);out geom;',   # TI 2 → Punkt 2 (ALICE)
+ 'ti8':   '[out:json][timeout:120];way(317804189);out geom;',   # TI 8 → Punkt 8 (LHCb)
  'lake':  '[out:json][timeout:120];rel(332617);out geom;',          # „Le Léman"
  'border':'[out:json][timeout:120];way["boundary"="administrative"]["admin_level"="2"]'
           '(46.22,5.98,46.34,6.16);out geom;',
@@ -156,28 +159,24 @@ def build():
             c = centroid([[(p['lon'], p['lat']) for p in e['geometry']]])
             GEO['ip'][name] = {'x': round(c[0], 1), 'y': round(c[1], 1)}
 
-    # TI 2 / TI 8: vom SPS (nächstgelegener Ringpunkt) zur LHC-Injektion an Punkt 2/8.
-    # Punkt 2 ≈ ALICE-Insertion, Punkt 8 ≈ LHCb-Insertion (echte Lage).
-    # HINWEIS: Die SPS→LHC-Transfertunnel sind in OSM NICHT als Geometrie vorhanden
-    # (nur interne SPS-Transfers TT2/TT10/TT60). Endpunkte sind echte Geodaten,
-    # die Verbindung ist eine GEKRÜMMTE Approximation (quadratische Bézier, nach
-    # außen gebogen) — keine Gerade. Klar als approximiert gekennzeichnet.
-    def nearest_sps(target):
-        return min(sps_pts, key=lambda p: (p[0]-target[0])**2 + (p[1]-target[1])**2)
+    # TI 2 / TI 8: ECHTE OSM-Trasse (way 317804188 „Tl2" / 317804189 „Tl-8",
+    # gekrümmte Tunnel) → SPS-Ende zuerst, dann an den echten Injektionspunkt
+    # (Punkt 2 = ALICE, Punkt 8 = LHCb) anbinden. So kommt der Einlauf aus der
+    # REALEN Richtung. (Die OSM-Trasse endet 12 px (TI8) bzw. 50 px (TI2) vor dem
+    # IP — das letzte Stück folgt der realen Tunnelrichtung in den IP.)
     GEO['ti'] = {}
-    GEO['tiApprox'] = True
+    GEO['tiApprox'] = False
     for tname, ipname in (('ti2', 'ALICE'), ('ti8', 'LHCB')):
-        if sps_pts and ipname in GEO['ip']:
-            ip = (GEO['ip'][ipname]['x'], GEO['ip'][ipname]['y'])
-            a = nearest_sps(ip)
-            mx, my = (a[0]+ip[0])/2, (a[1]+ip[1])/2          # Sehnen-Mittelpunkt
-            dx, dy = ip[0]-a[0], ip[1]-a[1]
-            L = math.hypot(dx, dy) or 1
-            nx, ny = -dy/L, dx/L                              # Normale zur Sehne
-            # nach außen biegen (weg vom Ringzentrum 350,240)
-            if (mx-LHC_CX)*nx + (my-LHC_CY)*ny < 0: nx, ny = -nx, -ny
-            cxp, cyp = mx + nx*L*0.22, my + ny*L*0.22         # Kontrollpunkt
-            GEO['ti'][tname] = f'M {a[0]:.1f},{a[1]:.1f} Q {cxp:.1f},{cyp:.1f} {ip[0]:.1f},{ip[1]:.1f}'
+        e = (raw.get(tname) or [{}])[0]
+        if not e.get('geometry') or ipname not in GEO['ip']:
+            continue
+        line = [tf(p['lon'], p['lat']) for p in e['geometry']]
+        ip = (GEO['ip'][ipname]['x'], GEO['ip'][ipname]['y'])
+        # Reihenfolge so, dass das dem IP NÄHERE Ende zuletzt kommt; dann IP anhängen.
+        if math.dist(line[0], ip) < math.dist(line[-1], ip):
+            line = line[::-1]
+        line = [(round(x, 1), round(y, 1)) for (x, y) in line] + [(round(ip[0], 1), round(ip[1], 1))]
+        GEO['ti'][tname] = 'M ' + ' L '.join(f'{x},{y}' for (x, y) in line)
 
     # Labels der Vorbeschleuniger (Zentroide)
     GEO['accelLabels'] = []
