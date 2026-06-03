@@ -287,8 +287,17 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
    <!-- LHC tunnel (massive average ring cx=350 cy=240 r=180) -->
    <circle id=&quot;p-lhc&quot; cx=&quot;350&quot; cy=&quot;240&quot; r=&quot;180&quot; class=&quot;svg-path svg-lhc&quot;/>
 
-   <!-- (RF-Cavity- &amp; Quadrupol-Deko entfernt: sie saßen an den ALTEN Detektor-
-        positionen; die Detektoren liegen jetzt auf den echten IPs.) -->
+   <!-- STYLISH ACCELERATOR DETECTORS &amp; DETAILS -->
+   <!-- RF Cavities on the LHC ring (Point 4) represented as small bright rects -->
+   <rect x=&quot;340&quot; y=&quot;415&quot; width=&quot;20&quot; height=&quot;10&quot; fill=&quot;rgba(255,127,14,0.2)&quot; stroke=&quot;#ff7f0e&quot; stroke-width=&quot;1&quot; />
+   <rect x=&quot;340&quot; y=&quot;55&quot; width=&quot;20&quot; height=&quot;10&quot; fill=&quot;rgba(255,127,14,0.2)&quot; stroke=&quot;#ff7f0e&quot; stroke-width=&quot;1&quot; />
+   <text x=&quot;350&quot; y=&quot;435&quot; fill=&quot;rgba(255,127,14,0.5)&quot; font-size=&quot;6px&quot; font-family=&quot;monospace&quot; text-anchor=&quot;middle&quot;>400 MHz RF</text>
+
+   <!-- Quadrupole focusing triplets near the detectors -->
+   <path d=&quot;M 330,420 L 370,420&quot; stroke=&quot;#2ea44f&quot; stroke-width=&quot;3&quot; opacity=&quot;0.3&quot; />
+   <path d=&quot;M 330,60 L 370,60&quot; stroke=&quot;#2ea44f&quot; stroke-width=&quot;3&quot; opacity=&quot;0.3&quot; />
+   <path d=&quot;M 170,220 L 170,260&quot; stroke=&quot;#2ea44f&quot; stroke-width=&quot;3&quot; opacity=&quot;0.3&quot; />
+   <path d=&quot;M 530,220 L 530,260&quot; stroke=&quot;#2ea44f&quot; stroke-width=&quot;3&quot; opacity=&quot;0.3&quot; />
 
    <!-- Nodes / Labels -->
    <circle id=&quot;n-linac4&quot; cx=&quot;30&quot; cy=&quot;385&quot; r=&quot;5&quot; class=&quot;svg-node&quot;/>
@@ -306,24 +315,28 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
    <circle id=&quot;n-sps&quot; cx=&quot;345&quot; cy=&quot;350&quot; r=&quot;10&quot; class=&quot;svg-node&quot;/>
    <text x=&quot;345&quot; y=&quot;291&quot; class=&quot;svg-lbl&quot; text-anchor=&quot;middle&quot;>SPS</text>
 
-   <!-- LHC Detector Groups — auf den ECHTEN IP-Positionen (aus OSM-Insertions
-        projiziert, geo.gen.js). Liegen auf dem Ring (r≈180), Bunches passieren sie. -->
+   <!-- LHC Detector Groups (DIDAKTIK): an den Kardinalpunkten = Überkreuzungen der
+        Strahlrohre (lhc-pipe1/2). Der Geo-Modus zeichnet die ECHTEN IP-Lagen separat. -->
    <g id=&quot;grp-atlas&quot; style=&quot;cursor:pointer&quot;>
-    <circle id=&quot;d-atlas&quot; cx=&quot;314&quot; cy=&quot;413&quot; r=&quot;14&quot; class=&quot;svg-node&quot;/>
-    <text x=&quot;314&quot; y=&quot;441&quot; class=&quot;svg-lbl&quot; style=&quot;fill:#e6edf3;font-weight:bold&quot;>ATLAS (IP1)</text>
+    <circle id=&quot;d-atlas&quot; cx=&quot;350&quot; cy=&quot;420&quot; r=&quot;14&quot; class=&quot;svg-node&quot;/>
+    <text x=&quot;350&quot; y=&quot;448&quot; class=&quot;svg-lbl&quot; style=&quot;fill:#e6edf3;font-weight:bold&quot;>ATLAS (IP1)</text>
    </g>
    <g id=&quot;grp-cms&quot; style=&quot;cursor:pointer&quot;>
-    <circle id=&quot;d-cms&quot; cx=&quot;386&quot; cy=&quot;63&quot; r=&quot;14&quot; class=&quot;svg-node&quot;/>
-    <text x=&quot;386&quot; y=&quot;45&quot; class=&quot;svg-lbl&quot; style=&quot;fill:#e6edf3;font-weight:bold&quot;>CMS (IP5)</text>
+    <circle id=&quot;d-cms&quot; cx=&quot;350&quot; cy=&quot;60&quot; r=&quot;14&quot; class=&quot;svg-node&quot;/>
+    <text x=&quot;350&quot; y=&quot;42&quot; class=&quot;svg-lbl&quot; style=&quot;fill:#e6edf3;font-weight:bold&quot;>CMS (IP5)</text>
    </g>
    <g id=&quot;grp-alice&quot; style=&quot;cursor:pointer&quot;>
-    <circle id=&quot;d-alice&quot; cx=&quot;200&quot; cy=&quot;337&quot; r=&quot;12&quot; class=&quot;svg-node&quot;/>
-    <text x=&quot;200&quot; y=&quot;362&quot; class=&quot;svg-lbl&quot; style=&quot;fill:#e6edf3;font-weight:bold&quot;>ALICE (IP2)</text>
+    <circle id=&quot;d-alice&quot; cx=&quot;170&quot; cy=&quot;240&quot; r=&quot;12&quot; class=&quot;svg-node&quot;/>
+    <text x=&quot;134&quot; y=&quot;240&quot; class=&quot;svg-lbl&quot; style=&quot;fill:#e6edf3;font-weight:bold&quot;>ALICE (IP2)</text>
    </g>
    <g id=&quot;grp-lhcb&quot; style=&quot;cursor:pointer&quot;>
-    <circle id=&quot;d-lhcb&quot; cx=&quot;448&quot; cy=&quot;386&quot; r=&quot;12&quot; class=&quot;svg-node&quot;/>
-    <text x=&quot;448&quot; y=&quot;411&quot; class=&quot;svg-lbl&quot; style=&quot;fill:#e6edf3;font-weight:bold&quot;>LHCb (IP8)</text>
+    <circle id=&quot;d-lhcb&quot; cx=&quot;530&quot; cy=&quot;240&quot; r=&quot;12&quot; class=&quot;svg-node&quot;/>
+    <text x=&quot;567&quot; y=&quot;240&quot; class=&quot;svg-lbl&quot; style=&quot;fill:#e6edf3;font-weight:bold&quot;>LHCb (IP8)</text>
    </g>
+
+   <!-- TI labels -->
+   <text x=&quot;206&quot; y=&quot;392&quot; class=&quot;svg-lbl&quot; style=&quot;font-size:8px&quot;>TI 2</text>
+   <text x=&quot;436&quot; y=&quot;356&quot; class=&quot;svg-lbl&quot; style=&quot;font-size:8px&quot;>TI 8</text>
 
    <!-- INFO HIT TARGETS — transparent click zones; order = innermost last (highest z in SVG) -->
    <circle id=&quot;hit-lhc&quot; cx=&quot;350&quot; cy=&quot;240&quot; r=&quot;180&quot; fill=&quot;none&quot; stroke=&quot;rgba(88,166,255,0.01)&quot; stroke-width=&quot;22&quot; pointer-events=&quot;stroke&quot; class=&quot;info-hit-ring&quot;/>
@@ -2025,17 +2038,17 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
       E5.btnZoomOut.classList.remove(&quot;off&quot;);
       let tx, ty, tw = 160, th = 120;
       if (name === &quot;ATLAS&quot;) {
-        tx = 234;
-        ty = 353;
+        tx = 270;
+        ty = 360;
       } else if (name === &quot;CMS&quot;) {
-        tx = 306;
-        ty = 3;
+        tx = 270;
+        ty = 0;
       } else if (name === &quot;ALICE&quot;) {
-        tx = 120;
-        ty = 277;
+        tx = 90;
+        ty = 180;
       } else if (name === &quot;LHCB&quot;) {
-        tx = 368;
-        ty = 326;
+        tx = 450;
+        ty = 180;
       }
       animateViewBox(tx, ty, tw, th);
       selectDetector(name);
@@ -2380,7 +2393,6 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
   }
 })();
 </script><script>(function(){function r(){try{var h=Math.ceil(document.getElementById('cern-v4')?document.getElementById('cern-v4').getBoundingClientRect().height:document.documentElement.scrollHeight);parent.postMessage({cernV4Height:h},'*');}catch(e){}}window.addEventListener('load',r);setTimeout(r,250);setTimeout(r,1200);if(window.ResizeObserver){new ResizeObserver(r).observe(document.body);}})();</script></body></html>"></iframe><script>(function(){var f=document.getElementById('cern-v4-frame');if(!f)return;window.addEventListener('message',function(e){if(e.source===f.contentWindow&&e.data&&e.data.cernV4Height){f.style.height=(e.data.cernV4Height+6)+'px';}});})();</script>'''))
-
 
 
 # %% [markdown]

@@ -104,13 +104,13 @@ describe('Interaktionen (esbuild-Bundle, jsdom)', () => {
     expect($('btn-toggle-geo').textContent).toMatch(/Didaktik/);
   });
 
-  it('Detektoren liegen auf den echten IP-Positionen (aus OSM projiziert)', () => {
+  it('Schema-Detektoren sitzen auf den Strahlrohr-Überkreuzungen (Kardinalpunkte)', () => {
     const at = (id) => [+$(id).getAttribute('cx'), +$(id).getAttribute('cy')];
-    // ATLAS unten, CMS oben, ALICE links-unten, LHCb rechts-unten (reale Anordnung)
-    expect(at('d-atlas')).toEqual([314, 413]);
-    expect(at('d-cms')).toEqual([386, 63]);
-    expect(at('d-alice')).toEqual([200, 337]);
-    expect(at('d-lhcb')).toEqual([448, 386]);
+    // Didaktik-Schema: Detektoren = Crossover-Punkte der lhc-pipe1/2 (Geo-Modus nutzt echte IPs separat)
+    expect(at('d-atlas')).toEqual([350, 420]);
+    expect(at('d-cms')).toEqual([350, 60]);
+    expect(at('d-alice')).toEqual([170, 240]);
+    expect(at('d-lhcb')).toEqual([530, 240]);
   });
 
   it('Geo-Overlay enthält reale Vorbeschleuniger + TI-Linien (akkurate Lage)', () => {

@@ -86,8 +86,17 @@
    <!-- LHC tunnel (massive average ring cx=350 cy=240 r=180) -->
    <circle id="p-lhc" cx="350" cy="240" r="180" class="svg-path svg-lhc"/>
 
-   <!-- (RF-Cavity- & Quadrupol-Deko entfernt: sie saßen an den ALTEN Detektor-
-        positionen; die Detektoren liegen jetzt auf den echten IPs.) -->
+   <!-- STYLISH ACCELERATOR DETECTORS & DETAILS -->
+   <!-- RF Cavities on the LHC ring (Point 4) represented as small bright rects -->
+   <rect x="340" y="415" width="20" height="10" fill="rgba(255,127,14,0.2)" stroke="#ff7f0e" stroke-width="1" />
+   <rect x="340" y="55" width="20" height="10" fill="rgba(255,127,14,0.2)" stroke="#ff7f0e" stroke-width="1" />
+   <text x="350" y="435" fill="rgba(255,127,14,0.5)" font-size="6px" font-family="monospace" text-anchor="middle">400 MHz RF</text>
+
+   <!-- Quadrupole focusing triplets near the detectors -->
+   <path d="M 330,420 L 370,420" stroke="#2ea44f" stroke-width="3" opacity="0.3" />
+   <path d="M 330,60 L 370,60" stroke="#2ea44f" stroke-width="3" opacity="0.3" />
+   <path d="M 170,220 L 170,260" stroke="#2ea44f" stroke-width="3" opacity="0.3" />
+   <path d="M 530,220 L 530,260" stroke="#2ea44f" stroke-width="3" opacity="0.3" />
 
    <!-- Nodes / Labels -->
    <circle id="n-linac4" cx="30" cy="385" r="5" class="svg-node"/>
@@ -105,24 +114,28 @@
    <circle id="n-sps" cx="345" cy="350" r="10" class="svg-node"/>
    <text x="345" y="291" class="svg-lbl" text-anchor="middle">SPS</text>
 
-   <!-- LHC Detector Groups — auf den ECHTEN IP-Positionen (aus OSM-Insertions
-        projiziert, geo.gen.js). Liegen auf dem Ring (r≈180), Bunches passieren sie. -->
+   <!-- LHC Detector Groups (DIDAKTIK): an den Kardinalpunkten = Überkreuzungen der
+        Strahlrohre (lhc-pipe1/2). Der Geo-Modus zeichnet die ECHTEN IP-Lagen separat. -->
    <g id="grp-atlas" style="cursor:pointer">
-    <circle id="d-atlas" cx="314" cy="413" r="14" class="svg-node"/>
-    <text x="314" y="441" class="svg-lbl" style="fill:#e6edf3;font-weight:bold">ATLAS (IP1)</text>
+    <circle id="d-atlas" cx="350" cy="420" r="14" class="svg-node"/>
+    <text x="350" y="448" class="svg-lbl" style="fill:#e6edf3;font-weight:bold">ATLAS (IP1)</text>
    </g>
    <g id="grp-cms" style="cursor:pointer">
-    <circle id="d-cms" cx="386" cy="63" r="14" class="svg-node"/>
-    <text x="386" y="45" class="svg-lbl" style="fill:#e6edf3;font-weight:bold">CMS (IP5)</text>
+    <circle id="d-cms" cx="350" cy="60" r="14" class="svg-node"/>
+    <text x="350" y="42" class="svg-lbl" style="fill:#e6edf3;font-weight:bold">CMS (IP5)</text>
    </g>
    <g id="grp-alice" style="cursor:pointer">
-    <circle id="d-alice" cx="200" cy="337" r="12" class="svg-node"/>
-    <text x="200" y="362" class="svg-lbl" style="fill:#e6edf3;font-weight:bold">ALICE (IP2)</text>
+    <circle id="d-alice" cx="170" cy="240" r="12" class="svg-node"/>
+    <text x="134" y="240" class="svg-lbl" style="fill:#e6edf3;font-weight:bold">ALICE (IP2)</text>
    </g>
    <g id="grp-lhcb" style="cursor:pointer">
-    <circle id="d-lhcb" cx="448" cy="386" r="12" class="svg-node"/>
-    <text x="448" y="411" class="svg-lbl" style="fill:#e6edf3;font-weight:bold">LHCb (IP8)</text>
+    <circle id="d-lhcb" cx="530" cy="240" r="12" class="svg-node"/>
+    <text x="567" y="240" class="svg-lbl" style="fill:#e6edf3;font-weight:bold">LHCb (IP8)</text>
    </g>
+
+   <!-- TI labels -->
+   <text x="206" y="392" class="svg-lbl" style="font-size:8px">TI 2</text>
+   <text x="436" y="356" class="svg-lbl" style="font-size:8px">TI 8</text>
 
    <!-- INFO HIT TARGETS — transparent click zones; order = innermost last (highest z in SVG) -->
    <circle id="hit-lhc" cx="350" cy="240" r="180" fill="none" stroke="rgba(88,166,255,0.01)" stroke-width="22" pointer-events="stroke" class="info-hit-ring"/>

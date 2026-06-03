@@ -47,11 +47,11 @@ function zoomToDetector(name){
  } else {
   zoomTarget = name;
   E.btnZoomOut.classList.remove("off");
-  let tx, ty, tw=160, th=120;   // Box zentriert auf die echten IP-Positionen
-  if(name === "ATLAS") { tx = 234; ty = 353; }
-  else if(name === "CMS") { tx = 306; ty = 3; }
-  else if(name === "ALICE") { tx = 120; ty = 277; }
-  else if(name === "LHCB") { tx = 368; ty = 326; }
+  let tx, ty, tw=160, th=120;   // Box auf die Schema-Detektorpositionen (Kardinalpunkte)
+  if(name === "ATLAS") { tx = 270; ty = 360; }
+  else if(name === "CMS") { tx = 270; ty = 0; }
+  else if(name === "ALICE") { tx = 90; ty = 180; }
+  else if(name === "LHCB") { tx = 450; ty = 180; }
   animateViewBox(tx, ty, tw, th);
   selectDetector(name);
  }
