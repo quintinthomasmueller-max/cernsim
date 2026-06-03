@@ -34,7 +34,10 @@
     Damit sind die im Maßstab winzigen Vorbeschleuniger (sonst sub-px) sichtbar.
   - **LHC nicht perfekt rund** ist KORREKT (real 8 Bögen + 8 Geraden, OSM-Rel. 9512017 bestätigt es) —
     echte Form bleibt im Real-Modus. Didaktik-Detektoren sitzen auf den Strahlrohr-Crossovern.
-  - **Visuell verifiziert** (Screenshots beide Modi) + Perf gemessen. Tests → **35 grün**; `check.sh` grün.
+  - **Visuell verifiziert** (Screenshots beide Modi) + Perf gemessen. Tests → **36 grün**; `check.sh` grün.
+  - ⚠ **nbstripout ist in dieser Umgebung NICHT aktiv** (Git-Filter greift nicht). Falls das `.ipynb`
+    ausgeführt wurde: vor Commit Outputs strippen (`nbstripout <nb>` oder `outputs=[]`/`execution_count=None`
+    je Code-Zelle), sonst landen Outputs im Commit.
 - **Zuvor erledigt (Phase 3 ABGESCHLOSSEN):** Headless-Test-Suite ausgebaut → **30 Tests / 4 Dateien**,
   alle grün: `tests/physics.test.mjs` (importiert `src/`-Module direkt; Signifikanz ∝ √N inkl.
   5·√(N/target) & Energie-Schwelle, Rate ∝ I²/β* deterministisch, Klassifikation Z⁰/J-ψ/Υ/Untergrund/
