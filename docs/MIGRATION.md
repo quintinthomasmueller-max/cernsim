@@ -27,7 +27,11 @@
   - **TI 2/TI 8 = echte gekrümmte OSM-Trassen** (Datenlücke geschlossen): in OSM als `way(317804188)`
     „Tl2" und `way(317804189)` „Tl-8" (l statt I!). Trasse SPS-Ende→IP; letztes Stück bindet an den
     echten Injektionspunkt an (TI8 12 px, TI2 50 px Rest) → **Einlauf aus realer Richtung**.
-  - **Datenlücke (Rest):** LINAC3/4 + LEIR nicht in OSM (Standort via POI „CERN Meyrin").
+  - **Übrige Transfers real:** TT2/TT10 + TT60 (PS↔SPS-Bereich) aus OSM ergänzt (`GEO.tt`).
+  - **Zoom-Inset „Injektorkomplex Meyrin"** (links neben dem Ring, verdeckt keinen Detektor):
+    zeigt die Kette LINAC4→PSB→PS / LINAC3→LEIR→PS + →SPS. **LINAC3/4 & LEIR sind NICHT in OSM**
+    (mehrfach geprüft, auch Rel. 27005) → im Inset **schematisch/topologisch**, klar so betitelt.
+    Damit sind die im Maßstab winzigen Vorbeschleuniger (sonst sub-px) sichtbar.
   - **LHC nicht perfekt rund** ist KORREKT (real 8 Bögen + 8 Geraden, OSM-Rel. 9512017 bestätigt es) —
     echte Form bleibt im Real-Modus. Didaktik-Detektoren sitzen auf den Strahlrohr-Crossovern.
   - **Visuell verifiziert** (Screenshots beide Modi) + Perf gemessen. Tests → **35 grün**; `check.sh` grün.

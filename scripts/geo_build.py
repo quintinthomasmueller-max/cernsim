@@ -178,6 +178,14 @@ def build():
         line = [(round(x, 1), round(y, 1)) for (x, y) in line] + [(round(ip[0], 1), round(ip[1], 1))]
         GEO['ti'][tname] = 'M ' + ' L '.join(f'{x},{y}' for (x, y) in line)
 
+    # Echte interne Transferlinien (PS↔SPS-Bereich): TT2/TT10 + TT60 aus OSM.
+    GEO['tt'] = []
+    for k in ('tt2_10', 'tt60'):
+        e = (raw.get(k) or [{}])[0]
+        if e.get('geometry'):
+            line = [tf(p['lon'], p['lat']) for p in e['geometry']]
+            GEO['tt'].append('M ' + ' L '.join(f'{x:.1f},{y:.1f}' for (x, y) in line))
+
     # Labels der Vorbeschleuniger (Zentroide)
     GEO['accelLabels'] = []
     for key, txt in (('sps', 'SPS'), ('ps', 'PS'), ('psb', 'PSB')):

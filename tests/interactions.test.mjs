@@ -125,4 +125,9 @@ describe('Interaktionen (esbuild-Bundle, jsdom)', () => {
     // Detektor-Labels im Geo-Layer (an realen IP-Positionen gezeichnet)
     ['ATLAS','CMS','ALICE','LHCB'].forEach(n => expect(txt).toContain(n));
   });
+
+  it('Zoom-Inset zeigt LINAC3/4 + LEIR + PSB (Injektorkomplex)', () => {
+    const txt = $('geo-layer').textContent;
+    ['LINAC4','LINAC3','LEIR','PSB','INJEKTOR-KOMPLEX MEYRIN'].forEach(n => expect(txt).toContain(n));
+  });
 });
