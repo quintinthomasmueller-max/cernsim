@@ -149,8 +149,10 @@ async function injectBunch(beam){
  const color = beam===1 ? (ion?"#e377c2":"#58a6ff") : (ion?"#c77dff":"#ff7f0e");
  const dot=document.createElementNS(SVG_NS,"circle");
  dot.setAttribute("class","traveling-dot"); dot.setAttribute("r","4");
- dot.setAttribute("fill",color); dot.style.filter="drop-shadow(0 0 4px "+color+")";
- E.svg.appendChild(dot);
+ // KEIN per-Punkt drop-shadow-Filter: SVG-Filter auf bewegten Elementen rastern
+ // jeden Frame neu → Ruckeln. Glow stattdessen billig per Stroke (siehe CSS).
+ dot.setAttribute("fill",color); dot.setAttribute("stroke",color);
+ (E.schematic||E.svg).appendChild(dot);
  const fin=()=>{ dot.remove(); };
 
  const lp=ion?paths.linac3:paths.linac4, ln=ion?nodes.linac3:nodes.linac4;
@@ -248,10 +250,11 @@ function addPermanentDot(beam){
  const existing=s.lhcDots[key].length;
  const angleOffset=existing*(2*Math.PI/NEEDED);
  const dot=document.createElementNS(SVG_NS,"circle");
- dot.setAttribute("r","3.5");
+ dot.setAttribute("class","lhc-bunch"); dot.setAttribute("r","3.5");
  let c=beam===1?(s.isIon?"#e377c2":"#58a6ff"):(s.isIon?"#c77dff":"#ff7f0e");
- dot.setAttribute("fill",c); dot.style.filter="drop-shadow(0 0 3px "+c+")";
- E.svg.appendChild(dot);
+ // KEIN drop-shadow-Filter (Perf): die 12 Bunches kreisen jeden Frame.
+ dot.setAttribute("fill",c); dot.setAttribute("stroke",c);
+ (E.schematic||E.svg).appendChild(dot);
  s.lhcDots[key].push({el:dot,off:angleOffset});
  if(!s.lhcRunning) startLHCLoop();
 }

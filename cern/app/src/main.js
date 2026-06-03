@@ -40,6 +40,7 @@ function initDom(){
  E.grpAtlas=$("grp-atlas"); E.grpCms=$("grp-cms"); E.grpAlice=$("grp-alice"); E.grpLhcb=$("grp-lhcb");
  E.svg=$("svg");
  E.geoLayer=$("geo-layer");
+ E.schematic=$("schematic");   // Didaktik-Gruppe (im Real-Modus ausgeblendet)
 
  // SVG-Pfade & Knoten + Stufen-Tracker → App.g
  g.trSteps=["tr-src","tr-inj","tr-ps","tr-sps","tr-lhc"].map($);
@@ -65,7 +66,8 @@ function start(){
  initDom();
  wireEngine();
  wireHandlers();
- App.drawGeo();
+ App.drawGeo();          // baut #geo-layer (reale Ansicht) auf
+ App.setViewMode(false); // Start im Didaktik-Modus (Schema sichtbar, Geo aus)
  App.resizeCanvases();
  App.updateReadouts(); App.drawDetBg(); App.drawHist();
  App.setStatus("BEREIT — Wähle Teilchenart und starte Injektion","on");

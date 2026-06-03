@@ -28,8 +28,10 @@ Hauptdatei: `cern/notebooks/CERN_Beschleuniger_Schaltzentrale.ipynb`.
   - Physik-Engine: `timeScale`, `getDurations`, `injectBunch`, `flowStep`, `fuellProtokoll`, `startLHCLoop`, Ramp.
   - Event-Display: `DETKONFIG`, `drawDetBg`, `drawParticleBarrel/Forward`, `drawCollisionEvent`, `drawLegend`.
   - Spektrum/Signifikanz: `sampleEvent`, `generateMassData`, `classify`, `getSignificance`, `drawHist`.
-  - Geo-Overlay (Phase 4): `geo.js#drawGeo` zeichnet `geo.gen.js` (geo-genau, generiert von
-    `scripts/geo_build.py` aus OSM/Overpass; Web-Mercator, ODbL) in `#geo-layer`.
+  - Zwei Modi (Phase 4): `#svg` hat `<g id="schematic">` (Didaktik, animiert) + `<g id="geo-layer">`
+    (Reale Ansicht). `geo.js#setViewMode(real)` schaltet per `display` hart um (kein Overlap; Default
+    Didaktik). Real = komplett OSM-Geodaten in echter Größe (`geo.js#drawGeo` aus `geo.gen.js`,
+    generiert von `scripts/geo_build.py`, Web-Mercator/uniform, ODbL; TI 2/8 approx., da nicht in OSM).
   - Daten: `CERN_REAL` (echte CMS-Massen/Topologien, ~37 KB) — eingebettet.
 - **Python-Datenschicht**: `cern/scripts/cern_utils.py` (`RESONANZEN`, `HISTORIE`, `lade_cms_dimuon`,
   `lade_dimuon_4vektoren`, `dimuon_invariante_masse`, `lade_higgs_4l`).

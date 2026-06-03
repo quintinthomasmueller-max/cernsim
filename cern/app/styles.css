@@ -45,8 +45,13 @@
 .svg-path.lit-i{stroke:#e377c2;filter:drop-shadow(0 0 5px rgba(227,119,194,.6))}
 .svg-path.lit-b2{stroke:#ff7f0e;filter:drop-shadow(0 0 5px rgba(255,127,14,.6))}
 .svg-lhc{stroke:rgba(88,166,255,.08);stroke-width:4;fill:none}
-.svg-lhc.lit{stroke:rgba(88,166,255,.3)}
-.svg-lhc.lit-i{stroke:rgba(227,119,194,.3)}
+/* Der LHC-Ring ist riesig (Ø ~360px). Im Betrieb laufen 12 Bunches darüber →
+   ein drop-shadow-Filter auf dem Ring würde jeden Frame komplett neu gerastert
+   (Haupt-Ursache des Ruckelns). Daher KEIN Filter, Glow nur über die Strichfarbe. */
+.svg-lhc.lit{stroke:rgba(88,166,255,.45);filter:none}
+.svg-lhc.lit-i{stroke:rgba(227,119,194,.45);filter:none}
+/* Bewegte Bunches: billiger Glow per Stroke statt drop-shadow-Filter */
+.traveling-dot,.lhc-bunch{stroke-width:2;stroke-opacity:.45;paint-order:stroke}
 .svg-node{fill:#0d1117;stroke:#21262d;stroke-width:2}
 .svg-node.glow{stroke:#58a6ff;fill:rgba(88,166,255,.12);filter:drop-shadow(0 0 6px rgba(88,166,255,.4))}
 .svg-node.glow-i{stroke:#e377c2;fill:rgba(227,119,194,.12);filter:drop-shadow(0 0 6px rgba(227,119,194,.4))}
@@ -64,9 +69,8 @@
 .cv4-sli::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#58a6ff;cursor:pointer;border:1px solid #30363d}
 .cv4-quench{background:rgba(248,81,73,.15);border:1px solid #f85149;color:#f85149;padding:10px;border-radius:6px;font-size:12px;font-weight:bold;text-align:center;animation:cv4blink 1s infinite}
 @keyframes cv4blink{0%,100%{opacity:.5}50%{opacity:1}}
-.geo-element{transition:opacity 0.3s ease, fill-opacity 0.3s ease, filter 0.3s ease;}
-/* Geo-Overlay ausgegraut: gedimmt + entsättigt (per Button), statt komplett ausgeblendet */
-#svg.geo-dimmed .geo-element{opacity:0.22;filter:grayscale(1) brightness(0.85);}
+/* Geo-Layer braucht keine Pointer-Events und soll bewegte Bunches nicht ausbremsen */
+#geo-layer{pointer-events:none}
 .info-hit{cursor:pointer;transition:fill 0.18s}
 .info-hit:hover{fill:rgba(88,166,255,0.07)!important}
 .info-hit-ring{cursor:pointer;transition:stroke 0.18s}

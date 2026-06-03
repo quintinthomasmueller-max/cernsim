@@ -8,7 +8,7 @@ import { App, NEEDED, sleep, $ } from './core.js';
 const s = App.state, E = App.els;
 
 // Handler-lokaler View-Zustand (nur hier verwendet)
-let geoVisible = true;
+let realMode = false;   // false = Didaktik (Schema), true = Reale Ansicht (Geo)
 let currentVB = {x:0, y:0, w:700, h:480};
 let zoomTarget = null; // "ATLAS", "CMS", "ALICE", "LHCB" or null
 
@@ -47,11 +47,11 @@ function zoomToDetector(name){
  } else {
   zoomTarget = name;
   E.btnZoomOut.classList.remove("off");
-  let tx, ty, tw=160, th=120;
-  if(name === "ATLAS") { tx = 270; ty = 360; }
-  else if(name === "CMS") { tx = 270; ty = 0; }
-  else if(name === "ALICE") { tx = 90; ty = 180; }
-  else if(name === "LHCB") { tx = 450; ty = 180; }
+  let tx, ty, tw=160, th=120;   // Box zentriert auf die echten IP-Positionen
+  if(name === "ATLAS") { tx = 234; ty = 353; }
+  else if(name === "CMS") { tx = 306; ty = 3; }
+  else if(name === "ALICE") { tx = 120; ty = 277; }
+  else if(name === "LHCB") { tx = 368; ty = 326; }
   animateViewBox(tx, ty, tw, th);
   selectDetector(name);
  }
@@ -112,14 +112,15 @@ export function wireHandlers(){
    }
  });
 
- // GEO OVERLAY TOGGLE — Standard = volle Kontraststufe; Button graut das Overlay aus.
+ // MODUS-UMSCHALTUNG: Didaktik (Schema, animiert) ⟷ Reale Ansicht (Geo, echte Größen)
  E.btnToggleGeo.addEventListener("click",()=>{
-  geoVisible = !geoVisible;
-  E.svg.classList.toggle("geo-dimmed", !geoVisible);
-  document.querySelectorAll(".geo-element").forEach(el=>{
-   el.style.pointerEvents = geoVisible ? "auto" : "none";
-  });
-  E.btnToggleGeo.classList.toggle("act", geoVisible);
+  realMode = !realMode;
+  App.setViewMode(realMode);
+  E.btnToggleGeo.classList.toggle("act", realMode);
+  E.btnToggleGeo.innerText = realMode ? "🎬 Didaktik-Modus" : "🌍 Reale Ansicht";
+  App.setStatus(realMode
+    ? "REALE ANSICHT — echte Anordnung & Größen (OSM-Geodaten, Nord oben)"
+    : "DIDAKTIK-MODUS — schematische, animierte Beschleuniger-Kette", "on");
  });
 
  // Event-Display-Tabs sind klickbar → wechseln Detektor + Spektrum (ohne Kamera-Zoom)

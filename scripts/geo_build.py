@@ -41,10 +41,16 @@ EP = 'https://overpass-api.de/api/interpreter'
 QUERIES = {
  'lhc':   '[out:json][timeout:120];way["name"~"^Large Hadron Collider"];out geom;',
  'sps':   '[out:json][timeout:120];way(66473762);out geom;',
+ 'ps':    '[out:json][timeout:120];way(174646428);out geom;',          # Proton Synchrotron
+ 'psb':   '[out:json][timeout:120];way(309914733);out geom;',          # PS Booster
+ # Detektor-Insertions = echte IP-Positionen auf dem Ring (ATLAS/CMS/ALICE/LHCb).
+ # Union-Klammern PFLICHT, sonst behält Overpass nur das letzte way() im Ergebnis.
+ 'ip':    '[out:json][timeout:120];(way(685422600);way(685422592);way(685422602);way(685422598););out geom;',
  'lake':  '[out:json][timeout:120];rel(332617);out geom;',          # „Le Léman"
  'border':'[out:json][timeout:120];way["boundary"="administrative"]["admin_level"="2"]'
           '(46.22,5.98,46.34,6.16);out geom;',
 }
+IP_WAYS = {685422600: 'ATLAS', 685422592: 'CMS', 685422602: 'ALICE', 685422598: 'LHCB'}
 def fetch():
     raw = {}
     for k, q in QUERIES.items():
@@ -123,6 +129,61 @@ def build():
     for ln in lines_from(raw.get('border', [])):
         d = path_d(ln, tf, step=2, clip=True, minpts=5)  # Grenze: Kurzfragmente verwerfen
         if d: GEO['border'].append(d)
+
+    # ── Echte Vorbeschleuniger (geo-akkurate relative Lage) ─────────────────
+    def proj_ring(key):
+        out = []
+        for ln in lines_from(raw.get(key, [])):
+            d = path_d(ln, tf)
+            if d: out.append(d)
+        return out
+    GEO['sps'] = proj_ring('sps')
+    GEO['ps']  = proj_ring('ps')
+    GEO['psb'] = proj_ring('psb')
+
+    def centroid(lines):
+        pts = [tf(lo, la) for ln in lines for (lo, la) in ln]
+        return (sum(p[0] for p in pts)/len(pts), sum(p[1] for p in pts)/len(pts)) if pts else None
+    sps_pts = [tf(lo, la) for ln in lines_from(raw.get('sps', [])) for (lo, la) in ln]
+    sps_c = centroid(lines_from(raw.get('sps', [])))
+
+    # Echte IP-Positionen (Zentroid der jeweiligen Insertion)
+    GEO['ip'] = {}
+    by_id = {e['id']: e for e in raw.get('ip', []) if 'geometry' in e}
+    for wid, name in IP_WAYS.items():
+        e = by_id.get(wid)
+        if e:
+            c = centroid([[(p['lon'], p['lat']) for p in e['geometry']]])
+            GEO['ip'][name] = {'x': round(c[0], 1), 'y': round(c[1], 1)}
+
+    # TI 2 / TI 8: vom SPS (nächstgelegener Ringpunkt) zur LHC-Injektion an Punkt 2/8.
+    # Punkt 2 ≈ ALICE-Insertion, Punkt 8 ≈ LHCb-Insertion (echte Lage).
+    # HINWEIS: Die SPS→LHC-Transfertunnel sind in OSM NICHT als Geometrie vorhanden
+    # (nur interne SPS-Transfers TT2/TT10/TT60). Endpunkte sind echte Geodaten,
+    # die Verbindung ist eine GEKRÜMMTE Approximation (quadratische Bézier, nach
+    # außen gebogen) — keine Gerade. Klar als approximiert gekennzeichnet.
+    def nearest_sps(target):
+        return min(sps_pts, key=lambda p: (p[0]-target[0])**2 + (p[1]-target[1])**2)
+    GEO['ti'] = {}
+    GEO['tiApprox'] = True
+    for tname, ipname in (('ti2', 'ALICE'), ('ti8', 'LHCB')):
+        if sps_pts and ipname in GEO['ip']:
+            ip = (GEO['ip'][ipname]['x'], GEO['ip'][ipname]['y'])
+            a = nearest_sps(ip)
+            mx, my = (a[0]+ip[0])/2, (a[1]+ip[1])/2          # Sehnen-Mittelpunkt
+            dx, dy = ip[0]-a[0], ip[1]-a[1]
+            L = math.hypot(dx, dy) or 1
+            nx, ny = -dy/L, dx/L                              # Normale zur Sehne
+            # nach außen biegen (weg vom Ringzentrum 350,240)
+            if (mx-LHC_CX)*nx + (my-LHC_CY)*ny < 0: nx, ny = -nx, -ny
+            cxp, cyp = mx + nx*L*0.22, my + ny*L*0.22         # Kontrollpunkt
+            GEO['ti'][tname] = f'M {a[0]:.1f},{a[1]:.1f} Q {cxp:.1f},{cyp:.1f} {ip[0]:.1f},{ip[1]:.1f}'
+
+    # Labels der Vorbeschleuniger (Zentroide)
+    GEO['accelLabels'] = []
+    for key, txt in (('sps', 'SPS'), ('ps', 'PS'), ('psb', 'PSB')):
+        c = centroid(lines_from(raw.get(key, [])))
+        if c: GEO['accelLabels'].append({'t': txt, 'x': round(c[0], 1), 'y': round(c[1], 1)})
 
     # POI projizieren (nur die im Frame)
     GEO['poi'] = []

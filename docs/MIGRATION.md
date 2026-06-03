@@ -12,15 +12,23 @@
 - **Aktive Phase:** Phase 4 (Curriculum-Visualisierungen → App-Komponenten) — **in Arbeit**
   (1. Komponente „Geo-Overlay" ✅; weitere offen).
 - **Entscheidungen:** gelockt (siehe „Gelockte Entscheidungen"). Modul-Modell = **leichter Namespace** (`App`-Objekt).
-- **Zuletzt erledigt (Phase 4, Komponente 1 — Geo-Overlay):** Das handdigitalisierte Karten-Overlay
-  ist durch ein **geo-genaues** ersetzt. `scripts/geo_build.py` (`--fetch` lädt OSM via Overpass →
-  `scratch/geo_raw.json`; Build projiziert **Web-Mercator + uniform** am echten LHC-Ring ausgerichtet)
-  generiert `cern/app/src/geo.gen.js` (LHC-Footprint 16 Pfade, Lac Léman 43, CH/FR-Grenze 19 Pfade,
-  projizierte POI + Labels). `src/geo.js#drawGeo` zeichnet das beim Boot in `#geo-layer` (shell.html),
-  Nord=oben, ODbL-Attribution im Bild. **Visuell verifiziert** (Screenshot): realer Footprint deckt
-  sich mit dem Schema, See/Flughafen SE (korrekt), Grenze/POIs plausibel. Tests +2 (Geo-Layer befüllt,
-  Toggle dimmt) → **32 Tests grün**; `check.sh` grün. Reale Größen der Injektoren bleiben **bewusst
-  schematisch** (Ebene B), nur das Overlay (Ebene A) ist geo-ehrlich.
+- **Zuletzt erledigt (Phase 4, Komponente 1 — Perf-Fix + ZWEI MODI):**
+  - **Perf:** Bunch-Animation ruckelte (gefühlt 5 fps). Ursache: `drop-shadow`-SVG-Filter auf den
+    12 kreisenden Bunches UND auf dem 360px-LHC-Ring (`.lit`) → jeder Frame komplett neu gerastert.
+    Filter entfernt (Glow jetzt billig per Stroke). Gemessen: LHC-Loop **60 fps** (p95 17,6 ms,
+    0 Frames > 20 ms). `#geo-layer{pointer-events:none}`.
+  - **Zwei harte Modi statt Overlay (löst Overlapping):** `#svg` enthält `<g id="schematic">`
+    (Didaktik) und `<g id="geo-layer">` (Real). `geo.js#setViewMode(real)` schaltet per `display`
+    HART um (kein Doppelbild). Default = **Didaktik** (animiertes Schema). Button „🌍 Reale Ansicht"
+    ⟷ „🎬 Didaktik-Modus". Bunches werden in `#schematic` gehängt → im Real-Modus mit ausgeblendet.
+  - **Reale Ansicht = komplett OSM-Geodaten, echte Größen:** echter LHC-Ring, **SPS ≈ ¼ LHC, PS/PSB
+    winzig** (reale Größenverteilung), Detektoren an echten IP-Positionen (Insertion-Zentroide),
+    Lac Léman/Grenze/POI, Nord oben. `geo_build.py` holt SPS/PS/PSB + die 4 Insertions; **TI 2/TI 8
+    gekrümmt** (quadratische Bézier; echte Endpunkte SPS↔IP, Bogen approximiert — **OSM hat die
+    SPS→LHC-Tunnel nicht**, nur interne TT2/TT10/TT60; im Bild als „TI 2/8 approx." gekennzeichnet).
+  - **Datenlücke offen:** LINAC3/4 + LEIR nicht in der Real-Ansicht (in OSM nicht/kaum als Geometrie;
+    Standort über POI „CERN Meyrin" angedeutet). Bei Bedarf später ergänzen.
+  - **Visuell verifiziert** (Screenshots beide Modi) + Perf gemessen. Tests → **35 grün**; `check.sh` grün.
 - **Zuvor erledigt (Phase 3 ABGESCHLOSSEN):** Headless-Test-Suite ausgebaut → **30 Tests / 4 Dateien**,
   alle grün: `tests/physics.test.mjs` (importiert `src/`-Module direkt; Signifikanz ∝ √N inkl.
   5·√(N/target) & Energie-Schwelle, Rate ∝ I²/β* deterministisch, Klassifikation Z⁰/J-ψ/Υ/Untergrund/

@@ -94,10 +94,35 @@ describe('Interaktionen (esbuild-Bundle, jsdom)', () => {
     expect([...layer.children].every(c => c.classList.contains('geo-element'))).toBe(true);
   });
 
-  it('Geo-Toggle dimmt auch das injizierte Overlay', () => {
-    $('btn-toggle-geo').click();
-    expect($('svg').classList.contains('geo-dimmed')).toBe(true);
-    $('btn-toggle-geo').click();
-    expect($('svg').classList.contains('geo-dimmed')).toBe(false);
+  it('Modus-Umschaltung blendet Schema bzw. Geo-Layer hart um (kein Overlap)', () => {
+    // Default Didaktik
+    expect($('geo-layer').style.display).toBe('none');
+    expect($('schematic').style.display).toBe('');
+    $('btn-toggle-geo').click();             // Reale Ansicht
+    expect($('geo-layer').style.display).toBe('');
+    expect($('schematic').style.display).toBe('none');
+    expect($('btn-toggle-geo').textContent).toMatch(/Didaktik/);
+  });
+
+  it('Detektoren liegen auf den echten IP-Positionen (aus OSM projiziert)', () => {
+    const at = (id) => [+$(id).getAttribute('cx'), +$(id).getAttribute('cy')];
+    // ATLAS unten, CMS oben, ALICE links-unten, LHCb rechts-unten (reale Anordnung)
+    expect(at('d-atlas')).toEqual([314, 413]);
+    expect(at('d-cms')).toEqual([386, 63]);
+    expect(at('d-alice')).toEqual([200, 337]);
+    expect(at('d-lhcb')).toEqual([448, 386]);
+  });
+
+  it('Geo-Overlay enthält reale Vorbeschleuniger + TI-Linien (akkurate Lage)', () => {
+    const txt = $('geo-layer').textContent;
+    expect(txt).toMatch(/SPS/);            // Vorbeschleuniger-Label
+    expect(txt).toMatch(/TI 2/);           // Transferlinie SPS→IP2
+    expect(txt).toMatch(/TI 8/);           // Transferlinie SPS→IP8
+  });
+
+  it('Reale Ansicht zeigt Detektoren an echten IPs im Geo-Layer', () => {
+    const txt = $('geo-layer').textContent;
+    // Detektor-Labels im Geo-Layer (an realen IP-Positionen gezeichnet)
+    ['ATLAS','CMS','ALICE','LHCB'].forEach(n => expect(txt).toContain(n));
   });
 });

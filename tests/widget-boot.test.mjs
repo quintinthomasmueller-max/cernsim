@@ -12,12 +12,14 @@ describe('Widget bootet headless & verdrahtet Interaktionen', () => {
     expect(booted).toBe(true);
   });
 
-  it('Geo-Overlay-Button graut aus und wieder zurück', () => {
-    const svg = $('svg');
+  it('Modus-Umschaltung: Didaktik ⟷ Reale Ansicht', () => {
+    expect($('schematic').style.display).toBe('');
+    expect($('geo-layer').style.display).toBe('none');
     $('btn-toggle-geo').click();
-    expect(svg.classList.contains('geo-dimmed')).toBe(true);
+    expect($('schematic').style.display).toBe('none');
+    expect($('geo-layer').style.display).toBe('');
     $('btn-toggle-geo').click();
-    expect(svg.classList.contains('geo-dimmed')).toBe(false);
+    expect($('schematic').style.display).toBe('');
   });
 
   it('Preset QGP setzt die Ziel-Energie (2.5 TeV)', () => {

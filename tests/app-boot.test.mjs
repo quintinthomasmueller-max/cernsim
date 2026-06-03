@@ -12,12 +12,16 @@ describe('esbuild-App bootet headless & verdrahtet Interaktionen', () => {
     expect(booted).toBe(true);
   });
 
-  it('Geo-Overlay-Button graut aus und wieder zurück', () => {
-    const svg = $('svg');
-    $('btn-toggle-geo').click();
-    expect(svg.classList.contains('geo-dimmed')).toBe(true);
-    $('btn-toggle-geo').click();
-    expect(svg.classList.contains('geo-dimmed')).toBe(false);
+  it('Modus-Umschaltung: Didaktik ⟷ Reale Ansicht', () => {
+    // Start = Didaktik: Schema sichtbar, Geo-Layer aus
+    expect($('schematic').style.display).toBe('');
+    expect($('geo-layer').style.display).toBe('none');
+    $('btn-toggle-geo').click();   // → Reale Ansicht
+    expect($('schematic').style.display).toBe('none');
+    expect($('geo-layer').style.display).toBe('');
+    $('btn-toggle-geo').click();   // → zurück zu Didaktik
+    expect($('schematic').style.display).toBe('');
+    expect($('geo-layer').style.display).toBe('none');
   });
 
   it('Preset QGP setzt die Ziel-Energie (2.5 TeV)', () => {
