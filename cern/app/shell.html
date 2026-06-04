@@ -18,6 +18,8 @@
  <div class="cv4-svg-wrap">
   <!-- Interactive Absolute Overlay Reset Zoom Button -->
   <button class="cv4-btn off" id="btn-zoom-out" style="position:absolute;top:12px;left:12px;padding:5px 10px;font-size:10px;background:rgba(22,27,34,0.85);border-color:#30363d;z-index:10;transition:all 0.2s">🔍 Ansicht zurücksetzen</button>
+  <!-- Zoom auf den Injektor-Komplex Meyrin (nur in der Realen Ansicht sichtbar) -->
+  <button class="cv4-btn" id="btn-zoom-meyrin" style="position:absolute;bottom:12px;left:12px;padding:5px 10px;font-size:10px;background:rgba(22,27,34,0.88);border-color:#2ea44f;color:#8b949e;z-index:10;transition:all 0.2s;display:none">🔬 Injektor-Komplex (Meyrin)</button>
 
   <!-- INFO PANEL -->
   <div id="info-panel" class="cv4-info-panel">
@@ -152,11 +154,11 @@
  <div class="cv4-panel">
   <div>
    <div class="cv4-ptitle">🔬 EXPERIMENT-PRESETS (SCHNELLWAHL)</div>
-   <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px">
-    <div><button class="cv4-btn" id="btn-pre-higgs" style="background:rgba(88,166,255,.10);border-color:#58a6ff;color:#58a6ff;font-size:9.5px;padding:6px 2px;width:100%">Higgs-Suche (ATLAS/CMS) <span class="cv4-pi-btn" data-pi="preHiggs">ⓘ</span></button><div class="cv4-param-info" id="pi-preHiggs"></div></div>
-    <div><button class="cv4-btn" id="btn-pre-qgp" style="background:rgba(227,119,194,.10);border-color:#e377c2;color:#e377c2;font-size:9.5px;padding:6px 2px;width:100%">QGP-Erzeugung (ALICE) <span class="cv4-pi-btn" data-pi="preQgp">ⓘ</span></button><div class="cv4-param-info" id="pi-preQgp"></div></div>
-    <div><button class="cv4-btn" id="btn-pre-lhcb" style="background:rgba(255,127,14,.10);border-color:#ff7f0e;color:#ff7f0e;font-size:9.5px;padding:6px 2px;width:100%">CP-Verletzung (LHCb) <span class="cv4-pi-btn" data-pi="preLhcb">ⓘ</span></button><div class="cv4-param-info" id="pi-preLhcb"></div></div>
-    <div><button class="cv4-btn" id="btn-pre-pilot" style="background:rgba(23,190,207,.10);border-color:#17becf;color:#17becf;font-size:9.5px;padding:6px 2px;width:100%">Pilot-Strahl (Testrun) <span class="cv4-pi-btn" data-pi="prePilot">ⓘ</span></button><div class="cv4-param-info" id="pi-prePilot"></div></div>
+   <!-- Die 3 realen LHC-Betriebsmodi: pp-Physik (Higgs/Z⁰/CP zusammen) · Schwerionen/QGP · Pilot. -->
+   <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px">
+    <div><button class="cv4-btn" id="btn-pre-pp" style="background:rgba(88,166,255,.10);border-color:#58a6ff;color:#58a6ff;font-size:9.5px;padding:6px 2px;width:100%">Protonen-Physik (13.6 TeV) <span class="cv4-pi-btn" data-pi="prePp">ⓘ</span></button><div class="cv4-param-info" id="pi-prePp"></div></div>
+    <div><button class="cv4-btn" id="btn-pre-qgp" style="background:rgba(227,119,194,.10);border-color:#e377c2;color:#e377c2;font-size:9.5px;padding:6px 2px;width:100%">Schwerionen / QGP (ALICE) <span class="cv4-pi-btn" data-pi="preQgp">ⓘ</span></button><div class="cv4-param-info" id="pi-preQgp"></div></div>
+    <div><button class="cv4-btn" id="btn-pre-pilot" style="background:rgba(23,190,207,.10);border-color:#17becf;color:#17becf;font-size:9.5px;padding:6px 2px;width:100%">Pilot / Inbetriebnahme <span class="cv4-pi-btn" data-pi="prePilot">ⓘ</span></button><div class="cv4-param-info" id="pi-prePilot"></div></div>
    </div>
   </div>
 

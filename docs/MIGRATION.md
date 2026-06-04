@@ -12,6 +12,58 @@
 - **Aktive Phase:** Phase 4 (Curriculum-Visualisierungen → App-Komponenten) — **in Arbeit**
   (1. Komponente „Geo-Overlay" ✅; weitere offen).
 - **Entscheidungen:** gelockt (siehe „Gelockte Entscheidungen"). Modul-Modell = **leichter Namespace** (`App`-Objekt).
+- **Zuletzt erledigt (diese Session):**
+  - **Canvas-Skalierungs-Bug behoben** (Event-Display + Histogramm): `resizeCanvases` schrieb die
+    per `getBoundingClientRect` gemessene Pixelgröße als Inline-`style.width/height` zurück — lief das
+    beim Boot (`readyState==="loading"`, Layout 0 breit), fror es eine falsche/überdimensionierte
+    Größe ein und überschrieb das responsive CSS dauerhaft. Fix: Anzeigegröße bleibt CSS-gesteuert,
+    nur Backing-Store = `clientWidth·dpr`, gekoppelt per **ResizeObserver** (`engine.js#fitCanvas`,
+    `main.js#start`). Lehre → Memory `canvas-sizing-pitfall`.
+  - **Massenspektrum-Engine überarbeitet (Ziel: max. logische Konsequenz):** Spektrum ist jetzt
+    **strahlkonfigurations-getrieben** statt rein detektor-getrieben — hängt von ZWEI Achsen ab:
+    (1) **Detektor** (Kanal/Fenster), (2) **Strahl-Programm/Preset**. `spectrum.js#DETSPEC` hat pro
+    Detektor `beam` ("pp"/"PbPb") + `bg(v)` + `reson[]` mit Schwelle `thr` (TeV/Strahl), optional
+    `pp:true` (nur mit Protonen erzeugbar) und `qgp:true` (im Ionen-Lauf unterdrückt).
+    `energyVis/prodVis/drawVis`: Peak erscheint erst beim Hochrampen über die Schwelle (darunter nur
+    Kontinuum); EW/B-Peaks (Z⁰/Higgs/B⁰) verschwinden im Ionen-Lauf; QGP unterdrückt Quarkonia.
+    **`getSignificance` gated durch `beamMatches`** → Entdeckung nur im richtigen Programm (CMS-Higgs
+    nur in pp, ALICE-QGP nur in Pb-Pb) — behebt „QGP-Preset → CMS entdeckt Higgs". Signifikanz sonst
+    kontinuierlich ∝ prodVis (ersetzt binäre `minE`-Schranke). Daten **und** Fit aus EINEM Modell
+    (`sampleMass`/`fitVal`). Energie-Slider koppelt live an `drawHist`. Drei klare Status-Gründe:
+    falsches Strahl-Programm / Energie zu gering / kein Signal. Tests **42 grün**. Visuell bestätigt
+    (ATLAS 0.45→6.8 TeV: Z⁰-Peak taucht auf; ALICE Pb-Pb: J/ψ unterdrückt; QGP-Lauf+CMS: 0σ „braucht Protonen").
+  - **Strahl-Logik verfeinert „pro Resonanz" (Realismus-Audit):** Strahl-Gating jetzt korrekt
+    physikalisch: **Z⁰ = QGP-blinde Standardkerze** → in pp UND Pb-Pb messbar (`discoBeam:"any"`, kein
+    pp-Flag); Higgs/B⁰ bleiben pp-exklusiv (`pp:true`); Quarkonia in beidem (in pp = unverdrängte
+    **p-p-Referenz**, in Pb-Pb QGP-unterdrückt). Detektor-Gating über `discoBeam` (`discoBeamOK`)
+    statt fixem Detektor-Strahl. Energie-Schwellen ehrlich als **Raten-Schwellen** beschriftet
+    („Produktionsrate zu gering", nicht „nicht erzeugbar"). Matrix (Preset×Detektor) gegen reale
+    Physik geprüft: Higgs/LHCb-Preset (pp) → ATLAS/CMS/LHCb produktiv + ALICE p-p-Referenz;
+    QGP-Preset (Pb-Pb) → **ATLAS-Z⁰ ✅ (Standardkerze)**, CMS/LHCb pp-blockiert, ALICE QGP.
+    CP-Verletzung im Higgs-Preset ist KORREKT (alle Experimente laufen gleichzeitig auf pp-Strahl).
+    Tests **43 grün** (u.a. „Z⁰ in pp UND Pb-Pb", „LHCb-CP nur pp"). UI-Matrix verifiziert.
+  - **Reale Ansicht: LHC verifiziert + Injektor-Komplex an reale Lage + Zoom.**
+    LHC-Geometrie frisch aus Overpass neu gezogen (`geo_build.py --fetch`, jetzt vollständig:
+    `tt2_10`/`tt60` + neu `linac4` in `QUERIES`) und **verifiziert**: 16 Segmente / 290 Punkte,
+    **max. Endpunkt-Lücke 0,00 px** = perfekt geschlossen, identisch zur vorigen Version → der
+    Ring ist bereits maximal akkurate echte OSM-Geometrie (wirkt rund, weil der echte LHC fast
+    rund IST). **LINAC 4 ist neu in OSM** (way 80305783) → als echtes Gebäude eingebaut; LEIR/
+    LINAC 3 weiterhin ∉ OSM. **Injektor-Inset-Box entfernt** (`geo.js#drawInset` raus): der
+    Komplex sitzt jetzt an der REALEN relativen Lage zu PS/PSB (Meyrin, CH-Seite, tangential nahe
+    ATLAS); im Vollbild nur ein dezenter Hinweis-Ring (`.geo-inj-hint`), die Detail-Beschriftung
+    (`.geo-inj-detail`, LINAC4/LINAC3/LEIR) erscheint per **Zoom-Button „🔬 Injektor-Komplex"**
+    (`#svg.inj-zoom`, geo-genaues Fenster `App.geoInjectorView`). `resetView()`/`zoomMeyrin()` in
+    handlers, Button nur in der Realen Ansicht sichtbar. Tests **45 grün** (Inset-Test → Real-Lage-
+    Test). Visuell verifiziert (Vollbild-Hinweis + Zoom auf Meyrin-Cluster). Hinweis: `animateViewBox`
+    nutzt `requestAnimationFrame` → im Headless-Preview keine Frames (nur dort), im echten Browser/
+    Notebook animiert es normal.
+  - **Presets auf die 3 realen LHC-Betriebsmodi reduziert (4 → 3):** Da Higgs UND CP-Verletzung
+    auf DEMSELBEN pp-Strahl entdeckt werden, „Higgs"+„CP/LHCb" zu **„Protonen-Physik (13.6 TeV)"**
+    zusammengeführt (`btn-pre-pp`, Default-Tab CMS; Higgs/Z⁰/CP via Detektor-Tab). Bleibt: QGP
+    (jetzt reale Pb-Pb-Energie **2.70 TeV/u**, √s_NN 5.36 TeV) + Pilot (0.45 TeV Inbetriebnahme).
+    Reale Run-Werte (Run 3: pp 6.8 TeV/Strahl=13.6 TeV, β* 0.30 m). `btn-pre-lhcb`/`preLhcb`
+    entfernt (shell/handlers/main/info). Tests **44 grün** (neu: „nur 3 Presets"). UI verifiziert
+    (3 Buttons in einer Reihe, alle Presets laden korrekte Werte, keine Konsolenfehler).
 - **Zuletzt erledigt (Phase 4, Komponente 1 — Perf-Fix + ZWEI MODI):**
   - **Perf:** Bunch-Animation ruckelte (gefühlt 5 fps). Ursache: `drop-shadow`-SVG-Filter auf den
     12 kreisenden Bunches UND auf dem 360px-LHC-Ring (`.lit`) → jeder Frame komplett neu gerastert.

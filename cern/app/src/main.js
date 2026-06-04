@@ -35,8 +35,8 @@ function initDom(){
  E.trInj=$("tr-inj");
  E.selP=$("sel-p"); E.selI=$("sel-i");
  E.btnToggleGeo=$("btn-toggle-geo");
- E.btnPreHiggs=$("btn-pre-higgs"); E.btnPreQgp=$("btn-pre-qgp"); E.btnPreLhcb=$("btn-pre-lhcb"); E.btnPrePilot=$("btn-pre-pilot");
- E.btnZoomOut=$("btn-zoom-out");
+ E.btnPrePp=$("btn-pre-pp"); E.btnPreQgp=$("btn-pre-qgp"); E.btnPrePilot=$("btn-pre-pilot");
+ E.btnZoomOut=$("btn-zoom-out"); E.btnZoomMeyrin=$("btn-zoom-meyrin");
  E.grpAtlas=$("grp-atlas"); E.grpCms=$("grp-cms"); E.grpAlice=$("grp-alice"); E.grpLhcb=$("grp-lhcb");
  E.svg=$("svg");
  E.geoLayer=$("geo-layer");
@@ -71,9 +71,17 @@ function start(){
  App.resizeCanvases();
  App.updateReadouts(); App.drawDetBg(); App.drawHist();
  App.setStatus("BEREIT — Wähle Teilchenart und starte Injektion","on");
- window.addEventListener("resize", ()=>{
-  App.resizeCanvases(); App.drawDetBg(); App.drawHist();
- });
+ // Backing-Store an die per-CSS bestimmte Anzeigegröße koppeln. ResizeObserver
+ // feuert initial UND bei jeder Layout-Änderung (Grid-Reflow @860px, iframe-
+ // Resize in Jupyter, verzögerter Stylesheet-Load) → eine evtl. vor dem Layout
+ // gemessene Boot-Größe korrigiert sich selbst. Kein Inline-Style-Lock mehr.
+ const redraw = ()=>{ App.resizeCanvases(); App.drawDetBg(); App.drawHist(); };
+ if(typeof ResizeObserver !== "undefined"){
+  const ro = new ResizeObserver(redraw);
+  ro.observe(App.els.cvEv); ro.observe(App.els.cvHist);
+ } else {
+  window.addEventListener("resize", redraw);
+ }
 }
 
 // ── Bootstrap (robust gegen Jupyter-Timing, idempotent pro Widget-Root) ──────

@@ -22,9 +22,9 @@ describe('Widget bootet headless & verdrahtet Interaktionen', () => {
     expect($('schematic').style.display).toBe('');
   });
 
-  it('Preset QGP setzt die Ziel-Energie (2.5 TeV)', () => {
+  it('Preset QGP setzt die reale Pb-Pb-Energie (2.70 TeV/u)', () => {
     $('btn-pre-qgp').click();
-    expect($('lbl-energy').textContent).toMatch(/2[.,]5\s*TeV/);
+    expect($('lbl-energy').textContent).toMatch(/2[.,]7\d*\s*TeV/);
   });
 
   it('Detektor-Tab (LHCb) wird aktiv', () => {

@@ -9,20 +9,25 @@ import { App, NEEDED, SVG_NS, sleep, $ } from './core.js';
 const s = App.state, E = App.els, g = App.g;
 
 // ── Canvas High-DPI backing store ──────────────────────────────────────────
+// WICHTIG: Die ANZEIGEGRÖSSE bleibt komplett CSS-gesteuert (width:100% etc.).
+// Wir setzen NUR den Backing-Store (canvas.width/height = Anzeigegröße·dpr) und
+// NIE canvas.style.width/height. Frühere Versionen schrieben die gemessene
+// Pixelgröße als Inline-Style zurück — lief das beim Boot (document "loading",
+// Layout noch 0 breit), fror es eine falsche Größe ein und überschrieb das
+// responsive CSS dauerhaft (Event-Display/Histogramm verzerrt/überdimensioniert).
+// clientWidth/Height = aktuelle, per CSS bestimmte Box → Quelle der Wahrheit.
+function fitCanvas(cv, ctx, fbW, fbH){
+ const w = cv.clientWidth || fbW, h = cv.clientHeight || fbH;
+ const bw = Math.round(w * s.dpr), bh = Math.round(h * s.dpr);
+ if(cv.width !== bw)  cv.width  = bw;   // setzt Backing-Store (löscht Canvas)
+ if(cv.height !== bh) cv.height = bh;
+ ctx.resetTransform ? ctx.resetTransform() : ctx.setTransform(1,0,0,1,0,0);
+ ctx.scale(s.dpr, s.dpr);
+ return {w, h};
+}
 function resizeCanvases(){
- const rEv = E.cvEv.getBoundingClientRect();
- s.evW = rEv.width || 340; s.evH = rEv.height || 180;
- E.cvEv.width = s.evW * s.dpr; E.cvEv.height = s.evH * s.dpr;
- E.cvEv.style.width = s.evW + "px"; E.cvEv.style.height = s.evH + "px";
- E.ctxEv.resetTransform ? E.ctxEv.resetTransform() : null;
- E.ctxEv.scale(s.dpr, s.dpr);
-
- const rHist = E.cvHist.getBoundingClientRect();
- s.histW = rHist.width || 340; s.histH = rHist.height || 130;
- E.cvHist.width = s.histW * s.dpr; E.cvHist.height = s.histH * s.dpr;
- E.cvHist.style.width = s.histW + "px"; E.cvHist.style.height = s.histH + "px";
- E.ctxHist.resetTransform ? E.ctxHist.resetTransform() : null;
- E.ctxHist.scale(s.dpr, s.dpr);
+ const ev = fitCanvas(E.cvEv, E.ctxEv, 340, 180);   s.evW = ev.w;   s.evH = ev.h;
+ const hi = fitCanvas(E.cvHist, E.ctxHist, 340, 130); s.histW = hi.w; s.histH = hi.h;
 }
 
 function setMode(ion){

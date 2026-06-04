@@ -1,11 +1,21 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// HISTOGRAM / MASSENSPEKTRUM  — DETEKTOR-GETRIEBEN
+// HISTOGRAM / MASSENSPEKTRUM  — STRAHLKONFIGURATIONS-GETRIEBEN
 // ═══════════════════════════════════════════════════════════════════════════
-// Grundsatz: Das angezeigte Massenspektrum hängt AUSSCHLIESSLICH vom gewählten
-// Detektor (s.selDet) ab — jeder Detektor misst physikalisch andere Kanäle.
-// Presets setzen nur Maschinenparameter + wählen den passenden Detektor; das
-// Spektrum folgt konsequent. Jeder Detektor akkumuliert sein eigenes Spektrum
-// (s.massStore[selDet]) und seine eigene Signifikanz (s.collStore[selDet]).
+// Das Spektrum ist eine Funktion von ZWEI Achsen, nicht nur des Detektors:
+//   1) WAS GEMESSEN wird — der gewählte Detektor (s.selDet) liefert seinen
+//      charakteristischen Kanal (ATLAS=Z⁰, CMS=Higgs-4ℓ, ALICE=Quarkonia, LHCb=B).
+//   2) WAS DA IST — die Strahl-Konfiguration entscheidet, welche Resonanzen
+//      überhaupt erzeugt werden und wie hoch ihr Peak steht:
+//        • Energie (s.paramEnergy, TeV/Strahl): jede Resonanz hat eine
+//          Erzeugungs-Schwelle `thr`. Darunter → NUR Untergrund-Kontinuum, kein
+//          Peak; beim Hochrampen wächst der Peak ein (prodVis 0→1). Energie formt
+//          also die FORM des Spektrums, nicht nur die Signifikanz.
+//        • Strahlart (s.isIon): im Pb-Pb-Modus schmelzen Quarkonia im QGP →
+//          J/ψ-/Υ-Peak in ALICE wird unterdrückt (drawVis = prodVis · Suppr.).
+//        • Intensität²/β*: Kollisionsrate = Statistik (∝ Signifikanz-Zuwachs).
+// Presets sind nur Shortcuts, die diese Parameter + den Detektor setzen — die
+// Logik oben ergibt sich daraus von selbst. Daten + Fit teilen EIN Modell
+// (Untergrund + Σ Resonanz·drawVis) → die Fit-Kurve liegt immer auf den Balken.
 //
 // Daten: echte CMS-Open-Data (CERN_REAL); LHCb-B-Physik = kalibrierte Simulation
 // (CMS-Dimuon-Set enthält keine B-Mesonen).
@@ -28,48 +38,90 @@ function lhcbPool(){
 const G=(v,m,sg)=>Math.exp(-0.5*((v-m)/sg)**2);
 
 // ── ZENTRALE DETEKTOR-SPEKTRUM-TABELLE ──────────────────────────────────────
-// Fit-Modelle wurden an die ECHTE Datenform angepasst (Peak-Lage stimmt mit den
-// CERN_REAL-Verteilungen überein → Fit-Kurve liegt auf den Daten).
+// Pro Detektor: `beam` = STRAHL-PROGRAMM, unter dem dieser Detektor seine
+// Entdeckung macht ("pp" = Protonen, "PbPb" = Blei-Ionen) + Untergrund `bg(v)` +
+// Liste `reson` der messbaren Resonanzen. Jede Resonanz trägt m (Masse),
+// hw (Klassifikations-Halbfenster), sg (Fit-/Sampling-Sigma), thr (Energie-
+// Schwelle TeV/Strahl), amp (relative Peak-Höhe), label, optional `pp:true`
+// (Erzeugung nur mit Protonen → in Ionen-Läufen kein Peak) und `qgp:true`
+// (im Ionen-Modus durch QGP unterdrückt). `primary` = Resonanz, deren
+// Erzeugbarkeit über die Signifikanz entscheidet.
+//   ⇒ Das Spektrum hängt logisch von BEIDEM ab: dem Strahl-Programm/Preset
+//     (beam + Energie) UND dem betrachteten Detektor. Higgs ist also nur im
+//     pp-Programm bei voller Energie entdeckbar — im QGP-Lauf (Pb-Pb) zeigt CMS
+//     nur das ZZ*-Kontinuum, keine Higgs-Entdeckung.
 const DETSPEC = {
- ATLAS: {                                  // Allzweck: Präzisions-EW, Z⁰→μμ
-  pool:()=>CERN_REAL.pp,  range:[50,150], bins:60, channel:"2mu",
-  minE:1.0, target:200,   col:"#58a6ff", fc:"rgba(88,166,255,0.38)",
-  markers:[[91.19,"Z⁰"]],
-  fit:(v)=> Math.exp(-(v-50)/30)*0.12 + G(v,91.19,3.0),
+ ATLAS: {                                  // Z⁰ = QGP-blinde „Standardkerze" → in pp UND Pb-Pb messbar
+  pool:()=>CERN_REAL.pp,  range:[50,150], bins:60, channel:"2mu", discoBeam:"any",
+  target:200, col:"#58a6ff", fc:"rgba(88,166,255,0.38)",
+  bg:(v)=> Math.exp(-(v-50)/30)*0.12,
+  // Z⁰ ist elektroschwach (koppelt nicht ans QGP) → KEIN pp-Flag: entsteht in pp und Pb-Pb.
+  reson:[{key:"Z0", m:91.19, hw:6.0, sg:3.0, thr:0.9, amp:1.00, label:"Z⁰"}],
+  primary:"Z0",
   title:"ATLAS · Z⁰→μ⁺μ⁻ · Präzisions-Kalibrierkanal (echte CMS-Daten)",
-  sub:"Standardmodell-EW · Z⁰-Resonanz bei 91 GeV",
+  sub:"Standardmodell-EW · Z⁰-Resonanz bei 91 GeV (QGP-blinde Standardkerze)",
   disco:"🌟 5σ: Z⁰-Resonanz präzise vermessen!"
  },
- CMS: {                                    // Allzweck: Higgs-Goldkanal H→ZZ*→4ℓ
-  pool:()=>CERN_REAL.higgs4l, range:[80,200], bins:60, channel:"4l",
-  minE:4.0, target:600,   col:"#2ea44f", fc:"rgba(46,164,79,0.38)",
-  markers:[[91.19,"Z⁰"],[125.09,"H 125"]],
-  // Fallendes ZZ*-Kontinuum + Higgs-Bump bei 124 (in 2-GeV-Bins knapp der höchste Peak)
-  fit:(v)=> Math.exp(-(v-80)/46) + 0.66*G(v,124,2.8),
+ CMS: {                                    // pp-Programm: Higgs-Goldkanal H→ZZ*→4ℓ
+  pool:()=>CERN_REAL.higgs4l, range:[80,200], bins:60, channel:"4l", discoBeam:"pp",
+  target:600, col:"#2ea44f", fc:"rgba(46,164,79,0.38)",
+  bg:(v)=> Math.exp(-(v-80)/46),
+  // Higgs braucht Protonen UND nahezu volle LHC-Energie (thr 5.5 TeV) — der
+  // Goldkanal-Bump taucht erst beim Hochrampen auf, darunter nur ZZ*-Kontinuum.
+  reson:[{key:"H", m:124, hw:5.0, sg:2.8, thr:5.5, amp:0.66, label:"H 125", pp:true}],
+  primary:"H",
   title:"CMS · H→ZZ*→4ℓ · Goldkanal (Higgs bei 125 GeV)",
-  sub:"Kleines Signal auf großem ZZ*-Untergrund · braucht ≥ 4 TeV",
+  sub:"Kleines Signal auf großem ZZ*-Untergrund · braucht Protonen + volle Energie",
   disco:"🌟 5σ: Higgs-Boson entdeckt!"
  },
- ALICE: {                                  // Schwerionen: Quarkonia (QGP)
-  pool:()=>CERN_REAL.ion, range:[1,12], bins:55, channel:"2mu",
-  minE:1.0, target:300,   col:"#e377c2", fc:"rgba(227,119,194,0.38)",
-  markers:[[3.097,"J/ψ"],[9.46,"Υ"]],
-  fit:(v)=> 0.27 + G(v,3.097,0.18)*0.73 + G(v,9.6,0.7)*0.16,
+ ALICE: {                                  // Schwerionen-Programm: Quarkonia (QGP)
+  pool:()=>CERN_REAL.ion, range:[1,12], bins:55, channel:"2mu", discoBeam:"PbPb",
+  target:300, col:"#e377c2", fc:"rgba(227,119,194,0.38)",
+  bg:(v)=> 0.27,
+  // Quarkonia entstehen in pp UND Pb-Pb (kein pp-Flag): in pp = volle Referenz,
+  // in Pb-Pb durch QGP unterdrückt (qgp). Die QGP-Entdeckung selbst braucht Pb-Pb.
+  reson:[{key:"Jpsi", m:3.097, hw:0.5, sg:0.18, thr:0.4, amp:0.73, label:"J/ψ", qgp:true},
+         {key:"Ups",  m:9.60,  hw:0.9, sg:0.70, thr:0.6, amp:0.16, label:"Υ",   qgp:true}],
+  primary:"Jpsi",
   title:"ALICE · J/ψ + Υ → μ⁺μ⁻ · Quarkonia (echte CMS-Daten)",
   sub:"Quark-Gluon-Plasma: Unterdrückung der Quarkonia-Zustände",
   disco:"🌟 5σ: Quarkonia-Unterdrückung (QGP) nachgewiesen!"
  },
- LHCB: {                                   // B-Physik: CP-Verletzung
-  pool:()=>lhcbPool(), range:[4.6,6.0], bins:50, channel:"B",
-  minE:1.0, target:400,   col:"#ff7f0e", fc:"rgba(255,127,14,0.38)",
-  markers:[[5.279,"B⁰"]],
-  fit:(v)=> 0.25 + G(v,5.279,0.07)*0.75,
+ LHCB: {                                   // pp-Programm: B-Physik / CP-Verletzung
+  pool:()=>lhcbPool(), range:[4.6,6.0], bins:50, channel:"B", discoBeam:"pp",
+  target:400, col:"#ff7f0e", fc:"rgba(255,127,14,0.38)",
+  bg:(v)=> 0.25,
+  reson:[{key:"B0", m:5.279, hw:0.18, sg:0.07, thr:0.45, amp:0.75, label:"B⁰", pp:true}],
+  primary:"B0",
   title:"LHCb · B⁰ → h⁺h⁻ · CP-Verletzung (kalibrierte Simulation)",
   sub:"Materie-Antimaterie-Asymmetrie im B-Mesonen-Zerfall",
   disco:"🌟 5σ: CP-Verletzung etabliert!"
  }
 };
 function spec(){ return DETSPEC[s.selDet] || DETSPEC.ATLAS; }
+const beamLabel = (b)=> b==="PbPb" ? "Blei-Ionen" : "Protonen";
+const curBeam = ()=> s.isIon ? "PbPb" : "pp";
+// Entdeckung möglich? discoBeam "any" (Z⁰-Standardkerze) immer; sonst muss das
+// Programm-Strahl == aktueller Strahl sein (Higgs/CP nur pp, QGP nur Pb-Pb).
+function discoBeamOK(sp){ return sp.discoBeam === "any" || sp.discoBeam === curBeam(); }
+// Text, warum die Entdeckung am Strahltyp scheitert (für ALICE in pp = Referenz, kein Fehler).
+function wrongBeamShort(sp){ return sp.discoBeam==="PbPb" ? "p-p-Referenz · QGP nur in Pb-Pb"
+                                                         : "Falsches Strahl-Programm · braucht "+beamLabel(sp.discoBeam); }
+function primaryReson(sp){ return sp.reson.find(r=>r.key===sp.primary) || sp.reson[0]; }
+
+// ── Strahl-Konfiguration → Sichtbarkeit einer Resonanz ──────────────────────
+// energyVis: 0 unter der Erzeugungs-Schwelle, weicher Anstieg auf 1 darüber.
+// prodVis:  Erzeugbarkeit = Energie × Strahlart (pp-Resonanzen: 0 im Ionen-Lauf).
+// drawVis:  tatsächlich sichtbare Peak-Höhe = prodVis · QGP-Suppression (Ionen).
+function energyVis(thr){
+ const span = 0.15*thr + 0.30;                  // Übergangsbreite ~½·Schwelle
+ return Math.max(0, Math.min(1, (s.paramEnergy - thr)/span));
+}
+function prodVis(r){ return energyVis(r.thr) * (r.pp && s.isIon ? 0 : 1); }  // EW/B nur mit Protonen
+function drawVis(r){ return prodVis(r) * (r.qgp && s.isIon ? 0.45 : 1); }    // QGP schmilzt Quarkonia
+function classifyReson(sp, m){ for(const r of sp.reson){ if(Math.abs(m-r.m) <= r.hw) return r; } return null; }
+function fitVal(sp, v){ let y=sp.bg(v); for(const r of sp.reson) y += drawVis(r)*r.amp*G(v,r.m,r.sg); return y; }
+function resoName(key){ return key==="Jpsi" ? "J/psi" : key==="Ups" ? "Upsilon(1S)" : key; }
 
 function classify(m){
  // ordnet eine reale Masse der nächstgelegenen Resonanz zu (sonst Untergrund)
@@ -95,18 +147,36 @@ function pickTopo(name){
          {pt:pt*(0.6+Math.random()*0.6),eta:(Math.random()-.5)*3,phi:a+Math.PI,q:-1,lep:"μ"}];
 }
 
+// Zieht eine Masse aus dem echten Datenpool, gewichtet mit der Strahl-Konfig:
+// Untergrund-Events sind immer zulässig; ein SIGNAL-Event (in einem Resonanz-
+// Fenster) wird nur akzeptiert, soweit die Resonanz erzeugbar/sichtbar ist
+// (drawVis). Sonst neu ziehen → unter der Schwelle bleibt nur das Kontinuum.
+function sampleMass(sp){
+ const pool=sp.pool();
+ for(let tries=0; tries<8; tries++){
+  let m=pool[(Math.random()*pool.length)|0];
+  let r=classifyReson(sp, m);
+  if(!r) return m;                           // Untergrund: immer zulässig
+  if(Math.random() < drawVis(r)) return m;   // Signal: nur soweit erzeugt/sichtbar
+ }
+ // Energie zu gering (oder Quarkonia voll unterdrückt) → Untergrund-Kontinuum
+ return sp.range[0] + Math.random()*(sp.range[1]-sp.range[0]);
+}
+
 function sampleEvent(){
  const sp=spec();
- let m=sp.pool()[(Math.random()*sp.pool().length)|0];
+ let m=sampleMass(sp);
  if(sp.channel==="4l"){
   // Higgs-Goldkanal: 4-Lepton-Topologie (2 Z→ℓℓ-Paare)
   let leptons=[]; for(let i=0;i<4;i++) leptons.push({pt:8+Math.random()*40,
     eta:(Math.random()-.5)*4, phi:Math.random()*6.283, q:i%2?1:-1, lep:Math.random()<.5?"e":"μ"});
-  let isSig=Math.abs(m-125)<5; if(isSig) s.higgsCands++;
+  const H=primaryReson(sp);
+  let isSig=Math.abs(m-H.m)<H.hw; if(isSig) s.higgsCands++;   // m liegt nur bei H, wenn Higgs erzeugbar
   return {M:m, name:isSig?"Higgs":null, channel:"4l", leptons:leptons, signal:isSig};
  }
  // Dimuon (ATLAS/ALICE) bzw. B-Vertex (LHCb) → 2-Spur-Topologie
- let name=classify(m);
+ let r=classifyReson(sp, m);
+ let name=r?resoName(r.key):null;
  return {M:m, name:name, channel:sp.channel, leptons:pickTopo(name), signal:!!name};
 }
 
@@ -122,7 +192,7 @@ function generateMassData(){
  let rateFactor = Math.pow(s.paramIntensity, 2) / Math.max(0.3, s.paramBetaStar);
  let n = Math.max(1, Math.round(rateFactor * (sp.channel==="4l"?1.5:5)));
  const store = s.massStore[s.selDet];
- for(let i=0;i<n;i++) store.push(sp.pool()[(Math.random()*sp.pool().length)|0]);
+ for(let i=0;i<n;i++) store.push(sampleMass(sp));   // energie-/strahlgewichtet (Peak nur, wenn erzeugbar)
  s.collStore[s.selDet] += 1;
  s.lastEvent = sampleEvent();
  store.push(s.lastEvent.M);   // das angezeigte Event landet immer im Spektrum des Detektors
@@ -132,8 +202,14 @@ function generateMassData(){
 function getSignificance() {
   const sp=spec(), n=s.collStore[s.selDet];
   if (n === 0) return 0;
-  if (s.paramEnergy < sp.minE) return 0;            // Energie zu gering (z. B. Pilot-Strahl)
-  return 5.0 * Math.sqrt(n / sp.target);
+  // Entdeckung braucht das RICHTIGE Strahl-Programm: CMS-Higgs/LHCb-CP nur in pp,
+  // ALICE-QGP nur in Pb-Pb. ATLAS-Z⁰ ist die QGP-blinde Standardkerze (discoBeam
+  // "any") → in beidem messbar. Zusätzlich muss die Primär-Resonanz bei dieser
+  // Energie erzeugbar sein (kontinuierlich ∝ prodVis statt binärer Schwelle).
+  if (!discoBeamOK(sp)) return 0;
+  const pv = prodVis(primaryReson(sp));
+  if (pv <= 0) return 0;
+  return 5.0 * Math.sqrt(n / sp.target) * pv;
 }
 
 function drawHist(){
@@ -148,14 +224,18 @@ function drawHist(){
   ctxHist.fillText(mn+" GeV",30,h-5);ctxHist.fillText(mx+" GeV",w-40,h-5);
 
   let sig = getSignificance();
-  const lowE = s.paramEnergy < sp.minE;
+  const prim = primaryReson(sp);
+  const wrongBeam = !discoBeamOK(sp);        // Entdeckung im falschen Strahl-Programm (für ALICE/pp = Referenz)
+  const notProd = !wrongBeam && prodVis(prim) <= 0;  // Rate bei dieser Energie zu gering (richtiger Strahl)
   $("lbl-sig").innerText = sig.toFixed(2) + " σ";
 
   let sigBar = $("sig-bar"), sigStatus = $("lbl-sig-status");
-  sigBar.style.width = (lowE ? 0 : Math.min(100,(sig/5.0)*100)) + "%";
+  sigBar.style.width = ((wrongBeam||notProd) ? 0 : Math.min(100,(sig/5.0)*100)) + "%";
 
   if (sig === 0) {
-    sigStatus.innerText = lowE ? "Inbetriebnahme · Energie zu gering" : "Rauschen (Kein Signal)";
+    sigStatus.innerText = wrongBeam ? wrongBeamShort(sp)
+                        : notProd  ? "Inbetriebnahme · "+prim.label+"-Rate zu gering"
+                        :            "Rauschen (Kein Signal)";
     sigStatus.style.color = "#8b949e"; sigBar.style.background = "#30363d";
   } else if (sig < 3.0) {
     sigStatus.innerText = "Rauschen (Keine Signifikanz)";
@@ -197,22 +277,28 @@ function drawHist(){
     }
     ctxHist.globalAlpha=1;
   }
-  // Resonanz-Marker (gestrichelt) bei den PDG-Massen des Detektors
+  // Resonanz-Marker (gestrichelt) bei den PDG-Massen des Detektors. Nicht
+  // erzeugbare Resonanzen (Energie unter Schwelle) werden blass markiert —
+  // die Linie zeigt, WO der Peak stünde, sobald genug Energie da ist.
   {ctxHist.save(); ctxHist.setLineDash([3,3]); ctxHist.lineWidth=0.9;
-   sp.markers.forEach(([m,lbl])=>{ if(m<mn||m>mx) return;
-    const xm=30+(m-mn)/(mx-mn)*(w-40);
-    ctxHist.strokeStyle="rgba(255,255,255,0.30)"; ctxHist.beginPath(); ctxHist.moveTo(xm,h-16); ctxHist.lineTo(xm,10); ctxHist.stroke();
-    ctxHist.fillStyle="rgba(255,255,255,0.45)"; ctxHist.font="6.5px sans-serif";
-    ctxHist.fillText(lbl, xm+2, 16); });
+   sp.reson.forEach(r=>{ if(r.m<mn||r.m>mx) return;
+    const xm=30+(r.m-mn)/(mx-mn)*(w-40);
+    const on=prodVis(r)>0;
+    ctxHist.strokeStyle=on?"rgba(255,255,255,0.30)":"rgba(255,255,255,0.12)";
+    ctxHist.beginPath(); ctxHist.moveTo(xm,h-16); ctxHist.lineTo(xm,10); ctxHist.stroke();
+    ctxHist.fillStyle=on?"rgba(255,255,255,0.45)":"rgba(255,255,255,0.22)";
+    ctxHist.font="6.5px sans-serif";
+    ctxHist.fillText(r.label, xm+2, 16); });
    ctxHist.restore(); }
 
-  // Fit-Kurve (an die echte Datenform angepasst → liegt auf den Balken)
-  if (sig > 0.5 && !lowE) {
+  // Fit-Kurve aus DEMSELBEN Modell wie die Daten (bg + Σ Resonanz·drawVis) →
+  // liegt immer auf den Balken; unter der Schwelle bleibt nur das Kontinuum.
+  if (sig > 0.5) {
     let alpha = Math.min(1.0, Math.max(0, (sig - 0.5) / 3.5));
     ctxHist.save(); ctxHist.globalAlpha = alpha;
     let ys=[], ymax=1e-9;
     for(let xp=30;xp<w-8;xp++){
-      let v=mn+(xp-30)/(w-38)*(mx-mn), yv=sp.fit(v);
+      let v=mn+(xp-30)/(w-38)*(mx-mn), yv=fitVal(sp,v);
       ys.push(yv); if(yv>ymax)ymax=yv;
     }
     ctxHist.strokeStyle=sp.col; ctxHist.lineWidth=1.7; ctxHist.beginPath();
@@ -232,10 +318,16 @@ function drawHist(){
   // Status-Hinweise unter der Achse
   if (sig < 5.0) {
     ctxHist.fillStyle="rgba(255,255,255,0.45)"; ctxHist.font="8px monospace";
-    if (lowE) {
-      ctxHist.fillText("⚠️ Strahlenergie zu gering ("+s.paramEnergy.toFixed(2)+" < "+sp.minE.toFixed(1)+" TeV) — keine Entdeckung möglich.", 36, h-26);
-    } else if (sig === 0) {
+    if (wrongBeam) {
+      ctxHist.fillText(sp.discoBeam==="PbPb"
+        ? "ℹ️ p-p-Referenz: Quarkonia unverdrängt. QGP-Unterdrückung nur im Pb-Pb-Lauf sichtbar."
+        : "⚠️ "+prim.label+"-Entdeckung braucht "+beamLabel(sp.discoBeam)+"-Strahl — aktuell "+beamLabel(curBeam())+". Falsches Preset.", 36, h-26);
+    } else if (notProd) {
+      ctxHist.fillText("⚠️ "+prim.label+"-Produktionsrate bei "+s.paramEnergy.toFixed(2)+" TeV zu gering für Entdeckung — ≥ "+prim.thr.toFixed(2)+" TeV nötig.", 36, h-26);
+    } else if (s.collStore[s.selDet] === 0) {
       ctxHist.fillText("Keine Kollisionen in "+s.selDet+". Starte Kollisionen!", 36, h-26);
+    } else if (sp.reson.some(r=>r.qgp) && s.isIon) {
+      ctxHist.fillText("Sammle Statistik · QGP unterdrückt "+prim.label+" (Signifikanz: " + sig.toFixed(1) + "σ / 5.0σ)", 36, h-26);
     } else {
       ctxHist.fillText("Sammle Statistik (Signifikanz: " + sig.toFixed(1) + "σ / 5.0σ)", 36, h-26);
     }

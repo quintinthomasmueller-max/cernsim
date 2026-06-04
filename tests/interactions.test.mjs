@@ -40,15 +40,15 @@ describe('Interaktionen (esbuild-Bundle, jsdom)', () => {
   });
 
   it('Param-Info-Akkordeon füllt Text und öffnet genau eine Box', () => {
-    const btn = document.querySelector('.cv4-pi-btn[data-pi="preHiggs"]');
+    const btn = document.querySelector('.cv4-pi-btn[data-pi="prePp"]');
     btn.click();
-    const box = $('pi-preHiggs');
+    const box = $('pi-prePp');
     expect(box.classList.contains('open')).toBe(true);
     expect(box.textContent.length).toBeGreaterThan(20);
     // zweite Box öffnen → erste schließt (nur eine offen)
     document.querySelector('.cv4-pi-btn[data-pi="preQgp"]').click();
     expect($('pi-preQgp').classList.contains('open')).toBe(true);
-    expect($('pi-preHiggs').classList.contains('open')).toBe(false);
+    expect($('pi-prePp').classList.contains('open')).toBe(false);
   });
 
   it('Tempo-Toggle wechselt die Beschriftung', () => {
@@ -79,10 +79,14 @@ describe('Interaktionen (esbuild-Bundle, jsdom)', () => {
     expect($('lbl-sig').textContent).toMatch(/0[.,]00\s*σ/);
   });
 
-  it('Higgs-Preset wählt CMS (Goldkanal H→4ℓ)', () => {
-    $('btn-pre-higgs').click();
+  it('Protonen-Physik-Preset (pp, 13.6 TeV) wählt CMS als Default-Tab', () => {
+    $('btn-pre-pp').click();
     expect($('lbl-energy').textContent).toMatch(/6[.,]8/);
     expect($('dt-cms').classList.contains('act')).toBe(true);
+  });
+  it('Nur noch 3 Presets (Higgs+CP zu pp-Physik zusammengeführt)', () => {
+    expect(document.querySelectorAll('[id^="btn-pre-"]').length).toBe(3);
+    expect($('btn-pre-lhcb')).toBeNull();
   });
 
   it('Geo-Overlay (generiert) wird beim Boot in #geo-layer gezeichnet', () => {
@@ -126,8 +130,14 @@ describe('Interaktionen (esbuild-Bundle, jsdom)', () => {
     ['ATLAS','CMS','ALICE','LHCB'].forEach(n => expect(txt).toContain(n));
   });
 
-  it('Zoom-Inset zeigt LINAC3/4 + LEIR + PSB (Injektorkomplex)', () => {
+  it('Injektor-Komplex an realer Lage: LINAC3/4 + LEIR + PSB + Hinweis', () => {
     const txt = $('geo-layer').textContent;
-    ['LINAC4','LINAC3','LEIR','PSB','INJEKTOR-KOMPLEX MEYRIN'].forEach(n => expect(txt).toContain(n));
+    ['LINAC4','LINAC3','LEIR','PSB','Injektor-Komplex'].forEach(n => expect(txt).toContain(n));
+  });
+  it('Injektor-Detail steckt in .geo-inj-detail (erst beim Zoom sichtbar)', () => {
+    expect($('geo-layer').querySelector('.geo-inj-detail')).toBeTruthy();
+    expect($('geo-layer').querySelector('.geo-inj-hint')).toBeTruthy();
+    // kein separater Inset-Kasten mehr (rect im geo-layer)
+    expect($('geo-layer').querySelector('rect')).toBeNull();
   });
 });

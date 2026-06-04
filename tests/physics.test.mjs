@@ -11,8 +11,9 @@ const s = App.state;
 
 beforeEach(() => {
   App.resetSpectrumData();
-  s.selDet = 'ATLAS';        // minE = 1.0 TeV, target = 200, channel = 2mu (Faktor 5)
-  s.paramEnergy = 6.8;
+  s.selDet = 'ATLAS';        // Z⁰-Schwelle 0.9 TeV, target = 200, channel = 2mu (Faktor 5)
+  s.isIon = false;
+  s.paramEnergy = 6.8;       // weit über allen Schwellen → prodVis = 1
   s.paramIntensity = 1.0;
   s.paramBetaStar = 1.0;
 });
@@ -28,12 +29,71 @@ describe('Signifikanz ∝ √N', () => {
     s.collStore.ATLAS = 200;             // = target → exakt 5σ
     expect(App.getSignificance()).toBeCloseTo(5.0, 6);
   });
-  it('= 0 bei Energie unter Detektor-Schwelle', () => {
-    s.collStore.ATLAS = 200; s.paramEnergy = 0.5;  // < minE 1.0
+  it('= 0 bei Energie unter Erzeugungs-Schwelle', () => {
+    s.collStore.ATLAS = 200; s.paramEnergy = 0.5;  // < Z⁰-Schwelle 0.9 TeV → nicht erzeugbar
     expect(App.getSignificance()).toBe(0);
   });
   it('= 0 ohne Kollisionen', () => {
     expect(App.getSignificance()).toBe(0);
+  });
+});
+
+describe('Energie formt das Spektrum (Erzeugungs-Schwellen)', () => {
+  it('CMS-Higgs braucht nahezu volle Energie (Schwelle 5.5 TeV)', () => {
+    s.selDet = 'CMS'; s.collStore.CMS = 600;     // = target
+    s.paramEnergy = 2.5; expect(App.getSignificance()).toBe(0);            // unter Schwelle → kein Higgs
+    s.paramEnergy = 6.8; expect(App.getSignificance()).toBeGreaterThan(4); // voll erzeugbar
+  });
+  it('Signifikanz steigt monoton mit der Energie über der Schwelle', () => {
+    s.selDet = 'ATLAS'; s.collStore.ATLAS = 200;
+    s.paramEnergy = 0.9; const a = App.getSignificance();   // genau an der Schwelle → 0
+    s.paramEnergy = 1.1; const b = App.getSignificance();
+    s.paramEnergy = 2.0; const c = App.getSignificance();
+    expect(a).toBe(0);
+    expect(b).toBeGreaterThan(0);
+    expect(c).toBeGreaterThan(b);
+  });
+});
+
+describe('Entdeckung hängt vom Strahl-Programm ab (Preset × Detektor)', () => {
+  it('CMS-Higgs ist im Pb-Pb-Lauf (QGP-Preset) NICHT entdeckbar — auch bei voller Energie/Statistik', () => {
+    s.selDet = 'CMS'; s.collStore.CMS = 600; s.paramEnergy = 6.8;
+    s.isIon = true;  expect(App.getSignificance()).toBe(0);             // Pb-Pb-Lauf → kein Higgs
+    s.isIon = false; expect(App.getSignificance()).toBeGreaterThan(4);  // pp-Lauf → entdeckbar
+  });
+  it('ALICE-QGP braucht Blei-Ionen — in p-p nur Referenz, keine Entdeckung', () => {
+    s.selDet = 'ALICE'; s.collStore.ALICE = 300; s.paramEnergy = 2.5;
+    s.isIon = false; expect(App.getSignificance()).toBe(0);             // p-p → keine QGP-Entdeckung
+    s.isIon = true;  expect(App.getSignificance()).toBeGreaterThan(4);  // Pb-Pb → entdeckbar
+  });
+  it('ATLAS-Z⁰ ist die QGP-blinde Standardkerze — in pp UND Pb-Pb messbar', () => {
+    s.selDet = 'ATLAS'; s.collStore.ATLAS = 200; s.paramEnergy = 6.8;
+    s.isIon = false; expect(App.getSignificance()).toBeCloseTo(5.0, 6);
+    s.isIon = true;  expect(App.getSignificance()).toBeCloseTo(5.0, 6);  // Z⁰ koppelt nicht ans QGP
+  });
+  it('LHCb-CP (B⁰) ist nur im pp-Lauf entdeckbar, nicht in Pb-Pb', () => {
+    s.selDet = 'LHCB'; s.collStore.LHCB = 400; s.paramEnergy = 6.5;
+    s.isIon = false; expect(App.getSignificance()).toBeGreaterThan(4);
+    s.isIon = true;  expect(App.getSignificance()).toBe(0);
+  });
+});
+
+describe('QGP: Quarkonia-Unterdrückung im Ionen-Modus', () => {
+  // Anteil der J/ψ-Fenster-Events am ALICE-Spektrum (statistisch, große N).
+  function jpsiFraction(ion) {
+    App.resetSpectrumData();
+    s.selDet = 'ALICE'; s.isIon = ion; s.paramEnergy = 2.5;   // J/ψ erzeugbar (Schwelle 0.4)
+    s.paramIntensity = 2.0; s.paramBetaStar = 0.3;            // viele Events pro Kollision
+    for (let i = 0; i < 250; i++) App.generateMassData();
+    const data = s.massStore.ALICE;
+    const inJ = data.filter(m => Math.abs(m - 3.097) <= 0.5).length;
+    return inJ / data.length;
+  }
+  it('Pb-Pb unterdrückt den J/ψ-Peak gegenüber p-p', () => {
+    const pp  = jpsiFraction(false);
+    const PbPb = jpsiFraction(true);
+    expect(pp).toBeGreaterThan(0.1);          // p-p: klarer J/ψ-Peak
+    expect(PbPb).toBeLessThan(pp * 0.85);     // Pb-Pb: deutlich unterdrückt (QGP-Schmelzen)
   });
 });
 

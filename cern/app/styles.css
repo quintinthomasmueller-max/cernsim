@@ -71,6 +71,12 @@
 @keyframes cv4blink{0%,100%{opacity:.5}50%{opacity:1}}
 /* Geo-Layer braucht keine Pointer-Events und soll bewegte Bunches nicht ausbremsen */
 #geo-layer{pointer-events:none}
+/* Injektor-Komplex Meyrin: Detail-Beschriftung erst beim Zoom (#svg.inj-zoom),
+   im Vollbild stattdessen nur der dezente Hinweis-Ring. */
+.geo-inj-detail{opacity:0;transition:opacity .3s}
+.geo-inj-hint{opacity:1;transition:opacity .3s}
+#svg.inj-zoom .geo-inj-detail{opacity:1}
+#svg.inj-zoom .geo-inj-hint{opacity:0}
 .info-hit{cursor:pointer;transition:fill 0.18s}
 .info-hit:hover{fill:rgba(88,166,255,0.07)!important}
 .info-hit-ring{cursor:pointer;transition:stroke 0.18s}

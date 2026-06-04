@@ -88,52 +88,58 @@ function drawGeo() {
   g.appendChild(label(6, 474, '© OpenStreetMap-Mitwirkende (ODbL) · Web-Mercator', {
     fill: 'rgba(255,255,255,0.3)', 'font-size': '6px', 'font-family': 'monospace' }));
 
-  drawInset(g);
+  drawInjector(g);
 }
 
-// ── Zoom-Inset: Injektorkomplex Meyrin (Detail) ─────────────────────────────
-// LINAC3/4 und LEIR sind in OSM NICHT als Geometrie vorhanden (nur PS/PSB/SPS/
-// LHC/TI/TT). Damit man die im Maßstab winzigen Vorbeschleuniger trotzdem sieht,
-// zeigt dieses Inset die Injektorkette TOPOLOGISCH (schematisch, klar so betitelt);
-// PS/PSB sind real in der Hauptkarte. So bleibt die Hauptkarte rein OSM-basiert.
-function ring(g, cx, cy, r, col, w) { g.appendChild(mk('circle', { cx, cy, r, fill: 'none', stroke: col, 'stroke-width': w || 1.5 })); }
-function seg(g, x1, y1, x2, y2, col, w, dash) {
-  const a = { d: `M ${x1},${y1} L ${x2},${y2}`, fill: 'none', stroke: col, 'stroke-width': w || 1.5 };
-  if (dash) a['stroke-dasharray'] = dash;
-  g.appendChild(mk('path', a));
+// ── Injektor-Komplex Meyrin: an der REALEN relativen Lage (statt separater Box) ──
+// PS/PSB/SPS sind bereits real (OSM) in der Karte; LINAC 4 ebenfalls (echtes OSM-
+// Gebäude, way 80305783). LEIR + LINAC 3 sind NICHT in OSM → hier schematisch an
+// geographisch-richtiger relativer Position zu PS angedeutet. Im Vollbild nur ein
+// dezenter Hinweis-Ring; die Detail-Beschriftung (.geo-inj-detail) erscheint beim
+// Zoom (#svg.inj-zoom, gesetzt vom „🔬 Injektor-Komplex"-Button). App.geoInjectorView
+// liefert das Zoom-Zielfenster (Cluster + SPS), damit der Button geo-genau hinzoomt.
+function ptsOf(paths) {
+  const o = []; (paths || []).forEach(d => d.slice(2).split(' L ').forEach(s => { const v = s.split(','); o.push([+v[0], +v[1]]); })); return o;
 }
-function drawInset(g) {
-  // links neben dem Ring (Frankreich-Seite, kein Detektor) → verdeckt nichts Wichtiges
-  const BX = 8, BY = 56, BW = 166, BH = 150;
-  const P = '#58a6ff', I = '#e377c2', PSc = '#2ea44f', O = '#ff7f0e';
-  g.appendChild(mk('rect', { x: BX, y: BY, width: BW, height: BH, rx: 6, fill: 'rgba(13,17,23,0.85)', stroke: 'rgba(139,148,158,0.5)', 'stroke-width': 1 }));
-  g.appendChild(label(BX + 8, BY + 14, 'INJEKTOR-KOMPLEX MEYRIN', { fill: '#c9d1d9', 'font-size': '7.5px', 'font-family': 'monospace', 'font-weight': 'bold' }));
-  g.appendChild(label(BX + 8, BY + 24, 'Detail · schematisch (LINAC/LEIR ∉ OSM)', { fill: 'rgba(139,148,158,0.9)', 'font-size': '6px', 'font-family': 'monospace' }));
+function avg(a, i) { return a.reduce((s, p) => s + p[i], 0) / a.length; }
+function drawInjector(g) {
+  const labs = GEO.accelLabels || [];
+  const PS = labs.find(l => l.t === 'PS'), PSB = labs.find(l => l.t === 'PSB');
+  if (!PS) return;
+  const P = '#58a6ff', I = '#e377c2', PSc = '#2ea44f';
 
-  const psX = BX + 120, psY = BY + 92;
-  ring(g, psX, psY, 20, PSc, 2);                                   // PS (größter Vorbeschleuniger)
-  // Proton-Zweig: LINAC4 → PSB → PS
-  const psbX = BX + 60, psbY = BY + 60;
-  ring(g, psbX, psbY, 8, P, 1.6);
-  seg(g, BX + 14, BY + 53, psbX - 7, psbY - 2, P, 1.6);            // LINAC4
-  seg(g, psbX + 7, psbY + 4, psX - 16, psY - 12, P, 1.4);          // PSB → PS
-  // Ionen-Zweig: LINAC3 → LEIR → PS
-  const leirX = BX + 60, leirY = BY + 120;
-  ring(g, leirX, leirY, 7, I, 1.6);
-  seg(g, BX + 14, BY + 130, leirX - 6, leirY + 2, I, 1.6);         // LINAC3
-  seg(g, leirX + 6, leirY - 3, psX - 16, psY + 12, I, 1.4);        // LEIR → PS
-  // PS → SPS/LHC (Ausgang)
-  const ex = BX + BW - 8;
-  seg(g, psX + 20, psY, ex, psY, O, 1.6, '4,3');
-  g.appendChild(mk('path', { d: `M ${ex},${psY} l -6,-3 l 0,6 z`, fill: O }));
+  // LINAC 4 — echtes OSM-Gebäude an realer Lage (klein)
+  (GEO.linac4 || []).forEach(d => g.appendChild(path(d, { stroke: P, 'stroke-width': 1.2, fill: 'rgba(88,166,255,0.14)' })));
+  const l4p = ptsOf(GEO.linac4), l4 = l4p.length ? [avg(l4p, 0), avg(l4p, 1)] : [PS.x - 6, PS.y + 4];
 
-  const lab = (x, y, t, c, anc) => g.appendChild(label(x, y, t, { fill: c, 'font-size': '7px', 'font-family': 'monospace', 'text-anchor': anc || 'start', 'font-weight': 'bold' }));
-  lab(BX + 12, BY + 49, 'LINAC4', P);
-  lab(psbX + 11, psbY - 4, 'PSB', P);
-  lab(BX + 12, BY + 144, 'LINAC3', I);
-  lab(leirX + 10, leirY + 4, 'LEIR', I);
-  lab(psX, psY + 3, 'PS', PSc, 'middle');
-  lab(ex - 2, psY - 6, 'SPS', O, 'end');
+  // Detail-Ebene: erst beim Zoom sichtbar (CSS) → kein Gewusel im Vollbild
+  const det = mk('g'); det.setAttribute('class', 'geo-element geo-inj-detail');
+  const ln = (d, c, w) => det.appendChild(mk('path', { d, fill: 'none', stroke: c, 'stroke-width': w }));
+  // LEIR (∉ OSM) schematisch SO von PS; LINAC 3 (∉ OSM) speist von West ein
+  const leirX = PS.x + 5.5, leirY = PS.y + 5;
+  det.appendChild(mk('circle', { cx: leirX, cy: leirY, r: 2.4, fill: 'none', stroke: I, 'stroke-width': 1.1 }));
+  ln(`M ${PS.x - 4.5},${PS.y + 9} L ${leirX - 2.2},${leirY + 0.4}`, I, 1);   // LINAC3 → LEIR
+  ln(`M ${leirX},${leirY} L ${PS.x + 1},${PS.y + 1}`, I, 1);                  // LEIR → PS
+  if (PSB) { ln(`M ${l4[0]},${l4[1]} L ${PSB.x},${PSB.y}`, P, 1); ln(`M ${PSB.x},${PSB.y} L ${PS.x},${PS.y}`, P, 1); }  // LINAC4→PSB→PS
+  // Nur die NICHT in OSM/accelLabels vorhandenen Elemente beschriften (PS/PSB/SPS
+  // tragen bereits ihre accelLabels) → keine Doppel-Labels beim Zoom.
+  const dl = (x, y, t, c, anc) => det.appendChild(label(x, y, t, { fill: c, 'font-size': '4px', 'font-family': 'monospace', 'text-anchor': anc || 'start', 'font-weight': 'bold' }));
+  dl(leirX + 3.5, leirY + 1.5, 'LEIR', I, 'start');         // rechts neben LEIR
+  dl(l4[0] - 1.5, l4[1] + 3.5, 'LINAC4', P, 'end');         // links von LINAC4
+  dl(PS.x - 2, PS.y + 12, 'LINAC3', I, 'end');              // unten-links
+  g.appendChild(det);
+
+  // Dezenter Dauer-Hinweis im Vollbild (verschwindet beim Zoom): markiert die Lage.
+  const hint = mk('g'); hint.setAttribute('class', 'geo-element geo-inj-hint');
+  hint.appendChild(mk('circle', { cx: PS.x, cy: PS.y, r: 8, fill: 'none', stroke: 'rgba(46,164,79,0.55)', 'stroke-width': 0.9, 'stroke-dasharray': '2.5,2' }));
+  hint.appendChild(label(PS.x - 11, PS.y + 18, '⊕ Injektor-Komplex (Zoom)', { fill: 'rgba(205,214,228,0.72)', 'font-size': '6.5px', 'font-family': 'monospace', 'text-anchor': 'start' }));
+  g.appendChild(hint);
+
+  // Zoom-Zielfenster = Bounding-Box von Cluster (LINAC4/PSB/PS/LEIR) + SPS + Marge.
+  const all = ptsOf(GEO.sps).concat(ptsOf(GEO.ps), ptsOf(GEO.psb), l4p, [[leirX, leirY], [PS.x, PS.y]]);
+  const xs = all.map(p => p[0]), ys = all.map(p => p[1]), m = 12;
+  const x0 = Math.min(...xs) - m, y0 = Math.min(...ys) - m, x1 = Math.max(...xs) + m, y1 = Math.max(...ys) + m;
+  App.geoInjectorView = { x: Math.round(x0), y: Math.round(y0), w: Math.round(x1 - x0), h: Math.round(y1 - y0) };
 }
 
 // ── Modus-Umschaltung (hart: kein Overlay/Overlap) ──────────────────────────

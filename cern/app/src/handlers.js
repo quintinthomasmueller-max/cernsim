@@ -40,12 +40,11 @@ function selectDetector(name){
 
 function zoomToDetector(name){
  if(zoomTarget === name){
-  // Zoom out (Detektor-Auswahl bleibt erhalten)
-  zoomTarget = null;
-  E.btnZoomOut.classList.add("off");
-  animateViewBox(0, 0, 700, 480);
+  resetView();   // Zoom out (Detektor-Auswahl bleibt erhalten)
  } else {
   zoomTarget = name;
+  E.svg.classList.remove("inj-zoom");
+  E.btnZoomMeyrin.style.display = "none";
   E.btnZoomOut.classList.remove("off");
   let tx, ty, tw=160, th=120;   // Box auf die Schema-Detektorpositionen (Kardinalpunkte)
   if(name === "ATLAS") { tx = 270; ty = 360; }
@@ -55,6 +54,26 @@ function zoomToDetector(name){
   animateViewBox(tx, ty, tw, th);
   selectDetector(name);
  }
+}
+
+// Vollbild wiederherstellen (Zoom zurück): Detail-Labels aus, Meyrin-Button (nur
+// in der Realen Ansicht) wieder anbieten.
+function resetView(){
+ zoomTarget = null;
+ E.svg.classList.remove("inj-zoom");
+ E.btnZoomOut.classList.add("off");
+ E.btnZoomMeyrin.style.display = realMode ? "" : "none";
+ animateViewBox(0, 0, 700, 480);
+}
+
+// Zoom auf den Injektor-Komplex Meyrin (geo-genaues Fenster aus geo.js).
+function zoomMeyrin(){
+ const v = App.geoInjectorView; if(!v) return;
+ zoomTarget = "MEYRIN";
+ E.svg.classList.add("inj-zoom");             // blendet die Detail-Beschriftung ein
+ E.btnZoomMeyrin.style.display = "none";
+ E.btnZoomOut.classList.remove("off");
+ animateViewBox(v.x, v.y, v.w, v.h);
 }
 
 async function fuellProtokoll(){
@@ -118,8 +137,9 @@ export function wireHandlers(){
   App.setViewMode(realMode);
   E.btnToggleGeo.classList.toggle("act", realMode);
   E.btnToggleGeo.innerText = realMode ? "🎬 Didaktik-Modus" : "🌍 Reale Ansicht";
+  resetView();   // Moduswechsel → Vollbild + Meyrin-Button passend ein/aus
   App.setStatus(realMode
-    ? "REALE ANSICHT — echte Anordnung & Größen (OSM-Geodaten, Nord oben)"
+    ? "REALE ANSICHT — echte OSM-Geometrie. Tipp: 🔬 Injektor-Komplex zoomt auf Meyrin."
     : "DIDAKTIK-MODUS — schematische, animierte Beschleuniger-Kette", "on");
  });
 
@@ -128,11 +148,8 @@ export function wireHandlers(){
   const t=$("dt-"+d); if(t) t.addEventListener("click",()=>selectDetector(d.toUpperCase()));
  });
 
- E.btnZoomOut.addEventListener("click", () => {
-  zoomTarget = null;
-  E.btnZoomOut.classList.add("off");
-  animateViewBox(0, 0, 700, 480);
- });
+ E.btnZoomOut.addEventListener("click", resetView);
+ E.btnZoomMeyrin.addEventListener("click", zoomMeyrin);
 
  E.grpAtlas.addEventListener("click", () => { App.showInfo("ATLAS"); zoomToDetector("ATLAS"); });
  E.grpCms.addEventListener("click",   () => { App.showInfo("CMS");   zoomToDetector("CMS");   });
@@ -163,41 +180,32 @@ export function wireHandlers(){
   });
  });
 
- // PRESETS
- E.btnPreHiggs.addEventListener("click",()=>{
+ // PRESETS — die 3 realen LHC-Betriebsmodi (pp-Physik / Schwerionen / Pilot).
+ // pp-Physik: EIN Proton-Lauf bei voller Energie, auf dem in Wirklichkeit ALLE
+ // Experimente gleichzeitig laufen — Higgs (CMS), Z⁰ (ATLAS) UND CP-Verletzung
+ // (LHCb). Default-Tab CMS; per Detektor-Tab sind die anderen Entdeckungen direkt da.
+ E.btnPrePp.addEventListener("click",()=>{
   App.setMode(false); // Protonen
   App.resetLHC();
   E.sliEnergy.value = 6.8; s.paramEnergy = 6.8; E.lblEnergy.innerText = "6.8 TeV";
-  E.sliIntensity.value = 1.20; s.paramIntensity = 1.20; E.lblIntensity.innerText = "1.20e11 p";
+  E.sliIntensity.value = 1.40; s.paramIntensity = 1.40; E.lblIntensity.innerText = "1.40e11 p";
   E.sliBeta.value = 0.3; s.paramBetaStar = 0.3; E.lblBeta.innerText = "0.30 m";
   E.sliRampSpeed.value = 0.05; s.paramRampSpeed = 0.05; E.lblRampSpeed.innerText = "0.05 T/s (Sicher)"; E.lblRampSpeed.style.color = "#58a6ff";
-  s.activePhysicsMode="HIGGS";
+  s.activePhysicsMode="PP";
   App.updateReadouts(); selectDetector("CMS");   // CMS = Higgs-Goldkanal H→ZZ*→4ℓ
-  App.setStatus("PRESET GELADEN: Higgs-Boson-Suche (Goldkanal H→4ℓ in CMS · 13.6 TeV) — Tipp: ATLAS-Tab zeigt Z⁰-Kalibrierkanal", "on");
+  App.setStatus("PRESET GELADEN: Protonen-Physik (Run 3 · 13.6 TeV) — Higgs (CMS), Z⁰ (ATLAS) & CP-Verletzung (LHCb) laufen alle auf diesem Strahl. Detektor-Tab wechseln!", "on");
  });
 
  E.btnPreQgp.addEventListener("click",()=>{
   App.setMode(true); // Blei-Ionen
   App.resetLHC();
-  E.sliEnergy.value = 2.5; s.paramEnergy = 2.5; E.lblEnergy.innerText = "2.5 TeV";
+  E.sliEnergy.value = 2.7; s.paramEnergy = 2.7; E.lblEnergy.innerText = "2.70 TeV/u";
   E.sliIntensity.value = 0.90; s.paramIntensity = 0.90; E.lblIntensity.innerText = "0.90e11 p";
-  E.sliBeta.value = 0.4; s.paramBetaStar = 0.4; E.lblBeta.innerText = "0.40 m";
+  E.sliBeta.value = 0.5; s.paramBetaStar = 0.5; E.lblBeta.innerText = "0.50 m";
   E.sliRampSpeed.value = 0.05; s.paramRampSpeed = 0.05; E.lblRampSpeed.innerText = "0.05 T/s (Sicher)"; E.lblRampSpeed.style.color = "#58a6ff";
   s.activePhysicsMode="QGP";
   App.updateReadouts(); selectDetector("ALICE");
-  App.setStatus("PRESET GELADEN: Blei-Ionen-Kollision zur Erzeugung des Quark-Gluon-Plasmas in ALICE", "on");
- });
-
- E.btnPreLhcb.addEventListener("click",()=>{
-  App.setMode(false); // Protonen
-  App.resetLHC();
-  E.sliEnergy.value = 6.5; s.paramEnergy = 6.5; E.lblEnergy.innerText = "6.5 TeV";
-  E.sliIntensity.value = 1.00; s.paramIntensity = 1.00; E.lblIntensity.innerText = "1.00e11 p";
-  E.sliBeta.value = 0.6; s.paramBetaStar = 0.6; E.lblBeta.innerText = "0.60 m";
-  E.sliRampSpeed.value = 0.05; s.paramRampSpeed = 0.05; E.lblRampSpeed.innerText = "0.05 T/s (Sicher)"; E.lblRampSpeed.style.color = "#58a6ff";
-  s.activePhysicsMode="LHCB";
-  App.updateReadouts(); selectDetector("LHCB");
-  App.setStatus("PRESET GELADEN: CP-Verletzung & Schönheit (B-Physik p-p Kollision bei 13 TeV in LHCb)", "on");
+  App.setStatus("PRESET GELADEN: Schwerionen-Lauf (Pb-Pb · 2.68 TeV/u, √s_NN = 5.36 TeV) → Quark-Gluon-Plasma in ALICE. ATLAS misst Z⁰ als Standardkerze.", "on");
  });
 
  E.btnPrePilot.addEventListener("click",()=>{
@@ -220,6 +228,7 @@ export function wireHandlers(){
   s.paramEnergy = parseFloat(E.sliEnergy.value);
   E.lblEnergy.innerText = s.paramEnergy.toFixed(1) + " TeV";
   App.updateReadouts();
+  App.drawHist();   // Energie formt das Spektrum (Erzeugbarkeit/Signifikanz) → sofortiges Feedback
  });
  E.sliIntensity.addEventListener("input",()=>{
   s.paramIntensity = parseFloat(E.sliIntensity.value);

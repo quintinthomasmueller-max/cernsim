@@ -43,12 +43,15 @@ QUERIES = {
  'sps':   '[out:json][timeout:120];way(66473762);out geom;',
  'ps':    '[out:json][timeout:120];way(174646428);out geom;',          # Proton Synchrotron
  'psb':   '[out:json][timeout:120];way(309914733);out geom;',          # PS Booster
+ 'linac4':'[out:json][timeout:120];way(80305783);out geom;',           # LINAC 4 (seit Kurzem in OSM)
  # Detektor-Insertions = echte IP-Positionen auf dem Ring (ATLAS/CMS/ALICE/LHCb).
  # Union-Klammern PFLICHT, sonst behält Overpass nur das letzte way() im Ergebnis.
  'ip':    '[out:json][timeout:120];(way(685422600);way(685422592);way(685422602);way(685422598););out geom;',
  # Echte Transfertunnel SPS→LHC (in OSM als „Tl2"/„Tl-8" geschrieben):
  'ti2':   '[out:json][timeout:120];way(317804188);out geom;',   # TI 2 → Punkt 2 (ALICE)
  'ti8':   '[out:json][timeout:120];way(317804189);out geom;',   # TI 8 → Punkt 8 (LHCb)
+ 'tt2_10':'[out:json][timeout:120];way(317804190);out geom;',   # interne Transferlinie TT2/TT10 (PS→SPS)
+ 'tt60':  '[out:json][timeout:120];way(685422589);out geom;',   # interne Transferlinie TT60 (PS→SPS)
  'lake':  '[out:json][timeout:120];rel(332617);out geom;',          # „Le Léman"
  'border':'[out:json][timeout:120];way["boundary"="administrative"]["admin_level"="2"]'
           '(46.22,5.98,46.34,6.16);out geom;',
@@ -143,6 +146,7 @@ def build():
     GEO['sps'] = proj_ring('sps')
     GEO['ps']  = proj_ring('ps')
     GEO['psb'] = proj_ring('psb')
+    GEO['linac4'] = proj_ring('linac4')   # echtes LINAC-4-Gebäude (OSM); LEIR/LINAC3 ∉ OSM → in geo.js schematisch
 
     def centroid(lines):
         pts = [tf(lo, la) for ln in lines for (lo, la) in ln]
