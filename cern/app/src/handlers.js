@@ -61,10 +61,26 @@ function zoomToDetector(name){
 function resetView(){
  zoomTarget = null;
  E.svg.classList.remove("inj-zoom");
+ E.svg.classList.remove("fcc-on");
  E.btnZoomOut.classList.add("off");
  E.btnZoomMeyrin.style.display = realMode ? "" : "none";
  animateViewBox(0, 0, 700, 480);
 }
+
+// Easter Egg: den GEPLANTEN Future Circular Collider (FCC) maßstäblich neben
+// LHC/SPS zeigen — mit dramatischem Heraus-Zoom. Nur in der Realen Ansicht.
+function revealFCC(){
+ if(!realMode) return;
+ const v = App.geoFccView; if(!v) return;
+ zoomTarget = "FCC";
+ E.svg.classList.remove("inj-zoom");
+ E.svg.classList.add("fcc-on");                 // blendet den FCC-Ring ein (CSS)
+ E.btnZoomMeyrin.style.display = "none";
+ E.btnZoomOut.classList.remove("off");
+ App.setStatus("🔭 FCC — Future Circular Collider: der geplante 91-km-Ring (×3,4 LHC), maßstäblich. „Ansicht zurücksetzen\" kehrt zurück.","on");
+ animateViewBox(v.x, v.y, v.w, v.h, 1700);      // langsam = dramatisch
+}
+App.revealFCC = revealFCC;
 
 // Zoom auf den Injektor-Komplex Meyrin (geo-genaues Fenster aus geo.js).
 function zoomMeyrin(){

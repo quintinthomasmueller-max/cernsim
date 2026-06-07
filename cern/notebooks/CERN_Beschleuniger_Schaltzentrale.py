@@ -178,6 +178,15 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
 .geo-inj-hint{opacity:1;transition:opacity .3s}
 #svg.inj-zoom .geo-inj-detail{opacity:1}
 #svg.inj-zoom .geo-inj-hint{opacity:0}
+/* Grobe Vollbild-Labels (PS/PSB/SPS-Zentroide) im Zoom ausblenden — sie wären
+   ~20× zu groß; die feinen Ersatz-Labels liefert die Detail-Ebene. */
+#svg.inj-zoom .geo-far{opacity:0}
+/* Easter Egg FCC: Ring standardmäßig versteckt, erscheint beim Heraus-Zoom. */
+.geo-fcc{opacity:0;transition:opacity .8s}
+#svg.fcc-on .geo-fcc{opacity:1}
+/* Versteckter Auslöser (✦ im See) — klickbar trotz #geo-layer{pointer-events:none}. */
+.fcc-trigger{pointer-events:auto;cursor:pointer;transition:fill .2s}
+.fcc-trigger:hover{fill:rgba(210,120,255,0.95)}
 .info-hit{cursor:pointer;transition:fill 0.18s}
 .info-hit:hover{fill:rgba(88,166,255,0.07)!important}
 .info-hit-ring{cursor:pointer;transition:stroke 0.18s}
@@ -1972,6 +1981,7 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
     const el = document.createElementNS(SVG_NS, tag);
     for (const k in attrs) el.setAttribute(k, attrs[k]);
     el.classList.add(&quot;geo-element&quot;);
+    el.setAttribute(&quot;vector-effect&quot;, &quot;non-scaling-stroke&quot;);
     return el;
   }
   function path(d, attrs) {
@@ -2016,15 +2026,23 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
     }
     for (const name in GEO.ip || {}) {
       const p = GEO.ip[name], c = DET_COL[name] || &quot;#fff&quot;;
-      g2.appendChild(mk(&quot;circle&quot;, { cx: p.x, cy: p.y, r: 4, fill: c, stroke: &quot;#0d1117&quot;, &quot;stroke-width&quot;: 1 }));
-      g2.appendChild(label(p.x, p.y - 7, name, { fill: c, &quot;font-size&quot;: &quot;8px&quot;, &quot;font-family&quot;: &quot;monospace&quot;, &quot;font-weight&quot;: &quot;bold&quot;, &quot;text-anchor&quot;: &quot;middle&quot; }));
+      const circ = mk(&quot;circle&quot;, { cx: p.x, cy: p.y, r: 4, fill: c, stroke: &quot;#0d1117&quot;, &quot;stroke-width&quot;: 1 });
+      const lab = label(p.x, p.y - 7, name, { fill: c, &quot;font-size&quot;: &quot;8px&quot;, &quot;font-family&quot;: &quot;monospace&quot;, &quot;font-weight&quot;: &quot;bold&quot;, &quot;text-anchor&quot;: &quot;middle&quot; });
+      circ.classList.add(&quot;geo-far&quot;);
+      lab.classList.add(&quot;geo-far&quot;);
+      g2.appendChild(circ);
+      g2.appendChild(lab);
     }
-    (GEO.accelLabels || []).forEach((p) => g2.appendChild(label(p.x, p.y, p.t, {
-      fill: &quot;rgba(205,214,228,0.7)&quot;,
-      &quot;font-size&quot;: &quot;7px&quot;,
-      &quot;font-family&quot;: &quot;monospace&quot;,
-      &quot;text-anchor&quot;: &quot;middle&quot;
-    })));
+    (GEO.accelLabels || []).forEach((p) => {
+      const el = label(p.x, p.y, p.t, {
+        fill: &quot;rgba(205,214,228,0.7)&quot;,
+        &quot;font-size&quot;: &quot;7px&quot;,
+        &quot;font-family&quot;: &quot;monospace&quot;,
+        &quot;text-anchor&quot;: &quot;middle&quot;
+      });
+      el.classList.add(&quot;geo-far&quot;);
+      g2.appendChild(el);
+    });
     if (GEO.ti) [&quot;ti2&quot;, &quot;ti8&quot;].forEach((k) => {
       const d = GEO.ti[k];
       if (!d) return;
@@ -2061,6 +2079,53 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
       &quot;font-family&quot;: &quot;monospace&quot;
     }));
     drawInjector(g2);
+    drawFCC(g2);
+  }
+  function drawFCC(g2) {
+    const LHC = { cx: 350, cy: 240, r: 180 };
+    const k = 90.7 / 26.7, R2 = LHC.r * k;
+    const ne = [0.6, -0.8], off = R2 - LHC.r - 4;
+    const cx = LHC.cx + ne[0] * off, cy = LHC.cy + ne[1] * off;
+    const view = padToAspect([[cx - R2, cy - R2], [cx + R2, cy + R2], [LHC.cx, LHC.cy]], 700 / 480, 60);
+    App.geoFccView = view;
+    const FC = &quot;rgba(210,120,255,&quot;;
+    const fcc = mk(&quot;g&quot;);
+    fcc.setAttribute(&quot;class&quot;, &quot;geo-element geo-fcc&quot;);
+    fcc.appendChild(mk(&quot;circle&quot;, { cx, cy, r: R2, fill: FC + &quot;0.05)&quot;, stroke: FC + &quot;0.85)&quot;, &quot;stroke-width&quot;: 2, &quot;stroke-dasharray&quot;: &quot;10,7&quot; }));
+    const fs = (s5) => (s5 * view.w / 700).toFixed(1) + &quot;px&quot;;
+    const ti = label(
+      cx,
+      cy - R2 + 24 * view.w / 700,
+      &quot;FCC \u2014 Future Circular Collider (geplant, ~91 km)&quot;,
+      { fill: FC + &quot;0.95)&quot;, &quot;font-size&quot;: fs(16), &quot;font-family&quot;: &quot;monospace&quot;, &quot;font-weight&quot;: &quot;bold&quot;, &quot;text-anchor&quot;: &quot;middle&quot; }
+    );
+    fcc.appendChild(ti);
+    fcc.appendChild(label(
+      cx,
+      cy - R2 + 44 * view.w / 700,
+      &quot;LHC 27 km \xB7 SPS 7 km \xB7 FCC 91 km   (\xD73,4)&quot;,
+      { fill: FC + &quot;0.7)&quot;, &quot;font-size&quot;: fs(11), &quot;font-family&quot;: &quot;monospace&quot;, &quot;text-anchor&quot;: &quot;middle&quot; }
+    ));
+    g2.appendChild(fcc);
+    if (GEO.lakeLabel) {
+      const t = mk(&quot;text&quot;, {
+        x: GEO.lakeLabel.x + 26,
+        y: GEO.lakeLabel.y + 20,
+        &quot;font-size&quot;: &quot;11px&quot;,
+        &quot;font-family&quot;: &quot;monospace&quot;,
+        fill: FC + &quot;0.45)&quot;,
+        &quot;text-anchor&quot;: &quot;middle&quot;
+      });
+      t.textContent = &quot;\u2726&quot;;
+      t.classList.add(&quot;fcc-trigger&quot;);
+      const tip = document.createElementNS(SVG_NS, &quot;title&quot;);
+      tip.textContent = &quot;?&quot;;
+      t.appendChild(tip);
+      t.addEventListener(&quot;click&quot;, () => {
+        if (App.revealFCC) App.revealFCC();
+      });
+      g2.appendChild(t);
+    }
   }
   function ptsOf(paths) {
     const o = [];
@@ -2070,41 +2135,90 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
     }));
     return o;
   }
-  function avg(a, i) {
-    return a.reduce((s5, p) => s5 + p[i], 0) / a.length;
+  function bboxC(pts) {
+    const xs = pts.map((p) => p[0]), ys = pts.map((p) => p[1]);
+    const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+    return { cx: (x0 + x1) / 2, cy: (y0 + y1) / 2, r: Math.max(x1 - x0, y1 - y0) / 2 || 1 };
+  }
+  function edgePath(A, B) {
+    const dx = B.cx - A.cx, dy = B.cy - A.cy, d = Math.hypot(dx, dy) || 1, ux = dx / d, uy = dy / d, f = (n) => n.toFixed(2);
+    return `M ${f(A.cx + ux * A.r)},${f(A.cy + uy * A.r)} L ${f(B.cx - ux * B.r)},${f(B.cy - uy * B.r)}`;
+  }
+  function roundedRectPath(cx, cy, w, h, r) {
+    r = Math.min(r, w / 2, h / 2);
+    const x = cx - w / 2, y = cy - h / 2, f = (n) => n.toFixed(2);
+    return `M ${f(x + r)},${f(y)} H ${f(x + w - r)} A ${f(r)},${f(r)} 0 0 1 ${f(x + w)},${f(y + r)} V ${f(y + h - r)} A ${f(r)},${f(r)} 0 0 1 ${f(x + w - r)},${f(y + h)} H ${f(x + r)} A ${f(r)},${f(r)} 0 0 1 ${f(x)},${f(y + h - r)} V ${f(y + r)} A ${f(r)},${f(r)} 0 0 1 ${f(x + r)},${f(y)} Z`;
+  }
+  function padToAspect(pts, aspect, m) {
+    let x0 = Math.min(...pts.map((p) => p[0])) - m, x1 = Math.max(...pts.map((p) => p[0])) + m;
+    let y0 = Math.min(...pts.map((p) => p[1])) - m, y1 = Math.max(...pts.map((p) => p[1])) + m;
+    let w = x1 - x0, h = y1 - y0;
+    if (w / h < aspect) {
+      const nw = h * aspect;
+      x0 -= (nw - w) / 2;
+      w = nw;
+    } else {
+      const nh = w / aspect;
+      y0 -= (nh - h) / 2;
+      h = nh;
+    }
+    const r = (n) => +n.toFixed(1);
+    return { x: r(x0), y: r(y0), w: r(w), h: r(h) };
   }
   function drawInjector(g2) {
     const labs = GEO.accelLabels || [];
     const PS = labs.find((l) => l.t === &quot;PS&quot;), PSB = labs.find((l) => l.t === &quot;PSB&quot;);
     if (!PS) return;
     const P = &quot;#58a6ff&quot;, I = &quot;#e377c2&quot;, PSc = &quot;#2ea44f&quot;;
-    (GEO.linac4 || []).forEach((d) => g2.appendChild(path(d, { stroke: P, &quot;stroke-width&quot;: 1.2, fill: &quot;rgba(88,166,255,0.14)&quot; })));
-    const l4p = ptsOf(GEO.linac4), l4 = l4p.length ? [avg(l4p, 0), avg(l4p, 1)] : [PS.x - 6, PS.y + 4];
+    (GEO.linac4 || []).forEach((d) => g2.appendChild(path(d, { stroke: P, &quot;stroke-width&quot;: 1, fill: &quot;rgba(88,166,255,0.14)&quot; })));
+    const l4p = ptsOf(GEO.linac4), psPts = ptsOf(GEO.ps), psbPts = ptsOf(GEO.psb);
+    const psC = psPts.length ? bboxC(psPts) : { cx: PS.x, cy: PS.y, r: 4 };
+    const psbC = psbPts.length ? bboxC(psbPts) : null;
+    const l4C = l4p.length ? bboxC(l4p) : null;
+    const gpm = psC.r / 101, M = (m) => m * gpm;
+    const leirW = M(24), leirH = M(18), leirCr = M(4);
+    const dir = [-0.29, 0.96];
+    const dist = psC.r + M(14) + leirW / 2;
+    const leirC = { cx: psC.cx + dir[0] * dist, cy: psC.cy + dir[1] * dist, r: leirW / 2 };
+    const l3len = M(30), l3y = leirC.cy + M(2);
+    const l3b = [leirC.cx - leirW / 2, l3y];
+    const l3a = [leirC.cx - leirW / 2 - l3len, l3y];
+    const view = padToAspect(
+      psPts.concat(
+        psbPts,
+        l4p,
+        [[leirC.cx - leirW / 2, leirC.cy], [leirC.cx + leirW / 2, leirC.cy + leirH / 2], l3a, [psC.cx, psC.cy]]
+      ),
+      700 / 480,
+      6
+    );
+    App.geoInjectorView = view;
+    const FS = (13 * view.w / 700).toFixed(2) + &quot;px&quot;;
     const det = mk(&quot;g&quot;);
     det.setAttribute(&quot;class&quot;, &quot;geo-element geo-inj-detail&quot;);
-    const ln = (d, c, w) => det.appendChild(mk(&quot;path&quot;, { d, fill: &quot;none&quot;, stroke: c, &quot;stroke-width&quot;: w }));
-    const leirX = PS.x + 5.5, leirY = PS.y + 5;
-    det.appendChild(mk(&quot;circle&quot;, { cx: leirX, cy: leirY, r: 2.4, fill: &quot;none&quot;, stroke: I, &quot;stroke-width&quot;: 1.1 }));
-    ln(`M ${PS.x - 4.5},${PS.y + 9} L ${leirX - 2.2},${leirY + 0.4}`, I, 1);
-    ln(`M ${leirX},${leirY} L ${PS.x + 1},${PS.y + 1}`, I, 1);
-    if (PSB) {
-      ln(`M ${l4[0]},${l4[1]} L ${PSB.x},${PSB.y}`, P, 1);
-      ln(`M ${PSB.x},${PSB.y} L ${PS.x},${PS.y}`, P, 1);
+    const beam = (d, c, dash) => det.appendChild(mk(&quot;path&quot;, Object.assign(
+      { d, fill: &quot;none&quot;, stroke: c, &quot;stroke-width&quot;: 1.1 },
+      dash ? { &quot;stroke-dasharray&quot;: dash } : {}
+    )));
+    det.appendChild(mk(&quot;path&quot;, { d: roundedRectPath(leirC.cx, leirC.cy, leirW, leirH, leirCr), fill: &quot;none&quot;, stroke: I, &quot;stroke-width&quot;: 1.1, &quot;stroke-dasharray&quot;: &quot;3,2&quot; }));
+    beam(`M ${l3a[0].toFixed(2)},${l3a[1].toFixed(2)} L ${l3b[0].toFixed(2)},${l3b[1].toFixed(2)}`, I, &quot;3,2&quot;);
+    beam(edgePath(leirC, psC), I);
+    if (psbC) {
+      if (l4C) beam(edgePath(l4C, psbC), P);
+      beam(edgePath(psbC, psC), P);
     }
-    const dl = (x, y, t, c, anc) => det.appendChild(label(x, y, t, { fill: c, &quot;font-size&quot;: &quot;4px&quot;, &quot;font-family&quot;: &quot;monospace&quot;, &quot;text-anchor&quot;: anc || &quot;start&quot;, &quot;font-weight&quot;: &quot;bold&quot; }));
-    dl(leirX + 3.5, leirY + 1.5, &quot;LEIR&quot;, I, &quot;start&quot;);
-    dl(l4[0] - 1.5, l4[1] + 3.5, &quot;LINAC4&quot;, P, &quot;end&quot;);
-    dl(PS.x - 2, PS.y + 12, &quot;LINAC3&quot;, I, &quot;end&quot;);
+    const dl = (x, y, t, c, anc) => det.appendChild(label(x, y, t, { fill: c, &quot;font-size&quot;: FS, &quot;font-family&quot;: &quot;monospace&quot;, &quot;text-anchor&quot;: anc || &quot;middle&quot;, &quot;font-weight&quot;: &quot;bold&quot; }));
+    dl(psC.cx, psC.cy + psC.r * 0.12, &quot;PS&quot;, PSc, &quot;middle&quot;);
+    if (psbC) dl(psbC.cx, psbC.cy - psbC.r - 0.8, &quot;PSB&quot;, P, &quot;middle&quot;);
+    if (l4C) dl(l4C.cx - l4C.r - 0.6, l4C.cy + 1.5, &quot;LINAC4&quot;, P, &quot;end&quot;);
+    dl(leirC.cx, leirC.cy + leirH / 2 + 1.2, &quot;LEIR&quot;, I, &quot;middle&quot;);
+    dl(l3a[0] - 0.6, l3y + 0.4, &quot;LINAC3&quot;, I, &quot;end&quot;);
     g2.appendChild(det);
     const hint = mk(&quot;g&quot;);
     hint.setAttribute(&quot;class&quot;, &quot;geo-element geo-inj-hint&quot;);
     hint.appendChild(mk(&quot;circle&quot;, { cx: PS.x, cy: PS.y, r: 8, fill: &quot;none&quot;, stroke: &quot;rgba(46,164,79,0.55)&quot;, &quot;stroke-width&quot;: 0.9, &quot;stroke-dasharray&quot;: &quot;2.5,2&quot; }));
     hint.appendChild(label(PS.x - 11, PS.y + 18, &quot;\u2295 Injektor-Komplex (Zoom)&quot;, { fill: &quot;rgba(205,214,228,0.72)&quot;, &quot;font-size&quot;: &quot;6.5px&quot;, &quot;font-family&quot;: &quot;monospace&quot;, &quot;text-anchor&quot;: &quot;start&quot; }));
     g2.appendChild(hint);
-    const all = ptsOf(GEO.sps).concat(ptsOf(GEO.ps), ptsOf(GEO.psb), l4p, [[leirX, leirY], [PS.x, PS.y]]);
-    const xs = all.map((p) => p[0]), ys = all.map((p) => p[1]), m = 12;
-    const x0 = Math.min(...xs) - m, y0 = Math.min(...ys) - m, x1 = Math.max(...xs) + m, y1 = Math.max(...ys) + m;
-    App.geoInjectorView = { x: Math.round(x0), y: Math.round(y0), w: Math.round(x1 - x0), h: Math.round(y1 - y0) };
   }
   var _real = false;
   function setViewMode(real) {
@@ -2178,10 +2292,24 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
   function resetView() {
     zoomTarget = null;
     E5.svg.classList.remove(&quot;inj-zoom&quot;);
+    E5.svg.classList.remove(&quot;fcc-on&quot;);
     E5.btnZoomOut.classList.add(&quot;off&quot;);
     E5.btnZoomMeyrin.style.display = realMode ? &quot;&quot; : &quot;none&quot;;
     animateViewBox(0, 0, 700, 480);
   }
+  function revealFCC() {
+    if (!realMode) return;
+    const v = App.geoFccView;
+    if (!v) return;
+    zoomTarget = &quot;FCC&quot;;
+    E5.svg.classList.remove(&quot;inj-zoom&quot;);
+    E5.svg.classList.add(&quot;fcc-on&quot;);
+    E5.btnZoomMeyrin.style.display = &quot;none&quot;;
+    E5.btnZoomOut.classList.remove(&quot;off&quot;);
+    App.setStatus('\u{1F52D} FCC \u2014 Future Circular Collider: der geplante 91-km-Ring (\xD73,4 LHC), ma\xDFst\xE4blich. \u201EAnsicht zur\xFCcksetzen&quot; kehrt zur\xFCck.', &quot;on&quot;);
+    animateViewBox(v.x, v.y, v.w, v.h, 1700);
+  }
+  App.revealFCC = revealFCC;
   function zoomMeyrin() {
     const v = App.geoInjectorView;
     if (!v) return;
@@ -2515,7 +2643,6 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
   }
 })();
 </script><script>(function(){function r(){try{var h=Math.ceil(document.getElementById('cern-v4')?document.getElementById('cern-v4').getBoundingClientRect().height:document.documentElement.scrollHeight);parent.postMessage({cernV4Height:h},'*');}catch(e){}}window.addEventListener('load',r);setTimeout(r,250);setTimeout(r,1200);if(window.ResizeObserver){new ResizeObserver(r).observe(document.body);}})();</script></body></html>"></iframe><script>(function(){var f=document.getElementById('cern-v4-frame');if(!f)return;window.addEventListener('message',function(e){if(e.source===f.contentWindow&&e.data&&e.data.cernV4Height){f.style.height=(e.data.cernV4Height+6)+'px';}});})();</script>'''))
-
 
 
 # %% [markdown]

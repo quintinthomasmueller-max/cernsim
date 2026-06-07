@@ -13,6 +13,43 @@
   (1. Komponente „Geo-Overlay" ✅; weitere offen).
 - **Entscheidungen:** gelockt (siehe „Gelockte Entscheidungen"). Modul-Modell = **leichter Namespace** (`App`-Objekt).
 - **Zuletzt erledigt (diese Session):**
+  - **Injektor-Zoom (Meyrin) brauchbar gemacht** (Nutzer: „man erkennt nichts, müsste näher
+    + feiner"). Drei Ursachen behoben in `geo.js`/`styles.css`: (1) **Zoom-Fenster enthielt das
+    riesige SPS** → Cluster nur ein ~12px-Fleck. Jetzt rahmt `App.geoInjectorView` NUR den Cluster
+    (LINAC4/PSB/PS/LEIR), aufs SVG-Seitenverhältnis gepolstert (`padToAspect`) → **~20× statt ~6×**.
+    (2) **Strokes skalierten mit** → fette Klötze: `mk()` setzt jetzt `vector-effect:non-scaling-stroke`
+    (Linien bleiben Bildschirm-px bei jedem Zoom). (3) **Labels explodierten** (PS/PSB 7px + ATLAS-IP
+    8px, ~20×): accelLabels **und** IP-Detektor-Kreise/-Labels tragen jetzt Klasse `geo-far`
+    → im Zoom ausgeblendet (`#svg.inj-zoom .geo-far{opacity:0}`); die Detail-Ebene liefert eigene
+    feine, zoom-skalierte Labels (`FS = 13·view.w/700`). Headless 45 grün, `check.sh` grün; visuell
+    bestätigt (Cluster mit PS-Ring/LEIR/LINAC3-4 klar lesbar, keine Riesen-Labels mehr).
+  - **Injektor-Topologie/Maßstab korrigiert** (Folge-Feedback: „Formen überlappen, nicht richtig
+    connected; sind die Größen akkurat?"). `drawInjector` nutzt jetzt echte Ring-Geometrie via
+    `bboxC` (Mittelpunkt+Radius aus OSM-Punkten) und `edgePath` (Kante-zu-Kante statt Linien ins
+    Zentrum). **Maßstab ehrlich:** PS/PSB/LINAC4 sind OSM → maßstäblich zueinander (PSB real 0,256× PS);
+    **LEIR + LINAC3 ∉ OSM → schematisch (jetzt gestrichelt)**, LEIR auf realistische 0,15× PS
+    verkleinert (vorher ~0,36×) und **außerhalb** des PS-Rings platziert (Lücke 0,6 → kein Überlapp).
+    Klare Ketten: Protonen LINAC4→PSB→PS (blau, durchgezogen), Ionen LINAC3→LEIR→PS (pink, gestrichelt).
+    Visuell bestätigt.
+  - **Injektor maßstabsgenau + reale Formen** (Folge-Feedback: „Real-Ansicht muss perfekt nach
+    Maßstab, richtige Formen/Radien — PSB z.B. 25 m"). Verifiziert: OSM ist exakt maßstäblich
+    (PS RMS 101 m, **PSB 25,4 m**, SPS 1102 m — Overpass nachgemessen). **LEIR + LINAC3 in KEINER
+    Geodatenquelle** (OSM-Name/-Tag, Nominatim, Wikidata-Koord. alle leer) → werden in `geo.js` aus
+    dem OSM-abgeleiteten Maßstab `gpm = psC.r/101` (geo/Meter) gezeichnet: **LEIR = abgerundetes
+    Rechteck 24×18 m** (Umfang ~77 m ≈ real 78,5 m; `roundedRectPath`), nicht mehr Kreis. Reale
+    Verhältnisse erreicht: LEIR/PS 0,119 (real 0,120), PSB/PS 0,256 (0,250), LEIR/PSB 0,464 (0,480).
+    ⚠ **LEIR/LINAC3-Position ist approximiert** (S-SW des PS, ∉ OSM → gestrichelt); Größe/Form/Maßstab
+    real. Falls echte LEIR/LINAC3-Koordinaten auftauchen → in `geo_build.py` projizieren (wie LINAC4).
+    Tests 45 grün, visuell bestätigt.
+  - **Easter Egg: FCC (Future Circular Collider)** (Nutzerwunsch). In der Realen Ansicht ein
+    versteckter Auslöser — dezenter **✦ im Genfersee** (`.fcc-trigger`, `pointer-events:auto` trotz
+    `#geo-layer{pointer-events:none}`; nur sichtbar/aktiv in der Realen Ansicht). Klick →
+    `handlers#revealFCC` (gated auf `realMode`): blendet `#svg.fcc-on .geo-fcc` ein und macht einen
+    **dramatischen Heraus-Zoom** (`animateViewBox(..., 1700ms)`, ~2,8× heraus auf `App.geoFccView`).
+    FCC **maßstäblich** gezeichnet (`geo.js#drawFCC`): R = LHC_R·(90,7/26,7) ≈ ×3,40 (real), Zentrum
+    NE → LHC sitzt innen ~tangential am SW-Rand (real); Léman liegt im FCC-Areal. Labels „FCC …91 km"
+    + Vergleich „LHC 27 · SPS 7 · FCC 91 km (×3,4)" (zoom-skalierte Schrift). `resetView` löscht
+    `fcc-on` und zoomt zurück. Visuell bestätigt; Tests 45 grün.
   - **Canvas-Skalierungs-Bug behoben** (Event-Display + Histogramm): `resizeCanvases` schrieb die
     per `getBoundingClientRect` gemessene Pixelgröße als Inline-`style.width/height` zurück — lief das
     beim Boot (`readyState==="loading"`, Layout 0 breit), fror es eine falsche/überdimensionierte

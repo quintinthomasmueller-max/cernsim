@@ -77,6 +77,15 @@
 .geo-inj-hint{opacity:1;transition:opacity .3s}
 #svg.inj-zoom .geo-inj-detail{opacity:1}
 #svg.inj-zoom .geo-inj-hint{opacity:0}
+/* Grobe Vollbild-Labels (PS/PSB/SPS-Zentroide) im Zoom ausblenden — sie wären
+   ~20× zu groß; die feinen Ersatz-Labels liefert die Detail-Ebene. */
+#svg.inj-zoom .geo-far{opacity:0}
+/* Easter Egg FCC: Ring standardmäßig versteckt, erscheint beim Heraus-Zoom. */
+.geo-fcc{opacity:0;transition:opacity .8s}
+#svg.fcc-on .geo-fcc{opacity:1}
+/* Versteckter Auslöser (✦ im See) — klickbar trotz #geo-layer{pointer-events:none}. */
+.fcc-trigger{pointer-events:auto;cursor:pointer;transition:fill .2s}
+.fcc-trigger:hover{fill:rgba(210,120,255,0.95)}
 .info-hit{cursor:pointer;transition:fill 0.18s}
 .info-hit:hover{fill:rgba(88,166,255,0.07)!important}
 .info-hit-ring{cursor:pointer;transition:stroke 0.18s}
