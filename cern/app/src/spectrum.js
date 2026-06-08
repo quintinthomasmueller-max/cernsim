@@ -186,6 +186,19 @@ function resetSpectrumData(){
  s.higgsCands=0;
 }
 
+// Bulk-Statistik (Datennahme): 'units' Kollisionen auf einmal in den AKTUELLEN
+// Detektor akkumulieren (collStore zählt voll für die Signifikanz; das Histogramm
+// wird mit Massen befüllt, aber gedeckelt, damit es nicht ins Unendliche wächst).
+const HIST_CAP = 6000;
+function accumulateStats(units){
+ units = Math.floor(units); if(units<=0) return;
+ const sp=spec(), store=s.massStore[s.selDet];
+ const rateFactor=Math.pow(s.paramIntensity,2)/Math.max(0.3,s.paramBetaStar);
+ const per=Math.max(1, Math.round(rateFactor*(sp.channel==="4l"?1.5:5)));
+ for(let k=0;k<units && store.length<HIST_CAP;k++){ for(let i=0;i<per && store.length<HIST_CAP;i++) store.push(sampleMass(sp)); }
+ s.collStore[s.selDet]+=units;
+}
+
 function generateMassData(){
  const sp=spec();
  // Datenrate ∝ Intensität² / β* (4ℓ-Goldkanal seltener → kleinerer Faktor)
@@ -338,5 +351,6 @@ App.classify = classify;
 App.sampleEvent = sampleEvent;
 App.resetSpectrumData = resetSpectrumData;
 App.generateMassData = generateMassData;
+App.accumulateStats = accumulateStats;
 App.getSignificance = getSignificance;
 App.drawHist = drawHist;

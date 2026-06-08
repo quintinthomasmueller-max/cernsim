@@ -6,7 +6,12 @@ import { App } from './core.js';
 
 Object.assign(App.state, {
   isIon: false, injecting: false, ramped: false, filling: false,
-  b1Count: 0, b2Count: 0, collisions: 0,
+  b1Count: 0, b2Count: 0,         // umlaufende Züge je Strahl
+  b1Batches: 0, b2Batches: 0,     // angekommene PS-Batches je Strahl (→ Bunches-Anzeige)
+  collisions: 0,
+  dtElapsed: 0, intensity0: 0, intensityNow: 0,   // Datennahme: vergangene reale Zeit + Strahl-Intensität (Burn-off)
+  statAcc: 0,                                     // Bruchteil-Akkumulator für Statistik (∝ ∫L·dt)
+  spsDots: { b1: [], b2: [] }, spsAngle: 0, spsRunning: false, spsLastT: null,  // im SPS akkumulierende Batches
   lhcDots: { b1: [], b2: [] },
   lhcSpeed: 0.0078,          // rad/ms bei Injektionsenergie (Proton)
   lhcAngle: 0, lhcRunning: false, lhcLastT: null,

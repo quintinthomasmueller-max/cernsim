@@ -49,7 +49,7 @@ const INFO_DB = {
   img: 'Aerial view of PS at CERN in 1965.jpg',
   cred: 'CERN · CC BY 4.0',
   stats: [['Umfang','628 m'],['β-Bereich','95 → 99,94 % c'],['Seit','1959']],
-  text: 'Das Proton-Synchrotron (PS) ist seit 1959 ununterbrochen in Betrieb. Es beschleunigt Protonen von 2 GeV (95 % c) auf 26 GeV (99,94 % c) – ab hier ist der Geschwindigkeitsgewinn minimal, aber der Energiegewinn enorm (Relativität!). Das PS war früher Europas stärkster Beschleuniger und ist heute unverzichtbares Bindeglied in der LHC-Injektorkette.'
+  text: 'Das Proton-Synchrotron (PS) ist seit 1959 ununterbrochen in Betrieb. Es beschleunigt Protonen von 2 GeV (95 % c) auf 26 GeV (99,94 % c) – ab hier ist der Geschwindigkeitsgewinn minimal, aber der Energiegewinn enorm (Relativität!). Hier entsteht die LHC-Bunch-Struktur: aus wenigen Paketen des PSB formt das PS per HF-Gymnastik (Bunch-Splitting) einen Batch von 72 Bunches mit 25 ns Abstand. Das SPS sammelt dann bis zu 4 dieser Batches und fügt sie zu einem Zug (288 Bunches) zusammen, der als Einheit in den LHC geschossen wird – ~12 Schüsse füllen einen Strahl (2808 Bunches).'
  },
  SPS: {
   title: 'Super Proton Synchrotron',

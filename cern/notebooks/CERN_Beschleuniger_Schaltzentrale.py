@@ -381,7 +381,7 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
   <div>
    <div class=&quot;cv4-ptitle&quot;>📡 INJEKTION</div>
    <div style=&quot;display:flex;flex-direction:column;gap:6px&quot;>
-    <button class=&quot;cv4-btn&quot; id=&quot;btn-speed-toggle&quot; style=&quot;background:rgba(88,166,255,.08);border-color:rgba(88,166,255,.3);color:#58a6ff;font-size:10.5px;padding:6px 4px;margin-bottom:2px&quot;>⏱️ Tempo: Zeitraffer (schnell)</button>
+    <button class=&quot;cv4-btn&quot; id=&quot;btn-speed-toggle&quot; style=&quot;background:rgba(88,166,255,.08);border-color:rgba(88,166,255,.3);color:#58a6ff;font-size:10.5px;padding:6px 4px;margin-bottom:2px&quot;>⏱️ Tempo: Zeitraffer · 1 s ≈ 40 s real</button>
     <button class=&quot;cv4-btn&quot; id=&quot;btn-auto&quot; style=&quot;background:rgba(46,164,79,.15);border-color:#2ea44f;color:#2ea44f&quot;>⚙️ Füllprotokoll starten</button>
    </div>
    <div class=&quot;cv4-tracker&quot; id=&quot;tracker&quot;>
@@ -395,8 +395,9 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
 
   <div>
    <div class=&quot;cv4-ptitle&quot;>🔋 LHC FÜLLSTAND</div>
-   <div class=&quot;cv4-fill-row&quot;><span style=&quot;width:50px&quot;>B1 <span id=&quot;b1c&quot;>0</span>/6</span><div class=&quot;cv4-fill-bar&quot;><div class=&quot;cv4-fill-bar-inner b1&quot; id=&quot;b1bar&quot; style=&quot;width:0%&quot;></div></div></div>
-   <div class=&quot;cv4-fill-row&quot; style=&quot;margin-top:4px&quot;><span style=&quot;width:50px&quot;>B2 <span id=&quot;b2c&quot;>0</span>/6</span><div class=&quot;cv4-fill-bar&quot;><div class=&quot;cv4-fill-bar-inner b2&quot; id=&quot;b2bar&quot; style=&quot;width:0%&quot;></div></div></div>
+   <div style=&quot;font-size:8.5px;color:#8b949e;margin:-2px 0 4px;line-height:1.35&quot;>1 Punkt = 1 PS-Batch (72 B). Das SPS bündelt bis 4 Batches zu 1 Zug (288 B) → ~10 Züge füllen den LHC (Pb-Ionen: nur 592 B)</div>
+   <div class=&quot;cv4-fill-row&quot;><span style=&quot;width:108px;font-size:9.5px&quot;>B1 <span id=&quot;b1c&quot;>0 / 2.808</span></span><div class=&quot;cv4-fill-bar&quot;><div class=&quot;cv4-fill-bar-inner b1&quot; id=&quot;b1bar&quot; style=&quot;width:0%&quot;></div></div></div>
+   <div class=&quot;cv4-fill-row&quot; style=&quot;margin-top:4px&quot;><span style=&quot;width:108px;font-size:9.5px&quot;>B2 <span id=&quot;b2c&quot;>0 / 2.808</span></span><div class=&quot;cv4-fill-bar&quot;><div class=&quot;cv4-fill-bar-inner b2&quot; id=&quot;b2bar&quot; style=&quot;width:0%&quot;></div></div></div>
   </div>
 
   <div>
@@ -472,7 +473,16 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
 
 <script>(() => {
   // cern/app/src/core.js
-  var NEEDED = 6;
+  var FILL = {
+    proton: { total: 2808, psBatch: 72, batchesPerTrain: 4 },
+    ion: { total: 592, psBatch: 37, batchesPerTrain: 2 }
+  };
+  var REAL_SPS_CYCLE_S = 25;
+  var SIM_SCALE = { slow: 15, fast: 40 };
+  var DT_SCALE = { slow: 1800, fast: 5400 };
+  var BEAM_LIFETIME_H = 15;
+  var DUMP_FRAC = 0.35;
+  var STAT_RATE = 0.04;
   var App = {
     state: {},
     // mutable Querschnittsvariablen (state.js füllt via Object.assign)
@@ -530,7 +540,22 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
     filling: false,
     b1Count: 0,
     b2Count: 0,
+    // umlaufende Züge je Strahl
+    b1Batches: 0,
+    b2Batches: 0,
+    // angekommene PS-Batches je Strahl (→ Bunches-Anzeige)
     collisions: 0,
+    dtElapsed: 0,
+    intensity0: 0,
+    intensityNow: 0,
+    // Datennahme: vergangene reale Zeit + Strahl-Intensität (Burn-off)
+    statAcc: 0,
+    // Bruchteil-Akkumulator für Statistik (∝ ∫L·dt)
+    spsDots: { b1: [], b2: [] },
+    spsAngle: 0,
+    spsRunning: false,
+    spsLastT: null,
+    // im SPS akkumulierende Batches
     lhcDots: { b1: [], b2: [] },
     lhcSpeed: 78e-4,
     // rad/ms bei Injektionsenergie (Proton)
@@ -596,6 +621,12 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
   var s = App.state;
   var E = App.els;
   var g = App.g;
+  var fc = () => s.isIon ? FILL.ion : FILL.proton;
+  var totalBatches = () => Math.round(fc().total / fc().psBatch);
+  var trainsTotal = () => Math.ceil(totalBatches() / fc().batchesPerTrain);
+  var fillLabel = (batches) => `${(batches * fc().psBatch).toLocaleString(&quot;de-DE&quot;)} / ${fc().total.toLocaleString(&quot;de-DE&quot;)}`;
+  var simScale = () => s.isFastMode ? SIM_SCALE.fast : SIM_SCALE.slow;
+  var trainCadenceMs = () => REAL_SPS_CYCLE_S * 1e3 / simScale();
   function fitCanvas(cv, ctx, fbW, fbH) {
     const w = cv.clientWidth || fbW, h = cv.clientHeight || fbH;
     const bw = Math.round(w * s.dpr), bh = Math.round(h * s.dpr);
@@ -633,7 +664,7 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
     App.drawDetBg();
     App.drawHist();
   }
-  function resetLHC() {
+  function resetLHC(keepData = false) {
     s.resetFlag = true;
     s.autopilotActive = false;
     stopAutoCollide();
@@ -643,23 +674,35 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
     clearIllum();
     s.lhcDots.b1.forEach((d) => d.el.remove());
     s.lhcDots.b2.forEach((d) => d.el.remove());
+    s.spsRunning = false;
+    s.spsDots.b1.forEach((d) => d.el.remove());
+    s.spsDots.b2.forEach((d) => d.el.remove());
+    s.spsDots = { b1: [], b2: [] };
     s.lhcDots = { b1: [], b2: [] };
     s.b1Count = 0;
     s.b2Count = 0;
-    s.collisions = 0;
-    App.resetSpectrumData();
+    s.b1Batches = 0;
+    s.b2Batches = 0;
+    if (!keepData) {
+      s.collisions = 0;
+      App.resetSpectrumData();
+      E.spInfo.innerText = &quot;Kollisionen: 0&quot;;
+    }
+    s.dtElapsed = 0;
+    s.intensityNow = 0;
+    s.statAcc = 0;
+    E.lblIntensity.innerText = s.paramIntensity.toFixed(2) + &quot;e11 p&quot;;
     s.ramped = false;
     s.squeezed = false;
     s.squeezing = false;
     s.lhcEnergy = s.isIon ? 177 : 450;
     s.lhcSpeed = s.isIon ? 5e-3 : 78e-4;
     s.paramBetaStar = 1.5;
-    E.b1c.innerText = &quot;0&quot;;
-    E.b2c.innerText = &quot;0&quot;;
+    E.b1c.innerText = fillLabel(0);
+    E.b2c.innerText = fillLabel(0);
     E.b1bar.style.width = &quot;0%&quot;;
     E.b2bar.style.width = &quot;0%&quot;;
     E.rbar.style.width = &quot;0%&quot;;
-    E.spInfo.innerText = &quot;Kollisionen: 0&quot;;
     E.btnRamp.classList.add(&quot;off&quot;);
     E.btnSqueeze.classList.add(&quot;off&quot;);
     E.btnColl.classList.add(&quot;off&quot;);
@@ -784,16 +827,40 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
     if (stageIdx != null) stageLeave(stageIdx);
     return !s.resetFlag;
   }
-  async function injectBunch(beam) {
+  function beamColor(beam) {
     const ion = s.isIon;
-    const R2 = g.R, J2 = g.J, paths = g.paths, nodes = g.nodes;
-    const color = beam === 1 ? ion ? &quot;#e377c2&quot; : &quot;#58a6ff&quot; : ion ? &quot;#c77dff&quot; : &quot;#ff7f0e&quot;;
+    return beam === 1 ? ion ? &quot;#e377c2&quot; : &quot;#58a6ff&quot; : ion ? &quot;#c77dff&quot; : &quot;#ff7f0e&quot;;
+  }
+  function newDot(beam, r) {
     const dot = document.createElementNS(SVG_NS, &quot;circle&quot;);
     dot.setAttribute(&quot;class&quot;, &quot;traveling-dot&quot;);
-    dot.setAttribute(&quot;r&quot;, &quot;4&quot;);
-    dot.setAttribute(&quot;fill&quot;, color);
-    dot.setAttribute(&quot;stroke&quot;, color);
+    dot.setAttribute(&quot;r&quot;, r);
+    const c = beamColor(beam);
+    dot.setAttribute(&quot;fill&quot;, c);
+    dot.setAttribute(&quot;stroke&quot;, c);
     (E.schematic || E.svg).appendChild(dot);
+    return dot;
+  }
+  function pulseNode(n) {
+    if (!n) return;
+    n.classList.add(&quot;flash&quot;);
+    setTimeout(() => n.classList.remove(&quot;flash&quot;), 200);
+  }
+  function countBatch(beam) {
+    const tot = totalBatches();
+    if (beam === 1) {
+      s.b1Batches++;
+      E.b1c.innerText = fillLabel(s.b1Batches);
+      E.b1bar.style.width = Math.min(1, s.b1Batches / tot) * 100 + &quot;%&quot;;
+    } else {
+      s.b2Batches++;
+      E.b2c.innerText = fillLabel(s.b2Batches);
+      E.b2bar.style.width = Math.min(1, s.b2Batches / tot) * 100 + &quot;%&quot;;
+    }
+  }
+  async function injectBatch(beam, parked) {
+    const ion = s.isIon, R2 = g.R, J2 = g.J, paths = g.paths, nodes = g.nodes;
+    const dot = newDot(beam, &quot;3.2&quot;);
     const fin = () => {
       dot.remove();
     };
@@ -806,22 +873,62 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
     const psE = ion ? J2.PS_FROM_LEIR : J2.PS_FROM_PSB;
     if (!await flowStep(dot, paths.ps, nodes.ps, 2, &quot;ps&quot;, [R2.PS, psE, J2.PS_EXIT, 3])) return fin();
     if (!await flowStep(dot, paths.psSps, null, null, &quot;trToSps&quot;)) return fin();
+    if (s.resetFlag) return fin();
+    const key = beam === 1 ? &quot;b1&quot; : &quot;b2&quot;;
+    const rec = { el: dot, off: s.spsDots[key].length * 0.7 };
+    s.spsDots[key].push(rec);
+    parked.push(rec);
+    stageEnter(3);
+    enterNode(nodes.sps);
+    pulseNode(nodes.sps);
+    startSpsLoop();
+    countBatch(beam);
+  }
+  async function fuseTrain(beam, parked) {
+    const R2 = g.R, J2 = g.J, paths = g.paths, nodes = g.nodes, key = beam === 1 ? &quot;b1&quot; : &quot;b2&quot;;
+    pulseNode(nodes.sps);
+    parked.forEach((rec) => {
+      rec.el.remove();
+      stageLeave(3);
+      leaveNode(nodes.sps);
+      const i = s.spsDots[key].indexOf(rec);
+      if (i >= 0) s.spsDots[key].splice(i, 1);
+    });
+    parked.length = 0;
+    if (s.resetFlag) return;
+    const train = newDot(beam, &quot;4.2&quot;);
+    train.setAttribute(&quot;cx&quot;, R2.SPS.cx + R2.SPS.r * Math.cos(J2.SPS_ENTRY));
+    train.setAttribute(&quot;cy&quot;, R2.SPS.cy + R2.SPS.r * Math.sin(J2.SPS_ENTRY));
     const spsExit = beam === 1 ? J2.SPS_TI2 : J2.SPS_TI8;
-    if (!await flowStep(dot, paths.sps, nodes.sps, 3, &quot;sps&quot;, [R2.SPS, J2.SPS_ENTRY, spsExit, 2])) return fin();
-    if (!await flowStep(dot, beam === 1 ? paths.ti2 : paths.ti8, null, null, &quot;ti&quot;)) return fin();
-    dot.remove();
-    addPermanentDot(beam);
-    if (beam === 1) {
-      s.b1Count++;
-      E.b1c.innerText = s.b1Count;
-      E.b1bar.style.width = s.b1Count / NEEDED * 100 + &quot;%&quot;;
-    } else {
-      s.b2Count++;
-      E.b2c.innerText = s.b2Count;
-      E.b2bar.style.width = s.b2Count / NEEDED * 100 + &quot;%&quot;;
+    if (!await flowStep(train, paths.sps, nodes.sps, 3, &quot;sps&quot;, [R2.SPS, J2.SPS_ENTRY, spsExit, 1])) {
+      train.remove();
+      return;
     }
-    paths.lhc.classList.add(ion ? &quot;lit-i&quot; : &quot;lit&quot;);
+    if (!await flowStep(train, beam === 1 ? paths.ti2 : paths.ti8, null, null, &quot;ti&quot;)) {
+      train.remove();
+      return;
+    }
+    train.remove();
+    addPermanentDot(beam);
+    if (beam === 1) s.b1Count++;
+    else s.b2Count++;
+    paths.lhc.classList.add(s.isIon ? &quot;lit-i&quot; : &quot;lit&quot;);
     renderTracker();
+  }
+  async function injectTrain(beam, nBatches) {
+    if (s.resetFlag) return;
+    const parked = [], proms = [], sub = trainCadenceMs() / fc().batchesPerTrain;
+    for (let i = 0; i < nBatches; i++) {
+      if (s.resetFlag) break;
+      proms.push(injectBatch(beam, parked));
+      if (i < nBatches - 1) await sleep(sub);
+    }
+    await Promise.all(proms);
+    if (s.resetFlag) {
+      parked.forEach((rec) => rec.el.remove());
+      return;
+    }
+    await fuseTrain(beam, parked);
   }
   async function doRamp() {
     if (s.ramped || s.filling || s.cryoRecovery) return;
@@ -919,7 +1026,7 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
   function addPermanentDot(beam) {
     const key = beam === 1 ? &quot;b1&quot; : &quot;b2&quot;;
     const existing = s.lhcDots[key].length;
-    const angleOffset = existing * (2 * Math.PI / NEEDED);
+    const angleOffset = existing * (2 * Math.PI / trainsTotal());
     const dot = document.createElementNS(SVG_NS, &quot;circle&quot;);
     dot.setAttribute(&quot;class&quot;, &quot;lhc-bunch&quot;);
     dot.setAttribute(&quot;r&quot;, &quot;3.5&quot;);
@@ -929,6 +1036,28 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
     (E.schematic || E.svg).appendChild(dot);
     s.lhcDots[key].push({ el: dot, off: angleOffset });
     if (!s.lhcRunning) startLHCLoop();
+  }
+  function startSpsLoop() {
+    if (s.spsRunning) return;
+    s.spsRunning = true;
+    s.spsLastT = null;
+    const R2 = g.R;
+    function frame(ts) {
+      if (!s.spsLastT) s.spsLastT = ts;
+      let dt = ts - s.spsLastT;
+      s.spsLastT = ts;
+      s.spsAngle += 52e-4 / timeScale() * dt;
+      const place = (arr, dir) => arr.forEach((d) => {
+        const a = dir * s.spsAngle + d.off;
+        d.el.setAttribute(&quot;cx&quot;, R2.SPS.cx + R2.SPS.r * Math.cos(a));
+        d.el.setAttribute(&quot;cy&quot;, R2.SPS.cy + R2.SPS.r * Math.sin(a));
+      });
+      place(s.spsDots.b1, 1);
+      place(s.spsDots.b2, -1);
+      if (s.spsRunning &amp;&amp; (s.spsDots.b1.length || s.spsDots.b2.length)) requestAnimationFrame(frame);
+      else s.spsRunning = false;
+    }
+    requestAnimationFrame(frame);
   }
   function startLHCLoop() {
     s.lhcRunning = true;
@@ -971,27 +1100,63 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
     if (s.autoCollInterval) stopAutoCollide();
     else startAutoCollide();
   }
+  var dtScale = () => s.isFastMode ? DT_SCALE.fast : DT_SCALE.slow;
+  var dtLabel = () => s.isFastMode ? &quot;90 min&quot; : &quot;30 min&quot;;
   function startAutoCollide() {
     if (!s.ramped || !s.squeezed || s.cryoRecovery) return;
     E.btnAutoColl.innerText = &quot;\u23F8\uFE0F Datennahme stoppen&quot;;
     E.btnAutoColl.classList.add(&quot;act&quot;);
     E.btnColl.classList.add(&quot;off&quot;);
-    setStatus(&quot;DATENNAHME GESTARTET: Akkumuliere Kollisionsdaten...&quot;, &quot;on&quot;);
+    s.dtElapsed = 0;
+    s.intensity0 = s.paramIntensity;
+    s.statAcc = 0;
+    setStatus(`DATENNAHME (1 s \u2248 ${dtLabel()} real) \u2014 Burn-off l\xE4uft \u2026`, &quot;on&quot;);
+    const tau = BEAM_LIFETIME_H * 3600;
     s.autoCollInterval = setInterval(() => {
       if (s.cryoRecovery) {
         stopAutoCollide();
         return;
       }
-      s.collisions += 1;
-      E.spInfo.innerText = &quot;Kollisionen: &quot; + s.collisions;
-      let detNode = g.nodes[s.selDet.toLowerCase()];
-      if (detNode) {
-        detNode.classList.add(&quot;flash&quot;);
-        setTimeout(() => detNode.classList.remove(&quot;flash&quot;), 75);
+      const dReal = 0.125 * dtScale();
+      s.dtElapsed += dReal;
+      const frac = Math.exp(-s.dtElapsed / tau);
+      const L = frac * frac;
+      s.intensityNow = s.intensity0 * frac;
+      E.lblIntensity.innerText = s.intensityNow.toFixed(2) + &quot;e11 p&quot;;
+      const op = (0.2 + 0.8 * frac).toFixed(3);
+      s.lhcDots.b1.forEach((d) => d.el.setAttribute(&quot;opacity&quot;, op));
+      s.lhcDots.b2.forEach((d) => d.el.setAttribute(&quot;opacity&quot;, op));
+      s.statAcc += STAT_RATE * L * dReal;
+      const whole = Math.floor(s.statAcc);
+      if (whole > 0) {
+        s.statAcc -= whole;
+        s.collisions += whole;
+        App.accumulateStats(whole);
       }
-      App.drawCollisionEvent(App.generateMassData());
+      if (Math.random() < L) {
+        let detNode = g.nodes[s.selDet.toLowerCase()];
+        if (detNode) {
+          detNode.classList.add(&quot;flash&quot;);
+          setTimeout(() => detNode.classList.remove(&quot;flash&quot;), 75);
+        }
+        s.lastEvent = App.sampleEvent();
+        App.drawCollisionEvent(s.lastEvent);
+      }
       App.drawHist();
+      E.spInfo.innerText = `Kollisionen: ${s.collisions.toLocaleString(&quot;de-DE&quot;)} \xB7 L ${Math.round(L * 100)} %`;
+      setStatus(`\u{1F4C9} DATENNAHME (1 s \u2248 ${dtLabel()} real) \u2014 N ${s.intensityNow.toFixed(2)}e11 (${Math.round(frac * 100)} %) \xB7 L ${Math.round(L * 100)} %`, &quot;on&quot;);
+      if (frac <= DUMP_FRAC) beamDump();
     }, 125);
+  }
+  function beamDump() {
+    stopAutoCollide();
+    setStatus(`\u{1F4A5} STRAHL-DUMP \u2014 N < ${Math.round(DUMP_FRAC * 100)} % (L < ${Math.round(DUMP_FRAC * DUMP_FRAC * 100)} %): Strahl verbraucht, neuer Fill n\xF6tig.`, &quot;danger&quot;);
+    setTimeout(() => {
+      if (!s.cryoRecovery) {
+        resetLHC(true);
+        setStatus(&quot;STRAHL GEDUMPT \u2014 Daten bleiben. F\xFCllprotokoll f\xFCr n\xE4chsten Fill starten.&quot;, &quot;on&quot;);
+      }
+    }, 1600);
   }
   function stopAutoCollide() {
     if (s.autoCollInterval) {
@@ -1019,7 +1184,8 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
   App.setMode = setMode;
   App.resetLHC = resetLHC;
   App.timeScale = timeScale;
-  App.injectBunch = injectBunch;
+  App.injectTrain = injectTrain;
+  App.trainCadenceMs = trainCadenceMs;
   App.toggleAutoCollide = toggleAutoCollide;
   App.stopAutoCollide = stopAutoCollide;
   App.updateReadouts = updateReadouts;
@@ -1640,6 +1806,18 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
     s3.collStore = { ATLAS: 0, CMS: 0, ALICE: 0, LHCB: 0 };
     s3.higgsCands = 0;
   }
+  var HIST_CAP = 6e3;
+  function accumulateStats(units) {
+    units = Math.floor(units);
+    if (units <= 0) return;
+    const sp = spec(), store = s3.massStore[s3.selDet];
+    const rateFactor = Math.pow(s3.paramIntensity, 2) / Math.max(0.3, s3.paramBetaStar);
+    const per = Math.max(1, Math.round(rateFactor * (sp.channel === &quot;4l&quot; ? 1.5 : 5)));
+    for (let k = 0; k < units &amp;&amp; store.length < HIST_CAP; k++) {
+      for (let i = 0; i < per &amp;&amp; store.length < HIST_CAP; i++) store.push(sampleMass(sp));
+    }
+    s3.collStore[s3.selDet] += units;
+  }
   function generateMassData() {
     const sp = spec();
     let rateFactor = Math.pow(s3.paramIntensity, 2) / Math.max(0.3, s3.paramBetaStar);
@@ -1715,11 +1893,11 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
       }
     });
     let maxB = Math.max(...bins, 1), bw = (w - 40) / nb;
-    let fc = sp.fc, tc = sp.col;
+    let fc3 = sp.fc, tc = sp.col;
     for (let i = 0; i < nb; i++) {
       let bh = bins[i] / maxB * (h - 30);
       let x = 30 + i * bw, y = h - 16 - bh;
-      ctxHist.fillStyle = fc;
+      ctxHist.fillStyle = fc3;
       ctxHist.fillRect(x, y, bw - 1, bh);
       ctxHist.fillStyle = tc;
       ctxHist.fillRect(x, y, bw - 1, 1.5);
@@ -1819,6 +1997,7 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
   App.sampleEvent = sampleEvent;
   App.resetSpectrumData = resetSpectrumData;
   App.generateMassData = generateMassData;
+  App.accumulateStats = accumulateStats;
   App.getSignificance = getSignificance;
   App.drawHist = drawHist;
 
@@ -1867,7 +2046,7 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
       img: &quot;Aerial view of PS at CERN in 1965.jpg&quot;,
       cred: &quot;CERN \xB7 CC BY 4.0&quot;,
       stats: [[&quot;Umfang&quot;, &quot;628 m&quot;], [&quot;\u03B2-Bereich&quot;, &quot;95 \u2192 99,94 % c&quot;], [&quot;Seit&quot;, &quot;1959&quot;]],
-      text: &quot;Das Proton-Synchrotron (PS) ist seit 1959 ununterbrochen in Betrieb. Es beschleunigt Protonen von 2 GeV (95 % c) auf 26 GeV (99,94 % c) \u2013 ab hier ist der Geschwindigkeitsgewinn minimal, aber der Energiegewinn enorm (Relativit\xE4t!). Das PS war fr\xFCher Europas st\xE4rkster Beschleuniger und ist heute unverzichtbares Bindeglied in der LHC-Injektorkette.&quot;
+      text: &quot;Das Proton-Synchrotron (PS) ist seit 1959 ununterbrochen in Betrieb. Es beschleunigt Protonen von 2 GeV (95 % c) auf 26 GeV (99,94 % c) \u2013 ab hier ist der Geschwindigkeitsgewinn minimal, aber der Energiegewinn enorm (Relativit\xE4t!). Hier entsteht die LHC-Bunch-Struktur: aus wenigen Paketen des PSB formt das PS per HF-Gymnastik (Bunch-Splitting) einen Batch von 72 Bunches mit 25 ns Abstand. Das SPS sammelt dann bis zu 4 dieser Batches und f\xFCgt sie zu einem Zug (288 Bunches) zusammen, der als Einheit in den LHC geschossen wird \u2013 ~12 Sch\xFCsse f\xFCllen einen Strahl (2808 Bunches).&quot;
     },
     SPS: {
       title: &quot;Super Proton Synchrotron&quot;,
@@ -2234,6 +2413,15 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
   App.isRealMode = isRealMode;
 
   // cern/app/src/handlers.js
+  var fc2 = () => App.state.isIon ? FILL.ion : FILL.proton;
+  var totalBatches2 = () => Math.round(fc2().total / fc2().psBatch);
+  function fmtBunch(beam) {
+    const b = beam === 1 ? App.state.b1Batches : App.state.b2Batches;
+    return (b * fc2().psBatch).toLocaleString(&quot;de-DE&quot;);
+  }
+  function totalStr() {
+    return fc2().total.toLocaleString(&quot;de-DE&quot;);
+  }
   var s4 = App.state;
   var E5 = App.els;
   var realMode = false;
@@ -2320,7 +2508,8 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
     animateViewBox(v.x, v.y, v.w, v.h);
   }
   async function fuellProtokoll() {
-    if (s4.filling || s4.ramped || s4.cryoRecovery || s4.b1Count >= NEEDED &amp;&amp; s4.b2Count >= NEEDED) return;
+    const totB = totalBatches2();
+    if (s4.filling || s4.ramped || s4.cryoRecovery || s4.b1Batches >= totB &amp;&amp; s4.b2Batches >= totB) return;
     s4.filling = true;
     s4.resetFlag = false;
     E5.btnAuto.classList.add(&quot;off&quot;);
@@ -2329,30 +2518,31 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
     E5.sliRampSpeed.disabled = true;
     E5.selP.style.pointerEvents = &quot;none&quot;;
     E5.selI.style.pointerEvents = &quot;none&quot;;
-    App.setStatus(&quot;F\xDCLLPROTOKOLL: Injektoren laufen \u2013 beide Strahlen werden gepipelinet gef\xFCllt \u2026&quot;, &quot;on&quot;);
-    const queue = [];
-    for (let i = 0; i < NEEDED; i++) {
-      queue.push(1);
-      queue.push(2);
-    }
-    const inflight = [];
-    for (const beam of queue) {
+    App.setStatus(&quot;F\xDCLLPROTOKOLL: PS-Batches laufen einzeln zum SPS und verschmelzen dort zu Z\xFCgen \u2026&quot;, &quot;on&quot;);
+    const bpt = fc2().batchesPerTrain;
+    const sizes = [];
+    for (let r = totB; r > 0; r -= bpt) sizes.push(Math.min(bpt, r));
+    const proms = [];
+    for (let t = 0; t < sizes.length; t++) {
+      for (const beam of [1, 2]) {
+        if (s4.resetFlag) break;
+        proms.push(App.injectTrain(beam, sizes[t]));
+        App.setStatus(`F\xDCLLPROTOKOLL: SPS-Z\xFCge entstehen \u2026  B1 ${fmtBunch(1)}/${totalStr()}  \xB7  B2 ${fmtBunch(2)}/${totalStr()} Bunches`, &quot;on&quot;);
+        await sleep(App.trainCadenceMs() / 2);
+      }
       if (s4.resetFlag) break;
-      inflight.push(App.injectBunch(beam));
-      App.setStatus(`F\xDCLLPROTOKOLL: Bunches im Beschleunigerkomplex \u2026  B1 ${s4.b1Count}/${NEEDED}  \xB7  B2 ${s4.b2Count}/${NEEDED}`, &quot;on&quot;);
-      await sleep(650 * App.timeScale());
     }
-    await Promise.all(inflight);
+    await Promise.all(proms);
     s4.filling = false;
     E5.selP.style.pointerEvents = &quot;&quot;;
     E5.selI.style.pointerEvents = &quot;&quot;;
     if (s4.resetFlag) return;
     E5.btnAuto.classList.remove(&quot;off&quot;);
-    if (s4.b1Count >= NEEDED &amp;&amp; s4.b2Count >= NEEDED) {
+    if (s4.b1Batches >= totB &amp;&amp; s4.b2Batches >= totB) {
       E5.btnRamp.classList.remove(&quot;off&quot;);
-      App.setStatus(&quot;LHC GEF\xDCLLT \u2014 beide Strahlen stabil. Ramping m\xF6glich!&quot;, &quot;on&quot;);
+      App.setStatus(`LHC GEF\xDCLLT \u2014 ${totalStr()} Bunches/Strahl (${sizes.length} Z\xFCge), beide Strahlen stabil. Ramping m\xF6glich!`, &quot;on&quot;);
     } else {
-      App.setStatus(`F\xFCllung beendet: B1 ${s4.b1Count}/${NEEDED}, B2 ${s4.b2Count}/${NEEDED}.`, &quot;on&quot;);
+      App.setStatus(`F\xFCllung beendet: B1 ${fmtBunch(s4.b1Count)}/${totalStr()}, B2 ${fmtBunch(s4.b2Count)}/${totalStr()} Bunches.`, &quot;on&quot;);
     }
   }
   App.selectDetector = selectDetector;
@@ -2362,12 +2552,12 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
     E5.btnSpeedToggle.addEventListener(&quot;click&quot;, () => {
       s4.isFastMode = !s4.isFastMode;
       if (s4.isFastMode) {
-        E5.btnSpeedToggle.innerText = &quot;\u23F1\uFE0F Tempo: Zeitraffer (schnell)&quot;;
+        E5.btnSpeedToggle.innerText = `\u23F1\uFE0F Tempo: Zeitraffer \xB7 1 s \u2248 ${SIM_SCALE.fast} s real`;
         E5.btnSpeedToggle.style.background = &quot;rgba(88,166,255,.08)&quot;;
         E5.btnSpeedToggle.style.borderColor = &quot;rgba(88,166,255,.3)&quot;;
         E5.btnSpeedToggle.style.color = &quot;#58a6ff&quot;;
       } else {
-        E5.btnSpeedToggle.innerText = &quot;\u23F1\uFE0F Tempo: Didaktisch (langsam)&quot;;
+        E5.btnSpeedToggle.innerText = `\u23F1\uFE0F Tempo: Didaktisch \xB7 1 s \u2248 ${SIM_SCALE.slow} s real`;
         E5.btnSpeedToggle.style.background = &quot;rgba(227,119,194,.08)&quot;;
         E5.btnSpeedToggle.style.borderColor = &quot;rgba(227,119,194,.3)&quot;;
         E5.btnSpeedToggle.style.color = &quot;#e377c2&quot;;

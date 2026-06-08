@@ -50,6 +50,15 @@ def build_standalone():
             '<link rel="stylesheet" href="styles.css"></head><body>'
             + body + '</body></html>')
 
+def build_share():
+    """EINE vollständig selbstständige HTML-Datei (CSS+JS inline) zum Teilen —
+    läuft per Doppelklick in jedem Browser, ohne weitere Dateien."""
+    return ('<!doctype html><html lang="de"><head><meta charset="utf-8">'
+            '<meta name="viewport" content="width=device-width,initial-scale=1">'
+            '<title>CERN CCC — Stellwerk-Simulation</title>'
+            '<style>html,body{margin:0;background:#0d1117}</style></head><body>'
+            + build_inner() + '</body></html>')
+
 # Höhen-Reporter (läuft IM iframe-Dokument): meldet die tatsächliche Inhaltshöhe
 # per postMessage an die Notebook-Seite, damit der Loader das iframe exakt skaliert.
 RESIZE_REPORTER = (
@@ -121,7 +130,11 @@ def main():
     # 3) cern/app/index.html
     open(os.path.join(APP, 'index.html'), 'w').write(build_standalone())
 
-    print(f"sync OK | Zelle 4 (iframe): {len(payload):,} B | App-Doc: {len(inner):,} B | JS: {len(build_js()):,} B")
+    # 4) cern/CERN-Stellwerk.html — EINE selbstständige Datei zum Teilen (CSS+JS inline)
+    share = build_share()
+    open(os.path.join(ROOT, 'cern', 'CERN-Stellwerk.html'), 'w').write(share)
+
+    print(f"sync OK | Zelle 4 (iframe): {len(payload):,} B | App-Doc: {len(inner):,} B | JS: {len(build_js()):,} B | Teilen-Datei: {len(share):,} B")
     # optionaler Byte-Vergleich gegen Referenz
     ref = sys.argv[1] if len(sys.argv) > 1 else None
     if ref and os.path.exists(ref):

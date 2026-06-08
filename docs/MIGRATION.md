@@ -11,8 +11,52 @@
 
 - **Aktive Phase:** Phase 4 (Curriculum-Visualisierungen → App-Komponenten) — **in Arbeit**
   (1. Komponente „Geo-Overlay" ✅; weitere offen).
+- **⚠️ OFFENE BAUSTELLEN (nach /clear ZUERST angehen — vom Nutzer notiert):**
+  1. **Massenspektrum-Logik KERNSANIEREN.** Die aktuelle Spektrum-/Entdeckungs-Logik
+     (`spectrum.js`: `sampleMass`/`generateMassData`/`accumulateStats`/`getSignificance`/`drawHist`,
+     `DETSPEC`, `prodVis`/`drawVis`/`discoBeamOK`) ist organisch gewachsen und soll grundlegend
+     überarbeitet werden (sauberes, konsistentes Modell für Datenrate, Untergrund, Resonanz-Sichtbarkeit,
+     Signifikanz ∝ √(integrierte Lumi) und Histogramm-Darstellung). Vor Umbau Modell/Annahmen festlegen.
+  2. **Punkt-Geschwindigkeiten verschoben/inkonsistent durch die letzten Änderungen.** Der Batch-Fan-in
+     + SPS-Umlauf (`engine.js#startSpsLoop`, neue Sub-Kadenz `injectTrain`, `getDurations`-Tempo vs.
+     SPS-Orbit-Speed `0.0052/timeScale()`) haben die wahrgenommenen Bewegungsgeschwindigkeiten der
+     Punkte verschoben — wirken jetzt teils unlogisch. Geschwindigkeiten der Stufen (LINAC→…→SPS→LHC),
+     der SPS-Akkumulation und des LHC-Umlaufs **kohärent neu kalibrieren** (ein konsistentes Tempo-Modell).
 - **Entscheidungen:** gelockt (siehe „Gelockte Entscheidungen"). Modul-Modell = **leichter Namespace** (`App`-Objekt).
 - **Zuletzt erledigt (diese Session):**
+  - **3 Folge-Fixes (Füllen/Datennahme/Export).** (1) **Batch-Stau behoben:** ankommende PS-Batches
+    **kreisen jetzt im SPS** (`engine.js#startSpsLoop`, `s.spsDots`) statt statisch am Eingang zu
+    parken → kein Stau im PS→SPS-Transfer/SPS-Eingang; bei Fusion werden sie aus dem Umlauf entfernt.
+    (2) **Datennahme tempo-gekoppelt + persistent:** Statistik wächst ∝ **integrierter Luminosität**
+    (`s.statAcc += STAT_RATE·L·dReal`, `spectrum.js#accumulateStats`) → Signifikanz steigt im
+    Datennahme-Maßstab (mode-abhängig), **eine** Füllung erreicht 5σ vor dem Dump (verifiziert: ATLAS
+    5σ@~1,3 s, alle Detektoren < 948 Koll./Fill); **`resetLHC(keepData=true)` beim Dump** behält
+    Spektrum/Signifikanz → mehrere Fills summieren sich (real). Sichtbare Einzel-Events bleiben in
+    watchbarer Rate (∝ L). (3) **Teilen-Export:** `scripts/sync_widget.py#build_share` schreibt
+    **`cern/CERN-Stellwerk.html`** — EINE selbstständige Datei (CSS+JS inline). Tests 45 grün, voller
+    Zyklus + Persistenz im Browser verifiziert. (committet — LHC-Loading-Realismus-Arc).
+  - **Strahl-Zerfall bei der Datennahme (Burn-off).** Während „Stable Beams"/Auto-Datennahme
+    zerfällt die Strahl-**Intensität** N exponentiell (Lebensdauer τ=15 h), die **Luminosität L ∝ N²**
+    und damit die **Kollisionsrate** sinken; umlaufende Bunches **verblassen** (opacity ∝ N, NICHT
+    Anzahl — physikalisch ehrlich); bei N < 35 % **Strahl-Dump → resetLHC** (Refill nötig). **Eigene,
+    viel größere Zeitstauchung** als das Füllen (`core.js#DT_SCALE`), weil ein Physik-Fill real ~15 h
+    dauert: langsam **„1 s ≈ 30 min real"**, schnell **„≈ 90 min"** (im Status angezeigt, modusabhängig).
+    Implementiert in `engine.js#startAutoCollide` (+ `beamDump`); `resetLHC` setzt Intensitäts-Anzeige
+    zurück. **Live verifiziert**: N 1,15→0,52e11, L 67→20 %, Rate sinkt, Dump nach ~10 s (schnell).
+    Tests 45 grün. (committet — LHC-Loading-Realismus-Arc).
+  - **LHC-Füllen realistisch umgebaut: Batch-Fan-in + reale Zahlen + Zeitskala.** (1) **Reale
+    Bunch-Zahlen**, modusabhängig: Protonen **2808**/Strahl, Pb-Ionen **592** (`core.js#FILL`:
+    `{total, psBatch, batchesPerTrain}`). (2) **1 Punkt = 1 PS-Batch** (72 B Protonen / 37 B Ionen):
+    Batches laufen einzeln LINAC→PSB/LEIR→PS→SPS, **parken/akkumulieren am SPS** und **fusionieren**
+    zu EINEM Zug (bis 4 Batches = 288 B), der über TI 2/8 in den LHC läuft → echte Hierarchie sichtbar
+    (`engine.js#injectBatch`/`fuseTrain`/`injectTrain`, ersetzt `injectBunch`). Protonen 39 Batches→10
+    Züge, Ionen 16→8. (3) **Zeit-Maßstab angezeigt** im Speed-Button: langsam **„1 s ≈ 15 s real"**,
+    schnell **„≈ 40 s"** (`SIM_SCALE`, Zug-Kadenz = realer SPS-Zyklus 25 s / Faktor). Füllstand zeigt
+    Bunches `X / 2808` (bzw. 592), Balken = Batches/Soll. PS-Info erklärt Bunch-Splitting+Fusion.
+    **End-to-end im Browser verifiziert** (Protonen 2808/20 Punkte, Ionen 592/16, rAF läuft echt;
+    Fan-in mit ~14 Batches gleichzeitig sichtbar). Tests 45 grün, `check.sh` grün. Rollback-Punkt
+    davor: Commit `dd87c34`. (committet — LHC-Loading-Realismus-Arc).
+    Offen/optional: Abort-Gap, animiertes Verschmelzen (Konvergenz-Tween) statt hartem Übergang.
   - **Injektor-Zoom (Meyrin) brauchbar gemacht** (Nutzer: „man erkennt nichts, müsste näher
     + feiner"). Drei Ursachen behoben in `geo.js`/`styles.css`: (1) **Zoom-Fenster enthielt das
     riesige SPS** → Cluster nur ein ~12px-Fleck. Jetzt rahmt `App.geoInjectorView` NUR den Cluster
@@ -137,9 +181,9 @@
   (`__cernBooted`, 62 SVG-Kinder, keine Konsolenfehler), Presets/Tabs/Geo-Toggle reagieren;
   iframe-srcdoc-Simulation bootet **im iframe** isoliert und der postMessage-Auto-Resizer skaliert
   die Höhe korrekt (Screenshots gesichtet). Damit sind Phase 1 & 2 auch visuell bestätigt.
-- **Nächster Schritt (Phase 4):** nächste Komponente migrieren — Kandidaten: Dimuon-„Teilchen-Zoo"-
-  Spektrum (Vollspektrum mit allen Resonanzen) oder Z⁰-Fit (Gauss+Untergrund). Je Komponente
-  Tests + 1× visuell. (Geo-Overlay ✅ erledigt.)
+- **Nächster Schritt:** die **zwei OFFENEN BAUSTELLEN oben** zuerst — (1) Massenspektrum-Logik
+  kernsanieren, (2) Punkt-Geschwindigkeiten kohärent neu kalibrieren. Danach Phase 4 fortsetzen
+  (nächste Komponente: Dimuon-„Teilchen-Zoo"-Spektrum oder Z⁰-Fit). Je Komponente Tests + 1× visuell.
 
 **Fortschritt:**
 - [x] Phase 0 — Headless-Sonde (risikolos, kein Architekturwechsel) ✅

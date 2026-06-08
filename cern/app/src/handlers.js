@@ -3,7 +3,13 @@
 // Manuelles Einzel-Füllen entfernt – Füllen ausschließlich über das Füllprotokoll.
 // wireHandlers() wird von main.js NACH initDom() aufgerufen.
 // ═══════════════════════════════════════════════════════════════════════════
-import { App, NEEDED, sleep, $ } from './core.js';
+import { App, FILL, SIM_SCALE, sleep, $ } from './core.js';
+
+// Aktuelle Füll-Konfig (Protonen vs. Pb-Ionen) + abgeleitete Zahlen.
+const fc = () => App.state.isIon ? FILL.ion : FILL.proton;
+const totalBatches = () => Math.round(fc().total / fc().psBatch);   // PS-Batches/Strahl
+function fmtBunch(beam){ const b = beam===1 ? App.state.b1Batches : App.state.b2Batches; return (b * fc().psBatch).toLocaleString("de-DE"); }
+function totalStr(){ return fc().total.toLocaleString("de-DE"); }
 
 const s = App.state, E = App.els;
 
@@ -93,34 +99,38 @@ function zoomMeyrin(){
 }
 
 async function fuellProtokoll(){
- if(s.filling || s.ramped || s.cryoRecovery || (s.b1Count>=NEEDED && s.b2Count>=NEEDED)) return;
+ const totB = totalBatches();
+ if(s.filling || s.ramped || s.cryoRecovery || (s.b1Batches>=totB && s.b2Batches>=totB)) return;
  s.filling = true; s.resetFlag = false;
  E.btnAuto.classList.add("off");
  E.sliEnergy.disabled = true; E.sliIntensity.disabled = true; E.sliRampSpeed.disabled = true;
  E.selP.style.pointerEvents = "none"; E.selI.style.pointerEvents = "none";
- App.setStatus("FÜLLPROTOKOLL: Injektoren laufen – beide Strahlen werden gepipelinet gefüllt …","on");
+ App.setStatus("FÜLLPROTOKOLL: PS-Batches laufen einzeln zum SPS und verschmelzen dort zu Zügen …","on");
 
- // Gemeinsamer Injektorkomplex; Aufspaltung erst am SPS. Abwechselnd B1 (TI 2) / B2 (TI 8),
- // Kadenz << Kettenlaufzeit -> mehrere Bunches gleichzeitig unterwegs (Pipeline), beide Ringe parallel.
- const queue = [];
- for(let i=0;i<NEEDED;i++){ queue.push(1); queue.push(2); }
- const inflight = [];
- for(const beam of queue){
+ // 1 Punkt = 1 PS-Batch. Pro SPS-Zug fusionieren batchesPerTrain Batches; der letzte
+ // Zug ist ggf. kürzer. Abwechselnd B1 (TI 2) / B2 (TI 8), je Zug ein realer SPS-Zyklus.
+ const bpt = fc().batchesPerTrain;
+ const sizes = []; for(let r=totB; r>0; r-=bpt) sizes.push(Math.min(bpt, r));
+ const proms = [];
+ for(let t=0; t<sizes.length; t++){
+  for(const beam of [1,2]){
+   if(s.resetFlag) break;
+   proms.push(App.injectTrain(beam, sizes[t]));
+   App.setStatus(`FÜLLPROTOKOLL: SPS-Züge entstehen …  B1 ${fmtBunch(1)}/${totalStr()}  ·  B2 ${fmtBunch(2)}/${totalStr()} Bunches`,"on");
+   await sleep(App.trainCadenceMs()/2);
+  }
   if(s.resetFlag) break;
-  inflight.push(App.injectBunch(beam));
-  App.setStatus(`FÜLLPROTOKOLL: Bunches im Beschleunigerkomplex …  B1 ${s.b1Count}/${NEEDED}  ·  B2 ${s.b2Count}/${NEEDED}`,"on");
-  await sleep(650 * App.timeScale());
  }
- await Promise.all(inflight);
+ await Promise.all(proms);
  s.filling = false;
  E.selP.style.pointerEvents = ""; E.selI.style.pointerEvents = "";
  if(s.resetFlag) return;
  E.btnAuto.classList.remove("off");
- if(s.b1Count>=NEEDED && s.b2Count>=NEEDED){
+ if(s.b1Batches>=totB && s.b2Batches>=totB){
   E.btnRamp.classList.remove("off");
-  App.setStatus("LHC GEFÜLLT — beide Strahlen stabil. Ramping möglich!","on");
+  App.setStatus(`LHC GEFÜLLT — ${totalStr()} Bunches/Strahl (${sizes.length} Züge), beide Strahlen stabil. Ramping möglich!`,"on");
  } else {
-  App.setStatus(`Füllung beendet: B1 ${s.b1Count}/${NEEDED}, B2 ${s.b2Count}/${NEEDED}.`,"on");
+  App.setStatus(`Füllung beendet: B1 ${fmtBunch(s.b1Count)}/${totalStr()}, B2 ${fmtBunch(s.b2Count)}/${totalStr()} Bunches.`,"on");
  }
 }
 
@@ -135,12 +145,12 @@ export function wireHandlers(){
  E.btnSpeedToggle.addEventListener("click",()=>{
    s.isFastMode = !s.isFastMode;
    if(s.isFastMode) {
-     E.btnSpeedToggle.innerText = "⏱️ Tempo: Zeitraffer (schnell)";
+     E.btnSpeedToggle.innerText = `⏱️ Tempo: Zeitraffer · 1 s ≈ ${SIM_SCALE.fast} s real`;
      E.btnSpeedToggle.style.background = "rgba(88,166,255,.08)";
      E.btnSpeedToggle.style.borderColor = "rgba(88,166,255,.3)";
      E.btnSpeedToggle.style.color = "#58a6ff";
    } else {
-     E.btnSpeedToggle.innerText = "⏱️ Tempo: Didaktisch (langsam)";
+     E.btnSpeedToggle.innerText = `⏱️ Tempo: Didaktisch · 1 s ≈ ${SIM_SCALE.slow} s real`;
      E.btnSpeedToggle.style.background = "rgba(227,119,194,.08)";
      E.btnSpeedToggle.style.borderColor = "rgba(227,119,194,.3)";
      E.btnSpeedToggle.style.color = "#e377c2";

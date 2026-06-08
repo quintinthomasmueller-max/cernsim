@@ -165,7 +165,7 @@
   <div>
    <div class="cv4-ptitle">📡 INJEKTION</div>
    <div style="display:flex;flex-direction:column;gap:6px">
-    <button class="cv4-btn" id="btn-speed-toggle" style="background:rgba(88,166,255,.08);border-color:rgba(88,166,255,.3);color:#58a6ff;font-size:10.5px;padding:6px 4px;margin-bottom:2px">⏱️ Tempo: Zeitraffer (schnell)</button>
+    <button class="cv4-btn" id="btn-speed-toggle" style="background:rgba(88,166,255,.08);border-color:rgba(88,166,255,.3);color:#58a6ff;font-size:10.5px;padding:6px 4px;margin-bottom:2px">⏱️ Tempo: Zeitraffer · 1 s ≈ 40 s real</button>
     <button class="cv4-btn" id="btn-auto" style="background:rgba(46,164,79,.15);border-color:#2ea44f;color:#2ea44f">⚙️ Füllprotokoll starten</button>
    </div>
    <div class="cv4-tracker" id="tracker">
@@ -179,8 +179,9 @@
 
   <div>
    <div class="cv4-ptitle">🔋 LHC FÜLLSTAND</div>
-   <div class="cv4-fill-row"><span style="width:50px">B1 <span id="b1c">0</span>/6</span><div class="cv4-fill-bar"><div class="cv4-fill-bar-inner b1" id="b1bar" style="width:0%"></div></div></div>
-   <div class="cv4-fill-row" style="margin-top:4px"><span style="width:50px">B2 <span id="b2c">0</span>/6</span><div class="cv4-fill-bar"><div class="cv4-fill-bar-inner b2" id="b2bar" style="width:0%"></div></div></div>
+   <div style="font-size:8.5px;color:#8b949e;margin:-2px 0 4px;line-height:1.35">1 Punkt = 1 PS-Batch (72 B). Das SPS bündelt bis 4 Batches zu 1 Zug (288 B) → ~10 Züge füllen den LHC (Pb-Ionen: nur 592 B)</div>
+   <div class="cv4-fill-row"><span style="width:108px;font-size:9.5px">B1 <span id="b1c">0 / 2.808</span></span><div class="cv4-fill-bar"><div class="cv4-fill-bar-inner b1" id="b1bar" style="width:0%"></div></div></div>
+   <div class="cv4-fill-row" style="margin-top:4px"><span style="width:108px;font-size:9.5px">B2 <span id="b2c">0 / 2.808</span></span><div class="cv4-fill-bar"><div class="cv4-fill-bar-inner b2" id="b2bar" style="width:0%"></div></div></div>
   </div>
 
   <div>
