@@ -138,11 +138,13 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
    MESSWERTE; rechts das Bedien-Panel. align-items:start = jede Spalte behält ihre
    Inhaltshöhe. Vorher klaffte unter dem Diagramm eine große Lücke neben dem hohen
    Panel — die Messwerte füllen sie jetzt. */
-.cv4-grid{display:grid;grid-template-columns:1fr 320px;gap:18px;align-items:start}
+/* Kein align-items:start mehr → die kürzere Spalte streckt sich auf die Höhe der
+   längeren (das Panel füllt den Rest mit seinem Hintergrund, statt ein Loch zu lassen). */
+.cv4-grid{display:grid;grid-template-columns:1fr 320px;gap:18px}
 .cv4-colL{display:flex;flex-direction:column;gap:14px;min-width:0}
 .cv4-svg-wrap{background:var(--screen);border-radius:14px;border:1px solid var(--bd-soft);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
-/* Karten der linken Spalte (Messwerte + Strahl-Einstellungen): gleicher Panel-Look. */
-.cv4-readouts,.cv4-params{background:var(--panel);border:1px solid var(--bd);border-radius:16px;padding:12px 16px}
+/* Karten der linken Spalte (Experiment-Wahl + Messwerte + Strahl-Einstellungen): Panel-Look. */
+.cv4-readouts,.cv4-params,.cv4-card{background:var(--panel);border:1px solid var(--bd);border-radius:16px;padding:12px 16px}
 .cv4-rg{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
 /* „Teilchen&quot;-Messwert = versteckter Toggle (Protonen ⟷ Blei-Ionen). */
 .cv4-ro-toggle{cursor:pointer;transition:border-color .15s,background .15s}
@@ -451,8 +453,18 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
   </svg>
  </div>
 
- <!-- MESSWERTE (LIVE): direkt unter dem Diagramm (linke Spalte) — füllt die Lücke
-      neben dem hohen Bedien-Panel. IDs unverändert (engine#updateReadouts). -->
+ <!-- EXPERIMENT WÄHLEN — direkt nach der LHC-Ansicht (Schnellstart, erster Schritt). -->
+ <div class=&quot;cv4-card&quot;>
+  <div class=&quot;cv4-ptitle&quot;>🔬 EXPERIMENT WÄHLEN — SCHNELLSTART</div>
+  <!-- Die 3 realen LHC-Betriebsmodi: pp-Physik (Higgs/Z⁰/CP zusammen) · Schwerionen/QGP · Pilot. -->
+  <div class=&quot;cv4-preset-grid&quot;>
+   <div><button class=&quot;cv4-btn&quot; id=&quot;btn-pre-pp&quot; style=&quot;background:rgba(88,166,255,.12);border-color:#58a6ff;color:#58a6ff;font-size:10.5px;padding:8px 3px;width:100%&quot;>Protonen-Physik<br><span style=&quot;font-size:8.5px;opacity:.8&quot;>13,6 TeV · Higgs/Z⁰/CP</span> <span class=&quot;cv4-pi-btn&quot; data-pi=&quot;prePp&quot;>ⓘ</span></button><div class=&quot;cv4-param-info&quot; id=&quot;pi-prePp&quot;></div></div>
+   <div><button class=&quot;cv4-btn&quot; id=&quot;btn-pre-qgp&quot; style=&quot;background:rgba(227,119,194,.12);border-color:#e377c2;color:#e377c2;font-size:10.5px;padding:8px 3px;width:100%&quot;>Schwerionen / QGP<br><span style=&quot;font-size:8.5px;opacity:.8&quot;>Blei-Ionen · ALICE</span> <span class=&quot;cv4-pi-btn&quot; data-pi=&quot;preQgp&quot;>ⓘ</span></button><div class=&quot;cv4-param-info&quot; id=&quot;pi-preQgp&quot;></div></div>
+   <div><button class=&quot;cv4-btn&quot; id=&quot;btn-pre-pilot&quot; style=&quot;background:rgba(23,190,207,.12);border-color:#17becf;color:#17becf;font-size:10.5px;padding:8px 3px;width:100%&quot;>Pilot-Strahl<br><span style=&quot;font-size:8.5px;opacity:.8&quot;>Inbetriebnahme · 0,45 TeV</span> <span class=&quot;cv4-pi-btn&quot; data-pi=&quot;prePilot&quot;>ⓘ</span></button><div class=&quot;cv4-param-info&quot; id=&quot;pi-prePilot&quot;></div></div>
+  </div>
+ </div>
+
+ <!-- MESSWERTE (LIVE): direkt unter dem Diagramm (linke Spalte). IDs unverändert (engine#updateReadouts). -->
  <div class=&quot;cv4-readouts&quot;>
   <div class=&quot;cv4-ptitle&quot;>📊 MESSWERTE (LIVE)</div>
   <div class=&quot;cv4-rg&quot;>
@@ -488,16 +500,6 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
  </div><!-- /.cv4-colL -->
 
  <div class=&quot;cv4-panel&quot;>
-  <div>
-   <div class=&quot;cv4-ptitle&quot;>🔬 EXPERIMENT WÄHLEN — SCHNELLSTART</div>
-   <!-- Die 3 realen LHC-Betriebsmodi: pp-Physik (Higgs/Z⁰/CP zusammen) · Schwerionen/QGP · Pilot. -->
-   <div class=&quot;cv4-preset-grid&quot;>
-    <div><button class=&quot;cv4-btn&quot; id=&quot;btn-pre-pp&quot; style=&quot;background:rgba(88,166,255,.12);border-color:#58a6ff;color:#58a6ff;font-size:10.5px;padding:8px 3px;width:100%&quot;>Protonen-Physik<br><span style=&quot;font-size:8.5px;opacity:.8&quot;>13,6 TeV · Higgs/Z⁰/CP</span> <span class=&quot;cv4-pi-btn&quot; data-pi=&quot;prePp&quot;>ⓘ</span></button><div class=&quot;cv4-param-info&quot; id=&quot;pi-prePp&quot;></div></div>
-    <div><button class=&quot;cv4-btn&quot; id=&quot;btn-pre-qgp&quot; style=&quot;background:rgba(227,119,194,.12);border-color:#e377c2;color:#e377c2;font-size:10.5px;padding:8px 3px;width:100%&quot;>Schwerionen / QGP<br><span style=&quot;font-size:8.5px;opacity:.8&quot;>Blei-Ionen · ALICE</span> <span class=&quot;cv4-pi-btn&quot; data-pi=&quot;preQgp&quot;>ⓘ</span></button><div class=&quot;cv4-param-info&quot; id=&quot;pi-preQgp&quot;></div></div>
-    <div><button class=&quot;cv4-btn&quot; id=&quot;btn-pre-pilot&quot; style=&quot;background:rgba(23,190,207,.12);border-color:#17becf;color:#17becf;font-size:10.5px;padding:8px 3px;width:100%&quot;>Pilot-Strahl<br><span style=&quot;font-size:8.5px;opacity:.8&quot;>Inbetriebnahme · 0,45 TeV</span> <span class=&quot;cv4-pi-btn&quot; data-pi=&quot;prePilot&quot;>ⓘ</span></button><div class=&quot;cv4-param-info&quot; id=&quot;pi-prePilot&quot;></div></div>
-   </div>
-  </div>
-
   <div>
    <div class=&quot;cv4-ptitle&quot;>📡 SCHRITT 1 — STRAHL FÜLLEN</div>
    <div style=&quot;display:flex;flex-direction:column;gap:6px&quot;>

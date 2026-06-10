@@ -37,11 +37,13 @@
    MESSWERTE; rechts das Bedien-Panel. align-items:start = jede Spalte behält ihre
    Inhaltshöhe. Vorher klaffte unter dem Diagramm eine große Lücke neben dem hohen
    Panel — die Messwerte füllen sie jetzt. */
-.cv4-grid{display:grid;grid-template-columns:1fr 320px;gap:18px;align-items:start}
+/* Kein align-items:start mehr → die kürzere Spalte streckt sich auf die Höhe der
+   längeren (das Panel füllt den Rest mit seinem Hintergrund, statt ein Loch zu lassen). */
+.cv4-grid{display:grid;grid-template-columns:1fr 320px;gap:18px}
 .cv4-colL{display:flex;flex-direction:column;gap:14px;min-width:0}
 .cv4-svg-wrap{background:var(--screen);border-radius:14px;border:1px solid var(--bd-soft);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
-/* Karten der linken Spalte (Messwerte + Strahl-Einstellungen): gleicher Panel-Look. */
-.cv4-readouts,.cv4-params{background:var(--panel);border:1px solid var(--bd);border-radius:16px;padding:12px 16px}
+/* Karten der linken Spalte (Experiment-Wahl + Messwerte + Strahl-Einstellungen): Panel-Look. */
+.cv4-readouts,.cv4-params,.cv4-card{background:var(--panel);border:1px solid var(--bd);border-radius:16px;padding:12px 16px}
 .cv4-rg{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
 /* „Teilchen"-Messwert = versteckter Toggle (Protonen ⟷ Blei-Ionen). */
 .cv4-ro-toggle{cursor:pointer;transition:border-color .15s,background .15s}

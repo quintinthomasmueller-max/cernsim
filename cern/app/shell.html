@@ -159,8 +159,18 @@
   </svg>
  </div>
 
- <!-- MESSWERTE (LIVE): direkt unter dem Diagramm (linke Spalte) — füllt die Lücke
-      neben dem hohen Bedien-Panel. IDs unverändert (engine#updateReadouts). -->
+ <!-- EXPERIMENT WÄHLEN — direkt nach der LHC-Ansicht (Schnellstart, erster Schritt). -->
+ <div class="cv4-card">
+  <div class="cv4-ptitle">🔬 EXPERIMENT WÄHLEN — SCHNELLSTART</div>
+  <!-- Die 3 realen LHC-Betriebsmodi: pp-Physik (Higgs/Z⁰/CP zusammen) · Schwerionen/QGP · Pilot. -->
+  <div class="cv4-preset-grid">
+   <div><button class="cv4-btn" id="btn-pre-pp" style="background:rgba(88,166,255,.12);border-color:#58a6ff;color:#58a6ff;font-size:10.5px;padding:8px 3px;width:100%">Protonen-Physik<br><span style="font-size:8.5px;opacity:.8">13,6 TeV · Higgs/Z⁰/CP</span> <span class="cv4-pi-btn" data-pi="prePp">ⓘ</span></button><div class="cv4-param-info" id="pi-prePp"></div></div>
+   <div><button class="cv4-btn" id="btn-pre-qgp" style="background:rgba(227,119,194,.12);border-color:#e377c2;color:#e377c2;font-size:10.5px;padding:8px 3px;width:100%">Schwerionen / QGP<br><span style="font-size:8.5px;opacity:.8">Blei-Ionen · ALICE</span> <span class="cv4-pi-btn" data-pi="preQgp">ⓘ</span></button><div class="cv4-param-info" id="pi-preQgp"></div></div>
+   <div><button class="cv4-btn" id="btn-pre-pilot" style="background:rgba(23,190,207,.12);border-color:#17becf;color:#17becf;font-size:10.5px;padding:8px 3px;width:100%">Pilot-Strahl<br><span style="font-size:8.5px;opacity:.8">Inbetriebnahme · 0,45 TeV</span> <span class="cv4-pi-btn" data-pi="prePilot">ⓘ</span></button><div class="cv4-param-info" id="pi-prePilot"></div></div>
+  </div>
+ </div>
+
+ <!-- MESSWERTE (LIVE): direkt unter dem Diagramm (linke Spalte). IDs unverändert (engine#updateReadouts). -->
  <div class="cv4-readouts">
   <div class="cv4-ptitle">📊 MESSWERTE (LIVE)</div>
   <div class="cv4-rg">
@@ -196,16 +206,6 @@
  </div><!-- /.cv4-colL -->
 
  <div class="cv4-panel">
-  <div>
-   <div class="cv4-ptitle">🔬 EXPERIMENT WÄHLEN — SCHNELLSTART</div>
-   <!-- Die 3 realen LHC-Betriebsmodi: pp-Physik (Higgs/Z⁰/CP zusammen) · Schwerionen/QGP · Pilot. -->
-   <div class="cv4-preset-grid">
-    <div><button class="cv4-btn" id="btn-pre-pp" style="background:rgba(88,166,255,.12);border-color:#58a6ff;color:#58a6ff;font-size:10.5px;padding:8px 3px;width:100%">Protonen-Physik<br><span style="font-size:8.5px;opacity:.8">13,6 TeV · Higgs/Z⁰/CP</span> <span class="cv4-pi-btn" data-pi="prePp">ⓘ</span></button><div class="cv4-param-info" id="pi-prePp"></div></div>
-    <div><button class="cv4-btn" id="btn-pre-qgp" style="background:rgba(227,119,194,.12);border-color:#e377c2;color:#e377c2;font-size:10.5px;padding:8px 3px;width:100%">Schwerionen / QGP<br><span style="font-size:8.5px;opacity:.8">Blei-Ionen · ALICE</span> <span class="cv4-pi-btn" data-pi="preQgp">ⓘ</span></button><div class="cv4-param-info" id="pi-preQgp"></div></div>
-    <div><button class="cv4-btn" id="btn-pre-pilot" style="background:rgba(23,190,207,.12);border-color:#17becf;color:#17becf;font-size:10.5px;padding:8px 3px;width:100%">Pilot-Strahl<br><span style="font-size:8.5px;opacity:.8">Inbetriebnahme · 0,45 TeV</span> <span class="cv4-pi-btn" data-pi="prePilot">ⓘ</span></button><div class="cv4-param-info" id="pi-prePilot"></div></div>
-   </div>
-  </div>
-
   <div>
    <div class="cv4-ptitle">📡 SCHRITT 1 — STRAHL FÜLLEN</div>
    <div style="display:flex;flex-direction:column;gap:6px">

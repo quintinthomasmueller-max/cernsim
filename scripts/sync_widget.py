@@ -146,12 +146,11 @@ def main():
     # 3) cern/app/index.html
     open(os.path.join(APP, 'index.html'), 'w').write(build_standalone())
 
-    # 4) cern/CERN-Stellwerk.html — EINE selbstständige Datei zum Teilen (CSS+JS inline)
+    # 4) cern/CERN-Stellwerk.html — DIE eine selbstständige Datei zum Teilen/Elternabend
+    #     (CSS+JS inline, didaktisch optimiert). Eine separate „-Elternabend"-Kopie gab es
+    #     früher, war aber bytegleich → entfernt (überflüssige Datei).
     share = build_share()
     open(os.path.join(ROOT, 'cern', 'CERN-Stellwerk.html'), 'w').write(share)
-    # 4b) Eigenständige Eltern-/Laien-Kopie (didaktisch optimiert, identischer Build) —
-    #     klar benannt zum Verteilen am Elternabend; bytegleich zu (4).
-    open(os.path.join(ROOT, 'cern', 'CERN-Stellwerk-Elternabend.html'), 'w').write(share)
 
     print(f"sync OK | Zelle 4 (iframe): {len(payload):,} B | App-Doc: {len(inner):,} B | JS: {len(build_js()):,} B | Teilen-Datei: {len(share):,} B")
     # optionaler Byte-Vergleich gegen Referenz
