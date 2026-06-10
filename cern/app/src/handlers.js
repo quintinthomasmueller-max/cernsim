@@ -108,7 +108,6 @@ async function fuellProtokoll(){
  const gen = s.fillGen;   // Füll-Generation DIESES Laufs (ältere In-Flight-Batches zählen nicht mehr)
  E.btnAuto.classList.add("off");
  E.sliEnergy.disabled = true; E.sliIntensity.disabled = true; E.sliRampSpeed.disabled = true;
- E.selP.style.pointerEvents = "none"; E.selI.style.pointerEvents = "none";
  App.setStatus("FÜLLPROTOKOLL: PS-Batches laufen einzeln zum SPS und verschmelzen dort zu Zügen …","on");
 
  // 1 Punkt = 1 PS-Batch. Pro SPS-Zug fusionieren batchesPerTrain Batches; der letzte
@@ -127,7 +126,6 @@ async function fuellProtokoll(){
  }
  await Promise.all(proms);
  s.filling = false;
- E.selP.style.pointerEvents = ""; E.selI.style.pointerEvents = "";
  if(s.resetFlag) return;
  E.btnAuto.classList.remove("off");
  if(s.b1Batches>=totB && s.b2Batches>=totB){

@@ -134,11 +134,6 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
 .cv4-dot.on{background:var(--green);box-shadow:0 0 8px var(--green);animation:cv4p 1.5s infinite}
 .cv4-dot.danger{background:var(--red);box-shadow:0 0 8px var(--red)}
 @keyframes cv4p{0%,100%{opacity:.6;transform:scale(.9)}50%{opacity:1;transform:scale(1.2)}}
-.cv4-sel{display:flex;gap:8px;margin-bottom:14px}
-.cv4-sel-tab{flex:1;padding:9px;font-size:13px;font-weight:700;text-align:center;border-radius:9px;cursor:pointer;border:1px solid var(--bd);background:var(--card);transition:all .2s}
-.cv4-sel-tab:hover{border-color:var(--tx-dim)}
-.cv4-sel-tab.act-p{background:rgba(88,166,255,.16);border-color:var(--blue);color:var(--blue)}
-.cv4-sel-tab.act-i{background:rgba(227,119,194,.16);border-color:var(--pink);color:var(--pink)}
 /* Linke Spalte (.cv4-colL) = Beschleuniger-Ansicht + direkt darunter die Live-
    MESSWERTE; rechts das Bedien-Panel. align-items:start = jede Spalte behält ihre
    Inhaltshöhe. Vorher klaffte unter dem Diagramm eine große Lücke neben dem hohen
@@ -146,8 +141,12 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
 .cv4-grid{display:grid;grid-template-columns:1fr 320px;gap:18px;align-items:start}
 .cv4-colL{display:flex;flex-direction:column;gap:14px;min-width:0}
 .cv4-svg-wrap{background:var(--screen);border-radius:14px;border:1px solid var(--bd-soft);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
-.cv4-readouts{background:var(--panel);border:1px solid var(--bd);border-radius:16px;padding:12px 16px}
+/* Karten der linken Spalte (Messwerte + Strahl-Einstellungen): gleicher Panel-Look. */
+.cv4-readouts,.cv4-params{background:var(--panel);border:1px solid var(--bd);border-radius:16px;padding:12px 16px}
 .cv4-rg{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+/* „Teilchen&quot;-Messwert = versteckter Toggle (Protonen ⟷ Blei-Ionen). */
+.cv4-ro-toggle{cursor:pointer;transition:border-color .15s,background .15s}
+.cv4-ro-toggle:hover{border-color:var(--blue);background:rgba(88,166,255,.06)}
 /* SVG fluid: skaliert über die viewBox (Ring am Handy voll sichtbar). Auf dem
    Desktop füllt es die linke Spalte → größeres Diagramm, weniger Leerraum. */
 #svg{width:100%;height:auto;display:block;margin:0 auto}
@@ -282,7 +281,6 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
  .cv4-hdr{flex-wrap:wrap;gap:8px}
  .cv4-bottom{grid-template-columns:1fr}           /* Event-Display + Spektrum untereinander */
  .cv4-preset-grid{grid-template-columns:1fr 1fr}
- .cv4-sel-tab{font-size:11px;padding:8px 4px}
  /* Info-Panel als zentriertes Modal — sonst vom niedrigen SVG-Wrap geclippt */
  .cv4-info-panel{position:fixed;top:50%;left:50%;right:auto;transform:translate(-50%,-50%);width:min(330px,92vw);max-height:82vh;overflow:auto;z-index:9999}
  #btn-diagram-full{display:block!important}        /* „Großansicht&quot; nur am Handy */
@@ -310,11 +308,6 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
 </div>
 <div class=&quot;cv4-param-info&quot; id=&quot;pi-introCern&quot;></div>
 <div class=&quot;cv4-param-info&quot; id=&quot;pi-introUse&quot;></div>
-
-<div class=&quot;cv4-sel&quot;>
-  <div class=&quot;cv4-sel-tab act-p&quot; id=&quot;sel-p&quot;>🔵 Protonen-Strahl <span style=&quot;opacity:.65;font-weight:400&quot;>· LINAC4→PSB→PS→SPS→LHC</span></div>
-  <div class=&quot;cv4-sel-tab&quot; id=&quot;sel-i&quot;>🟣 Blei-Ionen-Strahl <span style=&quot;opacity:.65;font-weight:400&quot;>· LINAC3→LEIR→PS→SPS→LHC</span></div>
-</div>
 
 <div class=&quot;cv4-grid&quot;>
  <!-- Linke Spalte: Beschleuniger-Ansicht + direkt darunter die Live-Messwerte. -->
@@ -466,8 +459,31 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
    <div class=&quot;cv4-ro&quot;><span class=&quot;cv4-ro-l&quot;>Energie/Beam</span><span class=&quot;cv4-ro-v&quot; id=&quot;v-e&quot;>0.00 TeV</span></div>
    <div class=&quot;cv4-ro&quot;><span class=&quot;cv4-ro-l&quot;>Magnetfeld B</span><span class=&quot;cv4-ro-v&quot; id=&quot;v-b&quot;>0.000 T</span></div>
    <div class=&quot;cv4-ro&quot;><span class=&quot;cv4-ro-l&quot;>Lorentz γ</span><span class=&quot;cv4-ro-v&quot; id=&quot;v-g&quot;>1</span></div>
-   <div class=&quot;cv4-ro&quot;><span class=&quot;cv4-ro-l&quot;>Teilchen</span><span class=&quot;cv4-ro-v&quot; id=&quot;v-t&quot; style=&quot;color:#58a6ff&quot;>Proton</span></div>
+   <!-- Versteckter Toggle: Klick wechselt Protonen ⟷ Blei-Ionen (ersetzt die früheren Auswahl-Tabs). -->
+   <div class=&quot;cv4-ro cv4-ro-toggle&quot; id=&quot;ro-teilchen&quot; title=&quot;Klicken: Protonen ⟷ Blei-Ionen-Strahl&quot;><span class=&quot;cv4-ro-l&quot;>Teilchen ⇄</span><span class=&quot;cv4-ro-v&quot; id=&quot;v-t&quot; style=&quot;color:#58a6ff&quot;>Proton</span></div>
   </div>
+ </div>
+
+ <!-- STRAHL-EINSTELLUNGEN: die regelbaren Maschinen-Parameter, unter die Messwerte
+      gezogen (zugänglicher; war zuvor „Betriebsparameter (CCC)&quot; im rechten Panel). -->
+ <div class=&quot;cv4-params&quot;>
+  <div class=&quot;cv4-ptitle&quot;>🎛️ STRAHL-EINSTELLUNGEN</div>
+
+  <div class=&quot;cv4-sli-lbl&quot;><span>Ziel-Energie: <button class=&quot;cv4-pi-btn&quot; data-pi=&quot;energy&quot;>ⓘ</button></span><span id=&quot;lbl-energy&quot;>6.8 TeV</span></div>
+  <div class=&quot;cv4-param-info&quot; id=&quot;pi-energy&quot;></div>
+  <input type=&quot;range&quot; class=&quot;cv4-sli&quot; id=&quot;sli-energy&quot; min=&quot;0.45&quot; max=&quot;7.0&quot; step=&quot;0.05&quot; value=&quot;6.8&quot;>
+
+  <div class=&quot;cv4-sli-lbl&quot; style=&quot;margin-top:8px&quot;><span>Bunch-Intensität: <button class=&quot;cv4-pi-btn&quot; data-pi=&quot;intensity&quot;>ⓘ</button></span><span id=&quot;lbl-intensity&quot;>1.15e11 p</span></div>
+  <div class=&quot;cv4-param-info&quot; id=&quot;pi-intensity&quot;></div>
+  <input type=&quot;range&quot; class=&quot;cv4-sli&quot; id=&quot;sli-intensity&quot; min=&quot;0.1&quot; max=&quot;1.8&quot; step=&quot;0.05&quot; value=&quot;1.15&quot;>
+
+  <div class=&quot;cv4-sli-lbl&quot; style=&quot;margin-top:8px&quot;><span>Strahl-Fokus β*: <button class=&quot;cv4-pi-btn&quot; data-pi=&quot;beta&quot;>ⓘ</button></span><span id=&quot;lbl-beta&quot;>1.50 m</span></div>
+  <div class=&quot;cv4-param-info&quot; id=&quot;pi-beta&quot;></div>
+  <input type=&quot;range&quot; class=&quot;cv4-sli&quot; id=&quot;sli-beta&quot; min=&quot;0.3&quot; max=&quot;1.5&quot; step=&quot;0.1&quot; value=&quot;1.5&quot; disabled>
+
+  <div class=&quot;cv4-sli-lbl&quot; style=&quot;margin-top:8px&quot;><span>Ramp-Rate dB/dt: <button class=&quot;cv4-pi-btn&quot; data-pi=&quot;rampspeed&quot;>ⓘ</button></span><span id=&quot;lbl-rampspeed&quot; style=&quot;color:#58a6ff&quot;>0.05 T/s (Sicher)</span></div>
+  <div class=&quot;cv4-param-info&quot; id=&quot;pi-rampspeed&quot;></div>
+  <input type=&quot;range&quot; class=&quot;cv4-sli&quot; id=&quot;sli-rampspeed&quot; min=&quot;0.02&quot; max=&quot;0.15&quot; step=&quot;0.01&quot; value=&quot;0.05&quot;>
  </div>
  </div><!-- /.cv4-colL -->
 
@@ -502,26 +518,6 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
    <div style=&quot;font-size:8.5px;color:#8b949e;margin:-2px 0 4px;line-height:1.35&quot;>1 Punkt = 1 PS-Batch (72 B). Das SPS bündelt bis 4 Batches zu 1 Zug (288 B) → ~10 Züge füllen den LHC (Pb-Ionen: nur 592 B)</div>
    <div class=&quot;cv4-fill-row&quot;><span style=&quot;width:108px;font-size:9.5px&quot;>B1 <span id=&quot;b1c&quot;>0 / 2.808</span></span><div class=&quot;cv4-fill-bar&quot;><div class=&quot;cv4-fill-bar-inner b1&quot; id=&quot;b1bar&quot; style=&quot;width:0%&quot;></div></div></div>
    <div class=&quot;cv4-fill-row&quot; style=&quot;margin-top:4px&quot;><span style=&quot;width:108px;font-size:9.5px&quot;>B2 <span id=&quot;b2c&quot;>0 / 2.808</span></span><div class=&quot;cv4-fill-bar&quot;><div class=&quot;cv4-fill-bar-inner b2&quot; id=&quot;b2bar&quot; style=&quot;width:0%&quot;></div></div></div>
-  </div>
-
-  <div>
-   <div class=&quot;cv4-ptitle&quot;>🎛️ BETRIEBSPARAMETER (CCC)</div>
-
-   <div class=&quot;cv4-sli-lbl&quot;><span>Ziel-Energie: <button class=&quot;cv4-pi-btn&quot; data-pi=&quot;energy&quot;>ⓘ</button></span><span id=&quot;lbl-energy&quot;>6.8 TeV</span></div>
-   <div class=&quot;cv4-param-info&quot; id=&quot;pi-energy&quot;></div>
-   <input type=&quot;range&quot; class=&quot;cv4-sli&quot; id=&quot;sli-energy&quot; min=&quot;0.45&quot; max=&quot;7.0&quot; step=&quot;0.05&quot; value=&quot;6.8&quot;>
-
-   <div class=&quot;cv4-sli-lbl&quot; style=&quot;margin-top:8px&quot;><span>Bunch-Intensität: <button class=&quot;cv4-pi-btn&quot; data-pi=&quot;intensity&quot;>ⓘ</button></span><span id=&quot;lbl-intensity&quot;>1.15e11 p</span></div>
-   <div class=&quot;cv4-param-info&quot; id=&quot;pi-intensity&quot;></div>
-   <input type=&quot;range&quot; class=&quot;cv4-sli&quot; id=&quot;sli-intensity&quot; min=&quot;0.1&quot; max=&quot;1.8&quot; step=&quot;0.05&quot; value=&quot;1.15&quot;>
-
-   <div class=&quot;cv4-sli-lbl&quot; style=&quot;margin-top:8px&quot;><span>Strahl-Fokus β*: <button class=&quot;cv4-pi-btn&quot; data-pi=&quot;beta&quot;>ⓘ</button></span><span id=&quot;lbl-beta&quot;>1.50 m</span></div>
-   <div class=&quot;cv4-param-info&quot; id=&quot;pi-beta&quot;></div>
-   <input type=&quot;range&quot; class=&quot;cv4-sli&quot; id=&quot;sli-beta&quot; min=&quot;0.3&quot; max=&quot;1.5&quot; step=&quot;0.1&quot; value=&quot;1.5&quot; disabled>
-
-   <div class=&quot;cv4-sli-lbl&quot; style=&quot;margin-top:8px&quot;><span>Ramp-Rate dB/dt: <button class=&quot;cv4-pi-btn&quot; data-pi=&quot;rampspeed&quot;>ⓘ</button></span><span id=&quot;lbl-rampspeed&quot; style=&quot;color:#58a6ff&quot;>0.05 T/s (Sicher)</span></div>
-   <div class=&quot;cv4-param-info&quot; id=&quot;pi-rampspeed&quot;></div>
-   <input type=&quot;range&quot; class=&quot;cv4-sli&quot; id=&quot;sli-rampspeed&quot; min=&quot;0.02&quot; max=&quot;0.15&quot; step=&quot;0.01&quot; value=&quot;0.05&quot;>
   </div>
 
   <div>
@@ -748,8 +744,6 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
   function setMode(ion) {
     if (s.isIon === ion &amp;&amp; s.b1Count === 0 &amp;&amp; s.b2Count === 0) return;
     s.isIon = ion;
-    E.selP.className = &quot;cv4-sel-tab&quot; + (ion ? &quot;&quot; : &quot; act-p&quot;);
-    E.selI.className = &quot;cv4-sel-tab&quot; + (ion ? &quot; act-i&quot; : &quot;&quot;);
     E.vT.innerText = ion ? &quot;Pb\u2078\xB2\u207A&quot; : &quot;Proton&quot;;
     E.vT.style.color = ion ? &quot;#e377c2&quot; : &quot;#58a6ff&quot;;
     E.trInj.innerText = ion ? &quot;LEIR&quot; : &quot;PSB&quot;;
@@ -1324,13 +1318,10 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
   App.updateReadouts = updateReadouts;
   App.setStatus = setStatus;
   function wireEngine() {
-    E.selP.addEventListener(&quot;click&quot;, () => {
+    const roT = $(&quot;ro-teilchen&quot;);
+    if (roT) roT.addEventListener(&quot;click&quot;, () => {
       if (s.filling) return;
-      setMode(false);
-    });
-    E.selI.addEventListener(&quot;click&quot;, () => {
-      if (s.filling) return;
-      setMode(true);
+      setMode(!s.isIon);
     });
     E.btnRamp.addEventListener(&quot;click&quot;, doRamp);
     E.btnSqueeze.addEventListener(&quot;click&quot;, doSqueeze);
@@ -2826,8 +2817,6 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
     E5.sliEnergy.disabled = true;
     E5.sliIntensity.disabled = true;
     E5.sliRampSpeed.disabled = true;
-    E5.selP.style.pointerEvents = &quot;none&quot;;
-    E5.selI.style.pointerEvents = &quot;none&quot;;
     App.setStatus(&quot;F\xDCLLPROTOKOLL: PS-Batches laufen einzeln zum SPS und verschmelzen dort zu Z\xFCgen \u2026&quot;, &quot;on&quot;);
     const bpt = fc2().batchesPerTrain;
     const sizes = [];
@@ -2844,8 +2833,6 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
     }
     await Promise.all(proms);
     s4.filling = false;
-    E5.selP.style.pointerEvents = &quot;&quot;;
-    E5.selI.style.pointerEvents = &quot;&quot;;
     if (s4.resetFlag) return;
     E5.btnAuto.classList.remove(&quot;off&quot;);
     if (s4.b1Batches >= totB &amp;&amp; s4.b2Batches >= totB) {
@@ -3051,8 +3038,6 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
     E6.lblBeta = $(&quot;lbl-beta&quot;);
     E6.lblRampSpeed = $(&quot;lbl-rampspeed&quot;);
     E6.trInj = $(&quot;tr-inj&quot;);
-    E6.selP = $(&quot;sel-p&quot;);
-    E6.selI = $(&quot;sel-i&quot;);
     E6.btnToggleGeo = $(&quot;btn-toggle-geo&quot;);
     E6.btnPrePp = $(&quot;btn-pre-pp&quot;);
     E6.btnPreQgp = $(&quot;btn-pre-qgp&quot;);

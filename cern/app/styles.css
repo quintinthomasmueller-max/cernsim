@@ -33,11 +33,6 @@
 .cv4-dot.on{background:var(--green);box-shadow:0 0 8px var(--green);animation:cv4p 1.5s infinite}
 .cv4-dot.danger{background:var(--red);box-shadow:0 0 8px var(--red)}
 @keyframes cv4p{0%,100%{opacity:.6;transform:scale(.9)}50%{opacity:1;transform:scale(1.2)}}
-.cv4-sel{display:flex;gap:8px;margin-bottom:14px}
-.cv4-sel-tab{flex:1;padding:9px;font-size:13px;font-weight:700;text-align:center;border-radius:9px;cursor:pointer;border:1px solid var(--bd);background:var(--card);transition:all .2s}
-.cv4-sel-tab:hover{border-color:var(--tx-dim)}
-.cv4-sel-tab.act-p{background:rgba(88,166,255,.16);border-color:var(--blue);color:var(--blue)}
-.cv4-sel-tab.act-i{background:rgba(227,119,194,.16);border-color:var(--pink);color:var(--pink)}
 /* Linke Spalte (.cv4-colL) = Beschleuniger-Ansicht + direkt darunter die Live-
    MESSWERTE; rechts das Bedien-Panel. align-items:start = jede Spalte behält ihre
    Inhaltshöhe. Vorher klaffte unter dem Diagramm eine große Lücke neben dem hohen
@@ -45,8 +40,12 @@
 .cv4-grid{display:grid;grid-template-columns:1fr 320px;gap:18px;align-items:start}
 .cv4-colL{display:flex;flex-direction:column;gap:14px;min-width:0}
 .cv4-svg-wrap{background:var(--screen);border-radius:14px;border:1px solid var(--bd-soft);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
-.cv4-readouts{background:var(--panel);border:1px solid var(--bd);border-radius:16px;padding:12px 16px}
+/* Karten der linken Spalte (Messwerte + Strahl-Einstellungen): gleicher Panel-Look. */
+.cv4-readouts,.cv4-params{background:var(--panel);border:1px solid var(--bd);border-radius:16px;padding:12px 16px}
 .cv4-rg{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+/* „Teilchen"-Messwert = versteckter Toggle (Protonen ⟷ Blei-Ionen). */
+.cv4-ro-toggle{cursor:pointer;transition:border-color .15s,background .15s}
+.cv4-ro-toggle:hover{border-color:var(--blue);background:rgba(88,166,255,.06)}
 /* SVG fluid: skaliert über die viewBox (Ring am Handy voll sichtbar). Auf dem
    Desktop füllt es die linke Spalte → größeres Diagramm, weniger Leerraum. */
 #svg{width:100%;height:auto;display:block;margin:0 auto}
@@ -181,7 +180,6 @@
  .cv4-hdr{flex-wrap:wrap;gap:8px}
  .cv4-bottom{grid-template-columns:1fr}           /* Event-Display + Spektrum untereinander */
  .cv4-preset-grid{grid-template-columns:1fr 1fr}
- .cv4-sel-tab{font-size:11px;padding:8px 4px}
  /* Info-Panel als zentriertes Modal — sonst vom niedrigen SVG-Wrap geclippt */
  .cv4-info-panel{position:fixed;top:50%;left:50%;right:auto;transform:translate(-50%,-50%);width:min(330px,92vw);max-height:82vh;overflow:auto;z-index:9999}
  #btn-diagram-full{display:block!important}        /* „Großansicht" nur am Handy */

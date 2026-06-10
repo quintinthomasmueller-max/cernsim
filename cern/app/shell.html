@@ -17,11 +17,6 @@
 <div class="cv4-param-info" id="pi-introCern"></div>
 <div class="cv4-param-info" id="pi-introUse"></div>
 
-<div class="cv4-sel">
-  <div class="cv4-sel-tab act-p" id="sel-p">🔵 Protonen-Strahl <span style="opacity:.65;font-weight:400">· LINAC4→PSB→PS→SPS→LHC</span></div>
-  <div class="cv4-sel-tab" id="sel-i">🟣 Blei-Ionen-Strahl <span style="opacity:.65;font-weight:400">· LINAC3→LEIR→PS→SPS→LHC</span></div>
-</div>
-
 <div class="cv4-grid">
  <!-- Linke Spalte: Beschleuniger-Ansicht + direkt darunter die Live-Messwerte. -->
  <div class="cv4-colL">
@@ -172,8 +167,31 @@
    <div class="cv4-ro"><span class="cv4-ro-l">Energie/Beam</span><span class="cv4-ro-v" id="v-e">0.00 TeV</span></div>
    <div class="cv4-ro"><span class="cv4-ro-l">Magnetfeld B</span><span class="cv4-ro-v" id="v-b">0.000 T</span></div>
    <div class="cv4-ro"><span class="cv4-ro-l">Lorentz γ</span><span class="cv4-ro-v" id="v-g">1</span></div>
-   <div class="cv4-ro"><span class="cv4-ro-l">Teilchen</span><span class="cv4-ro-v" id="v-t" style="color:#58a6ff">Proton</span></div>
+   <!-- Versteckter Toggle: Klick wechselt Protonen ⟷ Blei-Ionen (ersetzt die früheren Auswahl-Tabs). -->
+   <div class="cv4-ro cv4-ro-toggle" id="ro-teilchen" title="Klicken: Protonen ⟷ Blei-Ionen-Strahl"><span class="cv4-ro-l">Teilchen ⇄</span><span class="cv4-ro-v" id="v-t" style="color:#58a6ff">Proton</span></div>
   </div>
+ </div>
+
+ <!-- STRAHL-EINSTELLUNGEN: die regelbaren Maschinen-Parameter, unter die Messwerte
+      gezogen (zugänglicher; war zuvor „Betriebsparameter (CCC)" im rechten Panel). -->
+ <div class="cv4-params">
+  <div class="cv4-ptitle">🎛️ STRAHL-EINSTELLUNGEN</div>
+
+  <div class="cv4-sli-lbl"><span>Ziel-Energie: <button class="cv4-pi-btn" data-pi="energy">ⓘ</button></span><span id="lbl-energy">6.8 TeV</span></div>
+  <div class="cv4-param-info" id="pi-energy"></div>
+  <input type="range" class="cv4-sli" id="sli-energy" min="0.45" max="7.0" step="0.05" value="6.8">
+
+  <div class="cv4-sli-lbl" style="margin-top:8px"><span>Bunch-Intensität: <button class="cv4-pi-btn" data-pi="intensity">ⓘ</button></span><span id="lbl-intensity">1.15e11 p</span></div>
+  <div class="cv4-param-info" id="pi-intensity"></div>
+  <input type="range" class="cv4-sli" id="sli-intensity" min="0.1" max="1.8" step="0.05" value="1.15">
+
+  <div class="cv4-sli-lbl" style="margin-top:8px"><span>Strahl-Fokus β*: <button class="cv4-pi-btn" data-pi="beta">ⓘ</button></span><span id="lbl-beta">1.50 m</span></div>
+  <div class="cv4-param-info" id="pi-beta"></div>
+  <input type="range" class="cv4-sli" id="sli-beta" min="0.3" max="1.5" step="0.1" value="1.5" disabled>
+
+  <div class="cv4-sli-lbl" style="margin-top:8px"><span>Ramp-Rate dB/dt: <button class="cv4-pi-btn" data-pi="rampspeed">ⓘ</button></span><span id="lbl-rampspeed" style="color:#58a6ff">0.05 T/s (Sicher)</span></div>
+  <div class="cv4-param-info" id="pi-rampspeed"></div>
+  <input type="range" class="cv4-sli" id="sli-rampspeed" min="0.02" max="0.15" step="0.01" value="0.05">
  </div>
  </div><!-- /.cv4-colL -->
 
@@ -208,26 +226,6 @@
    <div style="font-size:8.5px;color:#8b949e;margin:-2px 0 4px;line-height:1.35">1 Punkt = 1 PS-Batch (72 B). Das SPS bündelt bis 4 Batches zu 1 Zug (288 B) → ~10 Züge füllen den LHC (Pb-Ionen: nur 592 B)</div>
    <div class="cv4-fill-row"><span style="width:108px;font-size:9.5px">B1 <span id="b1c">0 / 2.808</span></span><div class="cv4-fill-bar"><div class="cv4-fill-bar-inner b1" id="b1bar" style="width:0%"></div></div></div>
    <div class="cv4-fill-row" style="margin-top:4px"><span style="width:108px;font-size:9.5px">B2 <span id="b2c">0 / 2.808</span></span><div class="cv4-fill-bar"><div class="cv4-fill-bar-inner b2" id="b2bar" style="width:0%"></div></div></div>
-  </div>
-
-  <div>
-   <div class="cv4-ptitle">🎛️ BETRIEBSPARAMETER (CCC)</div>
-
-   <div class="cv4-sli-lbl"><span>Ziel-Energie: <button class="cv4-pi-btn" data-pi="energy">ⓘ</button></span><span id="lbl-energy">6.8 TeV</span></div>
-   <div class="cv4-param-info" id="pi-energy"></div>
-   <input type="range" class="cv4-sli" id="sli-energy" min="0.45" max="7.0" step="0.05" value="6.8">
-
-   <div class="cv4-sli-lbl" style="margin-top:8px"><span>Bunch-Intensität: <button class="cv4-pi-btn" data-pi="intensity">ⓘ</button></span><span id="lbl-intensity">1.15e11 p</span></div>
-   <div class="cv4-param-info" id="pi-intensity"></div>
-   <input type="range" class="cv4-sli" id="sli-intensity" min="0.1" max="1.8" step="0.05" value="1.15">
-
-   <div class="cv4-sli-lbl" style="margin-top:8px"><span>Strahl-Fokus β*: <button class="cv4-pi-btn" data-pi="beta">ⓘ</button></span><span id="lbl-beta">1.50 m</span></div>
-   <div class="cv4-param-info" id="pi-beta"></div>
-   <input type="range" class="cv4-sli" id="sli-beta" min="0.3" max="1.5" step="0.1" value="1.5" disabled>
-
-   <div class="cv4-sli-lbl" style="margin-top:8px"><span>Ramp-Rate dB/dt: <button class="cv4-pi-btn" data-pi="rampspeed">ⓘ</button></span><span id="lbl-rampspeed" style="color:#58a6ff">0.05 T/s (Sicher)</span></div>
-   <div class="cv4-param-info" id="pi-rampspeed"></div>
-   <input type="range" class="cv4-sli" id="sli-rampspeed" min="0.02" max="0.15" step="0.01" value="0.05">
   </div>
 
   <div>

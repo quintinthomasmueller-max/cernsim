@@ -47,8 +47,6 @@ App.fmtEnergy = fmtEnergy;
 function setMode(ion){
  if(s.isIon===ion && s.b1Count===0 && s.b2Count===0) return;
  s.isIon=ion;
- E.selP.className="cv4-sel-tab"+(ion?"":" act-p");
- E.selI.className="cv4-sel-tab"+(ion?" act-i":"");
  E.vT.innerText=ion?"Pb⁸²⁺":"Proton";
  E.vT.style.color=ion?"#e377c2":"#58a6ff";
  E.trInj.innerText=ion?"LEIR":"PSB";
@@ -515,8 +513,10 @@ App.setStatus = setStatus;
 
 // ── Listener (nach initDom in main.js aufgerufen) ───────────────────────────
 export function wireEngine(){
- E.selP.addEventListener("click",()=>{ if(s.filling)return; setMode(false); });
- E.selI.addEventListener("click",()=>{ if(s.filling)return; setMode(true); });
+ // Teilchenart-Wahl: versteckter Toggle auf dem „Teilchen"-Messwert (ersetzt die
+ // früheren Auswahl-Tabs). Klick wechselt Protonen ⟷ Blei-Ionen (nicht beim Füllen).
+ const roT = $("ro-teilchen");
+ if(roT) roT.addEventListener("click",()=>{ if(s.filling) return; setMode(!s.isIon); });
  E.btnRamp.addEventListener("click", doRamp);
  E.btnSqueeze.addEventListener("click", doSqueeze);
  E.btnColl.addEventListener("click", doCollide);

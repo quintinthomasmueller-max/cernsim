@@ -33,7 +33,6 @@ function initDom(){
  E.sliEnergy=$("sli-energy"); E.sliIntensity=$("sli-intensity"); E.sliBeta=$("sli-beta"); E.sliRampSpeed=$("sli-rampspeed");
  E.lblEnergy=$("lbl-energy"); E.lblIntensity=$("lbl-intensity"); E.lblBeta=$("lbl-beta"); E.lblRampSpeed=$("lbl-rampspeed");
  E.trInj=$("tr-inj");
- E.selP=$("sel-p"); E.selI=$("sel-i");
  E.btnToggleGeo=$("btn-toggle-geo");
  E.btnPrePp=$("btn-pre-pp"); E.btnPreQgp=$("btn-pre-qgp"); E.btnPrePilot=$("btn-pre-pilot");
  E.btnZoomOut=$("btn-zoom-out"); E.btnZoomMeyrin=$("btn-zoom-meyrin"); E.btnDiagramFull=$("btn-diagram-full");
