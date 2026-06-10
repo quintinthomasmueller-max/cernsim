@@ -61,7 +61,7 @@ function drawGeo() {
   // würde sonst ~20× vergrößert das Cluster überdecken).
   for (const name in (GEO.ip || {})) {
     const p = GEO.ip[name], c = DET_COL[name] || '#fff';
-    const circ = mk('circle', { cx: p.x, cy: p.y, r: 4, fill: c, stroke: '#0d1117', 'stroke-width': 1 });
+    const circ = mk('circle', { cx: p.x, cy: p.y, r: 4, fill: c, stroke: '#0e141d', 'stroke-width': 1 });   // = --screen (Theme)
     const lab = label(p.x, p.y - 7, name, { fill: c, 'font-size': '8px', 'font-family': 'monospace', 'font-weight': 'bold', 'text-anchor': 'middle' });
     circ.classList.add('geo-far'); lab.classList.add('geo-far');
     g.appendChild(circ); g.appendChild(lab);

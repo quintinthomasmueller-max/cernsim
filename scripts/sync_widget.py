@@ -52,11 +52,20 @@ def build_standalone():
 
 def build_share():
     """EINE vollständig selbstständige HTML-Datei (CSS+JS inline) zum Teilen —
-    läuft per Doppelklick in jedem Browser, ohne weitere Dateien."""
+    läuft per Doppelklick ODER gehostet in jedem Browser (Desktop + Handy),
+    ohne weitere Dateien. Meta = mobil-/Web-tauglich (Notch, Theme, „Zum
+    Startbildschirm", Emoji-Favicon ohne externe Datei)."""
+    icon = ("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' "
+            "viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9A%9B%EF%B8%8F%3C/text%3E%3C/svg%3E")
     return ('<!doctype html><html lang="de"><head><meta charset="utf-8">'
-            '<meta name="viewport" content="width=device-width,initial-scale=1">'
-            '<title>CERN CCC — Stellwerk-Simulation</title>'
-            '<style>html,body{margin:0;background:#0d1117}</style></head><body>'
+            '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">'
+            '<meta name="theme-color" content="#131a24">'
+            '<meta name="apple-mobile-web-app-capable" content="yes">'
+            '<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">'
+            '<meta name="apple-mobile-web-app-title" content="CERN-Schaltzentrale">'
+            '<link rel="icon" href="' + icon + '">'
+            '<title>CERN-Schaltzentrale — interaktives Modell</title>'
+            '<style>html,body{margin:0;background:#131a24}</style></head><body>'
             + build_inner() + '</body></html>')
 
 # Höhen-Reporter (läuft IM iframe-Dokument): meldet die tatsächliche Inhaltshöhe
@@ -82,11 +91,11 @@ def build_iframe_cell(inner):
     Eigener DOM/Origin → keine Jupyter-Script-Race, keine getElementById-Kollisionen.
     Der `cern-v4`-Marker bleibt im (escapeten) srcdoc enthalten → Zellen-Finder greift."""
     doc = ('<!doctype html><html><head><meta charset="utf-8">'
-           '<style>html,body{margin:0;background:#0d1117}</style></head><body>'
+           '<style>html,body{margin:0;background:#131a24}</style></head><body>'
            + inner + RESIZE_REPORTER + '</body></html>')
     iframe = ('<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no" '
               'style="width:100%;height:' + str(FALLBACK_H) + 'px;border:0;display:block;'
-              'overflow:hidden;background:#0d1117" '
+              'overflow:hidden;background:#131a24" '
               'srcdoc="' + esc_srcdoc(doc) + '"></iframe>')
     listener = ("<script>(function(){var f=document.getElementById('cern-v4-frame');"
                 "if(!f)return;window.addEventListener('message',function(e){"
@@ -95,10 +104,17 @@ def build_iframe_cell(inner):
     return iframe + listener
 
 def main():
-    # Resonanztabelle aus physics.json in data.js.reso spiegeln (Single Source of Truth),
-    # damit das gebündelte Widget garantiert dieselben Werte wie Python nutzt.
+    # Echtdaten-Blob cern/app/data.js aus der echten CMS-CSV regenerieren (maximal
+    # viel echte Massen/Kinematik; reso aus physics.json). Single Source bleibt gewahrt.
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     try:
-        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        import build_data
+        build_data.build()
+    except Exception as e:
+        print(f"⚠ build_data übersprungen ({e}) – cern/app/data.js evtl. veraltet")
+    # Resonanztabelle aus physics.json in data.js.reso spiegeln (Single Source of Truth),
+    # damit das gebündelte Widget garantiert dieselben Werte wie Python nutzt (no-op nach build_data).
+    try:
         import gen_constants
         gen_constants.write()
     except Exception as e:
@@ -133,6 +149,9 @@ def main():
     # 4) cern/CERN-Stellwerk.html — EINE selbstständige Datei zum Teilen (CSS+JS inline)
     share = build_share()
     open(os.path.join(ROOT, 'cern', 'CERN-Stellwerk.html'), 'w').write(share)
+    # 4b) Eigenständige Eltern-/Laien-Kopie (didaktisch optimiert, identischer Build) —
+    #     klar benannt zum Verteilen am Elternabend; bytegleich zu (4).
+    open(os.path.join(ROOT, 'cern', 'CERN-Stellwerk-Elternabend.html'), 'w').write(share)
 
     print(f"sync OK | Zelle 4 (iframe): {len(payload):,} B | App-Doc: {len(inner):,} B | JS: {len(build_js()):,} B | Teilen-Datei: {len(share):,} B")
     # optionaler Byte-Vergleich gegen Referenz

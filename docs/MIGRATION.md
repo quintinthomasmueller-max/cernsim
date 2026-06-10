@@ -11,19 +11,124 @@
 
 - **Aktive Phase:** Phase 4 (Curriculum-Visualisierungen → App-Komponenten) — **in Arbeit**
   (1. Komponente „Geo-Overlay" ✅; weitere offen).
-- **⚠️ OFFENE BAUSTELLEN (nach /clear ZUERST angehen — vom Nutzer notiert):**
-  1. **Massenspektrum-Logik KERNSANIEREN.** Die aktuelle Spektrum-/Entdeckungs-Logik
-     (`spectrum.js`: `sampleMass`/`generateMassData`/`accumulateStats`/`getSignificance`/`drawHist`,
-     `DETSPEC`, `prodVis`/`drawVis`/`discoBeamOK`) ist organisch gewachsen und soll grundlegend
-     überarbeitet werden (sauberes, konsistentes Modell für Datenrate, Untergrund, Resonanz-Sichtbarkeit,
-     Signifikanz ∝ √(integrierte Lumi) und Histogramm-Darstellung). Vor Umbau Modell/Annahmen festlegen.
-  2. **Punkt-Geschwindigkeiten verschoben/inkonsistent durch die letzten Änderungen.** Der Batch-Fan-in
-     + SPS-Umlauf (`engine.js#startSpsLoop`, neue Sub-Kadenz `injectTrain`, `getDurations`-Tempo vs.
-     SPS-Orbit-Speed `0.0052/timeScale()`) haben die wahrgenommenen Bewegungsgeschwindigkeiten der
-     Punkte verschoben — wirken jetzt teils unlogisch. Geschwindigkeiten der Stufen (LINAC→…→SPS→LHC),
-     der SPS-Akkumulation und des LHC-Umlaufs **kohärent neu kalibrieren** (ein konsistentes Tempo-Modell).
+- **✅ ZWEI BAUSTELLEN ERLEDIGT (diese Session — siehe „Zuletzt erledigt" unten):**
+  1. ~~Massenspektrum-Logik kernsanieren~~ → **Pacing/√-Form/Datenherkunft erledigt** (Signifikanz
+     wächst jetzt sichtbar √-förmig statt in 1–2 s; realistische Kandidaten-Zahlen; Datenherkunft
+     ehrlich deklariert). Falls weiter: Untergrund-Modell/Fit könnte noch vereinheitlicht werden.
+  2. ~~Punkt-Geschwindigkeiten kohärent neu kalibrieren~~ → **erledigt** (einheitliche px/ms-
+     Geschwindigkeits-Leiter `state.js#getStageVel`, dur = Pfadlänge/Geschwindigkeit; Stau weg).
 - **Entscheidungen:** gelockt (siehe „Gelockte Entscheidungen"). Modul-Modell = **leichter Namespace** (`App`-Objekt).
 - **Zuletzt erledigt (diese Session):**
+  - **Backend-Audit (Logik/Physik/Effizienz) komplett umgesetzt, Tests 77 grün.**
+    Physik: (A1) Resonanzbreiten in `physics.json` waren für Quarkonia ×1000 zu groß
+    (keV→GeV-Slip; J/ψ jetzt 9,3e-5 GeV) — propagierte in data.js.reso UND die
+    Notebook-Breit-Wigner-Sim; Notebook-`GAMMA_NAT`-Dublette durch `cu.RESONANZEN`
+    ersetzt (Single Source wiederhergestellt). (A2–A4) LHCb-Akzeptanz η=2–5, ATLAS
+    innerste Pixellage ~33 mm, CMS 124 Mio. Pixel. (A5) Higgs-Raten-Schwelle 5,5→3,5
+    TeV/Strahl (2012 bei 4 TeV/Strahl entdeckt!) + Statustexte als Raten-Aussage. (A6)
+    Auto-Datennahme koppelt jetzt an I²/β* (lumiF, normiert auf den Preset-Arbeitspunkt;
+    ohne Squeeze erreicht EIN Fill keine 5σ — der Squeeze hat sichtbaren Physik-Payoff).
+    (A7) Pilot-Higgs-Leck dicht (Re-Smear-Fenster-Treffer bleiben Untergrund).
+    Logik: (B1) Generationen-Token `s.fillGen` gegen Zombie-Batches bei Reset+Neustart;
+    (B2) `s.dumping`-Gate (keine manuellen Kollisionen/kein Neustart im 1,6-s-Dump-Fenster);
+    (B3) Pause/Weiter verjüngt den Strahl nicht mehr (Burn-off-Uhr persistiert, erst Refill
+    setzt zurück); (B4) Datennahme-Tick mit echter performance.now()-Zeitbasis (geklemmt —
+    Tab-Throttling verfälscht den „1 s ≈ X real"-Maßstab nicht mehr); (B5) Ionen-Slider
+    max 2,8 TeV/u + „TeV/u"-Label (engine#fmtEnergy), doRamp maxE 2760; (B6) Quench
+    probabilistisch (~30 % @0,11 → ~95 % @0,15 T/s, Zeitpunkt zufällig in der Rampe);
+    (B7) Resize zeichnet das letzte Event wieder (statt leerem Detektor).
+    Effizienz: (C1) Early-Abort detachter Dot-Animationen + Pfadlängen-Cache; (C3)
+    `meta.generated` entfernt (Build byte-reproduzierbar, kein tägliches Git-Rauschen);
+    (C4) Reservoir-Sampling am HIST_CAP (`spectrum.js#pushMass` — Histogramm bleibt über
+    Mehr-Fill-Läufe repräsentativ, auch der manuelle Pfad ist gedeckelt); Fit-Kurven-
+    x-Versatz behoben; `pickTopo` kennt jetzt `topo.low` (echte ρ/ω/φ-Kinematik).
+    Tote Variablen entfernt (injecting/activePhysicsMode/statAcc/autopilotActive),
+    stale Kalibrier-Kommentare korrigiert (core.js). NEU: `tests/audit-fixes.test.mjs`
+    bootet die src-Module gegen shell.html in jsdom (mit App-Zugriff!) und sichert
+    A1/A7/C4/B1/B2/B3 als Regression; physics-Tests um die A6-Lumi-Kopplung erweitert.
+  - **Didaktik-/Refinement-Pass (Zielgruppe Elternabend), Tests 64 grün.** (1) **Helleres
+    Dark-Theme** (`styles.css`): zentrale Palette via CSS-Variablen (vom Pechschwarz abgehoben,
+    Panels/Text kontrastreicher, `--tx-dim` deutlich angehoben, rundere Karten/Buttons); die
+    Physik-Visualisierungen bleiben bewusst auf dunklen „Monitor"-Screens (nicht umgefärbt).
+    (2) **Massenspektrum-Texte aus dem Canvas in HTML** (`shell.html` + `spectrum.js#drawHist`):
+    Titel/Untertitel ÜBER, Status/„was man real misst"/Datenherkunft UNTER dem Graphen (eigene
+    DOM-Boxen `#sp-title/#sp-sub/#sp-status/#sp-real/#sp-prov` → Balken werden nie mehr überlagert;
+    geometrisch verifiziert: head.bottom ≤ canvas.top ≤ canvas.bottom ≤ foot.top). Event-Display:
+    Rolle + Datenherkunft in HTML-`#ev-caption` statt auf den Canvas (`display.js#drawDetBg`).
+    `lbl-sig`/`sig-bar`/`sp-info` beibehalten (Tests). (3) **Texte didaktisch geschärft**:
+    Header „CERN-Schaltzentrale", Laien-Tagline, schritt-nummerierte Panel-Titel; neue
+    Akkordeon-Inhalte (bestehender Mechanismus, KEIN neues Feature): „Was ist der CERN?",
+    „Wie bediene ich das?", „Bild lesen", „Diagramm lesen" (`info.js`). (4) **Bugs:**
+    `fuellProtokoll`-Endmeldung rief `fmtBunch(s.b1Count)` statt `fmtBunch(1/2)` (zeigte stets B2)
+    → fix; Detektor-Tab-Wechsel (`handlers.js#selectDetector`) aktualisiert jetzt den Kandidaten-
+    Zähler `sp-info` auf den gewählten Detektor (war sonst veraltet). (5) **Elternabend-Kopie:**
+    `sync_widget.py` schreibt zusätzlich `cern/CERN-Stellwerk-Elternabend.html` (bytegleich zum
+    Teilen-Standalone). Verifiziert: headless `check.sh` 64 grün + Browser (Boot ohne Konsolenfehler,
+    aufgehelltes Theme, Spektrum-Texte außerhalb des Canvas, Akkordeons toggeln). ⚠ True-375px-Mobil
+    im Preview nicht erzwingbar (Viewport extern ~980px), aber der `@media(max-width:860px)`-Block ist
+    unverändert/konsolidiert (kein Duplikat-`.cv4-grid`).
+  - **Datenlücke 4ℓ geschlossen:** Higgs-Goldkanal nutzt jetzt ECHTE CMS-Open-Data (Record 5200,
+    278 4-Lepton-Kandidaten 2011/2012, in `cern/data/higgs4l/*.csv`) statt Simulation — echte 4ℓ-
+    Massen (Z→4ℓ-Peak 91 + Higgs-Bump 125) UND echte 4-Lepton-Kinematik im Event-Display
+    (`topo.h4l`, `App.sampleH4l`). `build_data.py#read_higgs4l` (Sim-Fallback bleibt); `meta.higgs4l_sim
+    = false`; Z→4ℓ-Marker in CMS-pp. Provenienz-Labels/Preset-Texte auf „echt" aktualisiert. Tests 64.
+  - **Massenspektrum + Live-Detektor physikalisch „unanfechtbar" gemacht, Tests 62 grün.**
+    (1) **Echtdaten reicher regeneriert:** neuer `scripts/build_data.py` baut `cern/app/data.js`
+    deterministisch aus der echten 12k-CMS-Dimuon-CSV (Record 545, Run2011A, √s=7 TeV) — echte
+    Massen je Fenster inkl. Substruktur (ψ(2S)/Υ-Familie), echte μμ-Kinematik je Resonanz + echter
+    `topo.bg`-Bucket (→ Event-Display-Untergrund jetzt ECHT) + `meta`-Provenienz. Higgs-4ℓ bleibt
+    klar als Simulation markiert; kein echtes Pb-Pb → QGP modelliert. In `sync_widget.py` vor esbuild
+    eingehängt; `reso` weiter byte-identisch via `gen_constants`. (2) **Strahl-bewusste Matrix**
+    (`spectrum.js` komplett neu): 8 Profile (Detektor × {pp,PbPb}) — jeder Detektor zeigt IMMER das
+    im aktuellen Strahl real Mögliche: ATLAS Z⁰ (beide, Standardkerze), CMS Higgs(pp)/Υ-Sequenz-
+    unterdrückung(PbPb), ALICE Quarkonia-Referenz(pp)/QGP-unterdrückt(PbPb, R_AA), LHCb CP(pp)/
+    spezialisiert(PbPb, disco:false). Unterdrücktes Signal → Kombinatorik-Kontinuum (R_AA senkt
+    Peak korrekt). (3) **Gleichzeitige Datennahme** (`engine.js#startAutoCollide`): ALLE Detektoren
+    akkumulieren pro Tick parallel mit eigener `rate` (Higgs selten → kleine Rate; collStore/histAcc
+    pro Detektor); Tab-Wechsel zeigt den parallel gewachsenen Stand. (4) **Live-Detektor ehrlich**
+    (`display.js`): Untergrundspuren aus echter `topo.bg`-Kinematik; strahl-/kanalabhängige
+    Provenienz; Multiplizitäts-Skalenhinweis. (5) **Skalen überall deklariert**: 7-TeV-Daten/Run-3,
+    Massen energieunabh. / Raten modelliert, Kandidaten statt Roh-Kollisionen, R_AA, Higgs=Sim,
+    QGP=Modell (Histogramm-Kopf, Event-Footer, Preset-Status + info.js). Verifiziert headless (62
+    Tests: Matrix, Gleichzeitigkeit, QGP-Unterdrückung, Echtdaten-Provenienz) + Browser (Boot ohne
+    Fehler, QGP-Preset-Texte, Spektrum-/Event-Captions je Detektor×Strahl, LHCb-Pb-Pb „Spezialisiert").
+  - **Mobil-/Web-tauglich für Eltern-QR-Nachmittag (responsive + Vollbild-Ring), Tests 55 grün.**
+    Verteil-Artefakt = `cern/CERN-Stellwerk.html` (self-contained). (1) **SVG fluid** (`styles.css`:
+    `#svg{width:100%;max-width:700px}` + `.cv4-svg-wrap` Höhe nur ab Desktop 500px) → LHC-Ring am
+    Handy voll sichtbar statt mittig abgeschnitten. **Root-Bug gefunden:** doppelte `.cv4-grid`-Regel
+    NACH der `@media(max-width:860px)` überschrieb die Einspaltigkeit → Duplikat entfernt. (2)
+    **Mobile-Block** (`@media max-width:860px`): `.cv4-bottom` einspaltig, Header umbruchfähig,
+    Presets 2-spaltig (`.cv4-preset-grid`-Klasse statt Inline-Grid), Info-Panel als zentriertes
+    Modal. (3) **Vollbild-Ring** „⛶ Großansicht" (nur Handy): CSS-Overlay (`#cern-v4.diagram-full`,
+    kein Fullscreen-API wg. iOS), `#svg` füllt Querformat (`height:92vh`); Toggle/Escape in
+    `handlers.js`, Ref in `main.js#initDom`. (4) **Share-Meta** (`sync_widget.py#build_share`):
+    `viewport-fit=cover`, `theme-color`, apple-web-app-Metas, Emoji-Favicon. (5) **QR-Generator**
+    `scripts/make_qr.mjs` (npm-Paket `qrcode`, `npm run qr "<URL>"` → `cern/CERN-Stellwerk-QR.png/svg`)
+    — echter QR sobald die Host-URL feststeht. Verifiziert: headless 55 grün + **Browser-Sichtung**
+    (375px Handy: Ring voll skaliert/gestapelt; Hoch- & Querformat-Vollbild; 1280px Desktop unverändert
+    1100px/2-spaltig, Großansicht-Button korrekt versteckt; keine Konsolenfehler).
+  - **Die ZWEI offenen Baustellen behoben (Tempo + Spektrum), Tests 54 grün.**
+    (1) **Kohärentes Tempo-Modell — „Stau zwischen PS und SPS" weg.** Ursache: `getDurations`
+    gab PRO STUFE eine feste DAUER vor, entkoppelt von der echten Pfadlänge → kurze Transferlinien
+    (PS→SPS ≈ 15 px) „dauerten" so lang wie ganze Ring-Umläufe → der Punkt kroch dort. Jetzt EINE
+    monoton steigende px/ms-Geschwindigkeits-Leiter (`state.js#getStageVel`, ersetzt `getDurations`);
+    `engine.js#moveAlongPath`/`orbitRing` rechnen **dur = echte Pfad-/Bogenlänge / Geschwindigkeit**;
+    der SPS-Akkumulations-Umlauf nutzt **ω = v_tangential/r** aus derselben Leiter (kein Tempo-Sprung
+    beim Eintritt). Headless-Tests: Monotonie LINAC→…→TI, trToSps > ps (kein Stau), slow<fast, Ionen
+    langsamer.
+    (2) **Massenspektrum: Signifikanz √-förmig & nicht zu schnell + realistische Zahlen + Datenherkunft.**
+    DT_SCALE gemäßigt (1800/5400 → **900/2000**; ein Fill ~63 s/28 s bis Dump); collStore wächst
+    **kontinuierlich (float)** ∝ ∫L·dt → Signifikanz 5·√(collStore/target) klettert GLATT der √-Kurve
+    entlang (steil→flach), zusätzlich vom Burn-off gedämpft — kein 1–2-s-Sprung auf 5σ mehr.
+    Realistischere Targets (ATLAS 300, ALICE 450, LHCb 600, **CMS-Higgs 900** = schwerster Kanal,
+    knapp ein guter Fill). Zähler umbenannt **„Kollisionen" → „Kandidaten (DET)"** (ehrlich:
+    Kandidaten-Events im Kanal, nicht Roh-Kollisionen). **Datenherkunft deklariert:** je Detektor
+    `prov` (was echte CMS-Open-Data ist vs. illustrativ/Zufall) als Histogramm-Kopf + Event-Display-
+    Footer (`display.js#evProvenance`), und `real` („was würde man am Schnittpunkt Detektor×Strahl
+    real bekommen", z. B. „~1 H→4ℓ pro Tag") im Entdeckungs-Infoblock. Headless-Sim-Tests: erster
+    Tick < 1.5σ, Z⁰ 5σ in ~5–10 s (nicht sofort), Kurve konkav, CMS > ATLAS, Fill > 30 s. Matrix
+    Preset×Detektor bleibt konsistent (discoBeam-Gating). Verifikation headless (54 Tests, `check.sh`
+    grün); Browser-Sichtung auf Nutzer-Anfrage offen.
   - **3 Folge-Fixes (Füllen/Datennahme/Export).** (1) **Batch-Stau behoben:** ankommende PS-Batches
     **kreisen jetzt im SPS** (`engine.js#startSpsLoop`, `s.spsDots`) statt statisch am Eingang zu
     parken → kein Stau im PS→SPS-Transfer/SPS-Eingang; bei Fusion werden sie aus dem Umlauf entfernt.
@@ -181,9 +286,10 @@
   (`__cernBooted`, 62 SVG-Kinder, keine Konsolenfehler), Presets/Tabs/Geo-Toggle reagieren;
   iframe-srcdoc-Simulation bootet **im iframe** isoliert und der postMessage-Auto-Resizer skaliert
   die Höhe korrekt (Screenshots gesichtet). Damit sind Phase 1 & 2 auch visuell bestätigt.
-- **Nächster Schritt:** die **zwei OFFENEN BAUSTELLEN oben** zuerst — (1) Massenspektrum-Logik
-  kernsanieren, (2) Punkt-Geschwindigkeiten kohärent neu kalibrieren. Danach Phase 4 fortsetzen
-  (nächste Komponente: Dimuon-„Teilchen-Zoo"-Spektrum oder Z⁰-Fit). Je Komponente Tests + 1× visuell.
+- **Nächster Schritt:** die zwei Baustellen (Tempo + Spektrum) sind erledigt → **Browser-Sichtung
+  auf Nutzer-Anfrage** (Füll-Tempo flüssig? Signifikanz-√-Kurve im Datennahme-Lauf sichtbar?), dann
+  Phase 4 fortsetzen (nächste Komponente: Dimuon-„Teilchen-Zoo"-Spektrum oder Z⁰-Fit).
+  Je Komponente Tests + 1× visuell.
 
 **Fortschritt:**
 - [x] Phase 0 — Headless-Sonde (risikolos, kein Architekturwechsel) ✅

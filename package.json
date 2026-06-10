@@ -8,11 +8,13 @@
     "build": "node cern/app/esbuild.mjs",
     "pretest": "python3 scripts/sync_widget.py",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "qr": "node scripts/make_qr.mjs"
   },
   "devDependencies": {
     "esbuild": "^0.24.0",
     "jsdom": "^25.0.1",
+    "qrcode": "^1.5.4",
     "vitest": "^2.1.8"
   }
 }

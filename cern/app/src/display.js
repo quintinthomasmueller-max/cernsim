@@ -29,6 +29,16 @@ function layerColor(k){ return ({track:'rgba(88,166,255,0.32)',em:'rgba(46,164,7
   coil:'rgba(139,148,158,0.42)',muon:'rgba(248,81,73,0.34)',vtx:'rgba(255,255,255,0.45)',rich:'rgba(88,166,255,0.18)',
   magnet:'rgba(241,224,90,0.5)'})[k] || 'rgba(139,148,158,0.25)'; }
 function detGeo(){ const cx=s.evW/2, cy=s.evH/2, Rmax=Math.min(cx,cy)-6, D=DETKONFIG[s.selDet]||DETKONFIG.ATLAS; return {D,cx,cy,Rmax,sc:Rmax/86}; }
+// Ehrliche Datenherkunft des Event-Displays (strahl-/kanalabhängig): Dimuon-
+// Signal- UND Untergrundspuren stammen aus echter CMS-μμ-Kinematik; 4ℓ (CMS-pp)
+// und B-Vertex (LHCb) sind kalibrierte Simulation; Pb-Pb-Multiplizität ist
+// didaktisch reduziert (real mehrere Tausend Spuren).
+function evProvenance(){
+ const ion=s.isIon;
+ if(s.selDet==='CMS' && !ion) return "4ℓ-Kinematik & -Masse: ECHTE CMS-Open-Data (Record 5200)";
+ if(s.selDet==='LHCB')        return "Vertex & Spuren: illustrativ · B-Masse: SIMULATION";
+ return "Signal- & Untergrund-μμ: ECHTE CMS-Kinematik" + (ion ? " · Multipl. didakt. reduziert" : "");
+}
 function rKind(D,kind,last){ let r=null; D.lagen.forEach(l=>{ if(l.kind===kind && (last||r===null)) r=l.r; }); return r; }
 function radii(D,sc){ const trk=(rKind(D,'track',true)||30), em=(rKind(D,'em')||trk+10),
   had=(rKind(D,'had')||em+10), mu=(rKind(D,'muon')||had+20);
@@ -117,9 +127,11 @@ function drawDetBg(){
  const ctxEv=E.ctxEv, evW=s.evW, evH=s.evH;
  const {D,cx,cy,Rmax,sc}=detGeo();
  ctxEv.clearRect(0,0,evW,evH); ctxEv.textAlign='left';
- ctxEv.strokeStyle="#1a1f27"; ctxEv.lineWidth=1; ctxEv.strokeRect(0,0,evW,evH);
- ctxEv.fillStyle=D.farbe; ctxEv.font="9px monospace"; ctxEv.fillText(s.selDet+" | "+(s.isIon?"Pb-Pb":"p-p"), 6, 11);
- ctxEv.fillStyle="rgba(160,170,185,0.7)"; ctxEv.font="6px monospace"; ctxEv.fillText(D.rolle, 6, 20);
+ ctxEv.strokeStyle="#2d3845"; ctxEv.lineWidth=1; ctxEv.strokeRect(0,0,evW,evH);
+ ctxEv.fillStyle=D.farbe; ctxEv.font="bold 9px monospace"; ctxEv.fillText(s.selDet+" · "+(s.isIon?"Pb-Pb":"p-p"), 6, 12);
+ // Rolle + Datenherkunft als HTML unter dem Canvas (nicht mehr über die Spuren).
+ const cap=document.getElementById('ev-caption');
+ if(cap) cap.textContent = D.rolle + " · Daten: " + evProvenance();
  if(D.typ==='barrel'){
   D.lagen.forEach(l=>{ const R=l.r*sc;
    ctxEv.strokeStyle=layerColor(l.kind); ctxEv.lineWidth=(l.kind==='muon'||l.kind==='coil')?1.5:1;
@@ -169,7 +181,9 @@ function drawCollisionEvent(ev){
    ctxEv.fillStyle='rgba(241,224,90,0.9)'; ctxEv.font='6px sans-serif'; ctxEv.fillText('Sek.-Vertex (B)', svx+4, svy-5); }
  } else {
   let nbg=Math.round((s.isIon?64:11)*Math.min(2.2,Math.max(.3,s.paramIntensity)));
-  for(let i=0;i<nbg;i++) drawParticleBarrel(cx,cy,Math.random()*2*Math.PI,'bg',4+Math.random()*9,Math.random()<.5?1:-1,D,sc);
+  // Untergrundspuren aus ECHTER CMS-Off-Peak-μμ-Kinematik (topo.bg) statt Zufall.
+  for(let i=0;i<nbg;i++){ const t=App.sampleBgTrack();
+   drawParticleBarrel(cx,cy, t.phi!=null?t.phi:Math.random()*2*Math.PI,'bg', t.pt||(4+Math.random()*9), t.q||(Math.random()<.5?1:-1), D, sc); }
   if(!s.isIon){
    drawParticleBarrel(cx,cy,1.1+Math.random()*0.5,'gamma',20,0,D,sc);
    drawParticleBarrel(cx,cy,3.6+Math.random()*0.5,'had',26,1,D,sc);

@@ -41,6 +41,9 @@ function selectDetector(name){
  document.querySelectorAll(".cv4-dtab").forEach(t=>t.classList.remove("act"));
  const tab=$("dt-"+name.toLowerCase()); if(tab) tab.classList.add("act");
  s.selDet=name;
+ // Kandidaten-Zähler auf den NEU gewählten Detektor umstellen (sonst zeigte er
+ // den Stand des vorigen Detektors bis zur nächsten Kollision/zum Reset).
+ if(E.spInfo) E.spInfo.innerText = `Kandidaten (${name}): ${Math.round(s.collStore[name]||0).toLocaleString("de-DE")}`;
  App.drawDetBg(); App.drawHist();
 }
 
@@ -100,8 +103,9 @@ function zoomMeyrin(){
 
 async function fuellProtokoll(){
  const totB = totalBatches();
- if(s.filling || s.ramped || s.cryoRecovery || (s.b1Batches>=totB && s.b2Batches>=totB)) return;
+ if(s.filling || s.ramped || s.cryoRecovery || s.dumping || (s.b1Batches>=totB && s.b2Batches>=totB)) return;
  s.filling = true; s.resetFlag = false;
+ const gen = s.fillGen;   // Füll-Generation DIESES Laufs (ältere In-Flight-Batches zählen nicht mehr)
  E.btnAuto.classList.add("off");
  E.sliEnergy.disabled = true; E.sliIntensity.disabled = true; E.sliRampSpeed.disabled = true;
  E.selP.style.pointerEvents = "none"; E.selI.style.pointerEvents = "none";
@@ -115,7 +119,7 @@ async function fuellProtokoll(){
  for(let t=0; t<sizes.length; t++){
   for(const beam of [1,2]){
    if(s.resetFlag) break;
-   proms.push(App.injectTrain(beam, sizes[t]));
+   proms.push(App.injectTrain(beam, sizes[t], gen));
    App.setStatus(`FÜLLPROTOKOLL: SPS-Züge entstehen …  B1 ${fmtBunch(1)}/${totalStr()}  ·  B2 ${fmtBunch(2)}/${totalStr()} Bunches`,"on");
    await sleep(App.trainCadenceMs()/2);
   }
@@ -130,7 +134,7 @@ async function fuellProtokoll(){
   E.btnRamp.classList.remove("off");
   App.setStatus(`LHC GEFÜLLT — ${totalStr()} Bunches/Strahl (${sizes.length} Züge), beide Strahlen stabil. Ramping möglich!`,"on");
  } else {
-  App.setStatus(`Füllung beendet: B1 ${fmtBunch(s.b1Count)}/${totalStr()}, B2 ${fmtBunch(s.b2Count)}/${totalStr()} Bunches.`,"on");
+  App.setStatus(`Füllung beendet: B1 ${fmtBunch(1)}/${totalStr()}, B2 ${fmtBunch(2)}/${totalStr()} Bunches.`,"on");
  }
 }
 
@@ -177,6 +181,17 @@ export function wireHandlers(){
  E.btnZoomOut.addEventListener("click", resetView);
  E.btnZoomMeyrin.addEventListener("click", zoomMeyrin);
 
+ // VOLLBILD-RING (Großansicht am Handy): CSS-Overlay statt Fullscreen-API
+ // (iOS-Safari erlaubt requestFullscreen auf Elementen nicht zuverlässig).
+ // Der Ring/Bunches skalieren automatisch (alles in SVG-viewBox-Koordinaten).
+ if(E.btnDiagramFull){
+  const root = E.root || document.getElementById("cern-v4");
+  const setFull = (on)=>{ root.classList.toggle("diagram-full", on);
+    E.btnDiagramFull.innerHTML = on ? "✕ Schließen" : "⛶ Großansicht"; };
+  E.btnDiagramFull.addEventListener("click", ()=> setFull(!root.classList.contains("diagram-full")));
+  document.addEventListener("keydown", e=>{ if(e.key==="Escape" && root.classList.contains("diagram-full")) setFull(false); });
+ }
+
  E.grpAtlas.addEventListener("click", () => { App.showInfo("ATLAS"); zoomToDetector("ATLAS"); });
  E.grpCms.addEventListener("click",   () => { App.showInfo("CMS");   zoomToDetector("CMS");   });
  E.grpAlice.addEventListener("click", () => { App.showInfo("ALICE"); zoomToDetector("ALICE"); });
@@ -217,9 +232,8 @@ export function wireHandlers(){
   E.sliIntensity.value = 1.40; s.paramIntensity = 1.40; E.lblIntensity.innerText = "1.40e11 p";
   E.sliBeta.value = 0.3; s.paramBetaStar = 0.3; E.lblBeta.innerText = "0.30 m";
   E.sliRampSpeed.value = 0.05; s.paramRampSpeed = 0.05; E.lblRampSpeed.innerText = "0.05 T/s (Sicher)"; E.lblRampSpeed.style.color = "#58a6ff";
-  s.activePhysicsMode="PP";
   App.updateReadouts(); selectDetector("CMS");   // CMS = Higgs-Goldkanal H→ZZ*→4ℓ
-  App.setStatus("PRESET GELADEN: Protonen-Physik (Run 3 · 13.6 TeV) — Higgs (CMS), Z⁰ (ATLAS) & CP-Verletzung (LHCb) laufen alle auf diesem Strahl. Detektor-Tab wechseln!", "on");
+  App.setStatus("PRESET: Protonen-Physik (Run 3 · 13.6 TeV) — Higgs (CMS), Z⁰ (ATLAS) & CP (LHCb) laufen GLEICHZEITIG auf diesem Strahl (Tab wechseln zeigt jeden Stand). Spektren: echte CMS-Open-Data — μμ (Record 545) UND die 278 echten 4ℓ-Higgs-Kandidaten (Record 5200).", "on");
  });
 
  E.btnPreQgp.addEventListener("click",()=>{
@@ -229,9 +243,8 @@ export function wireHandlers(){
   E.sliIntensity.value = 0.90; s.paramIntensity = 0.90; E.lblIntensity.innerText = "0.90e11 p";
   E.sliBeta.value = 0.5; s.paramBetaStar = 0.5; E.lblBeta.innerText = "0.50 m";
   E.sliRampSpeed.value = 0.05; s.paramRampSpeed = 0.05; E.lblRampSpeed.innerText = "0.05 T/s (Sicher)"; E.lblRampSpeed.style.color = "#58a6ff";
-  s.activePhysicsMode="QGP";
   App.updateReadouts(); selectDetector("ALICE");
-  App.setStatus("PRESET GELADEN: Schwerionen-Lauf (Pb-Pb · 2.68 TeV/u, √s_NN = 5.36 TeV) → Quark-Gluon-Plasma in ALICE. ATLAS misst Z⁰ als Standardkerze.", "on");
+  App.setStatus("PRESET: Schwerionen (Pb-Pb · 2.7 TeV/u, √s_NN=5.36 TeV) → ALICE: J/ψ-QGP-Unterdrückung · CMS: Υ-Sequenzunterdrückung · ATLAS: Z⁰-Standardkerze · LHCb spezialisiert. Massen echt (CMS-p-p), QGP-Unterdrückung modelliert.", "on");
  });
 
  E.btnPrePilot.addEventListener("click",()=>{
@@ -241,7 +254,6 @@ export function wireHandlers(){
   E.sliIntensity.value = 0.10; s.paramIntensity = 0.10; E.lblIntensity.innerText = "0.10e11 p";
   E.sliBeta.value = 1.5; s.paramBetaStar = 1.5; E.lblBeta.innerText = "1.50 m";
   E.sliRampSpeed.value = 0.02; s.paramRampSpeed = 0.02; E.lblRampSpeed.innerText = "0.02 T/s (Sicher)"; E.lblRampSpeed.style.color = "#58a6ff";
-  s.activePhysicsMode="PILOT";
   App.updateReadouts(); selectDetector("ATLAS");
   App.setStatus("PRESET GELADEN: Pilot-Strahl (Inbetriebnahme · 0.45 TeV — zu wenig Energie für Entdeckungen)", "on");
  });
@@ -252,7 +264,7 @@ export function wireHandlers(){
  // SLIDERS
  E.sliEnergy.addEventListener("input",()=>{
   s.paramEnergy = parseFloat(E.sliEnergy.value);
-  E.lblEnergy.innerText = s.paramEnergy.toFixed(1) + " TeV";
+  E.lblEnergy.innerText = App.fmtEnergy(s.paramEnergy);   // Einheit modusabhängig (Ionen: TeV/u)
   App.updateReadouts();
   App.drawHist();   // Energie formt das Spektrum (Erzeugbarkeit/Signifikanz) → sofortiges Feedback
  });

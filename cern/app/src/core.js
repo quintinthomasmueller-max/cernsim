@@ -18,10 +18,10 @@
 
 // Füll-Modell: 1 umlaufender Punkt = 1 SPS-Zug (eine Injektion in den LHC).
 // MODUSABHÄNGIGE reale Zahlen (Protonen 25-ns-Standard vs. Pb⁸²⁺-Ionen):
-//   • Protonen: 2808 Bunches/Strahl in ~12 SPS-Schüssen (je ⌀234, max 288 = 4×72).
-//   • Pb-Ionen: nur 592 Bunches/Strahl (größerer Abstand) in ~8 Schüssen.
+//   • Protonen: 2808 Bunches/Strahl in 10 Zügen (max 288 = 4×72; real ~12 Injektionen).
+//   • Pb-Ionen: nur 592 Bunches/Strahl (größerer Abstand) in 8 Zügen.
 // Batch-Hierarchie (real, als Label): PSB bündelt+spaltet zu 72-Bunch-PS-Batches,
-// das SPS fügt bis 4 Batches zu einem Zug (288 B), ~12 Züge füllen den LHC.
+// das SPS fügt bis 4 Batches zu einem Zug (288 B), ~10 Züge füllen den LHC.
 // psBatch = Bunches je PS-Batch (= 1 wandernder Punkt), batchesPerTrain = wie viele
 // Batches das SPS zu EINEM Zug fusioniert. Daraus abgeleitet: Batches/Strahl =
 // total/psBatch, Züge = ⌈Batches/batchesPerTrain⌉.
@@ -42,13 +42,21 @@ export const SIM_SCALE = { slow: 15, fast: 40 };
 // Kollisionen zerfällt die Strahl-INTENSITÄT N (Burn-off, ~15 h Lebensdauer);
 // die Luminosität L ∝ N² und damit die Kollisionsrate sinken. Bei N < 35 % →
 // Strahl-Dump (Refill nötig). DT_SCALE = reale Sekunden je Darstellungssekunde.
-export const DT_SCALE = { slow: 1800, fast: 5400 };   // 1 s ≈ 30 min / 90 min real
+// BEWUSST GEMÄSSIGT (war 1800/5400): ein Fill dauert jetzt ~63 s (langsam) /
+// ~28 s (schnell) bis zum Dump → die Signifikanz klettert SICHTBAR der √-Kurve
+// entlang, statt in 1–2 s auf 5σ zu springen.
+export const DT_SCALE = { slow: 900, fast: 2000 };    // 1 s ≈ 15 min / 33 min real
 export const BEAM_LIFETIME_H = 15;                     // Intensitäts-Lebensdauer τ
 export const DUMP_FRAC = 0.35;                         // Dump-Schwelle (N/N₀)
-// Statistik-Akkumulation der Datennahme ∝ integrierte Luminosität (∫L·dt im
-// Datennahme-Maßstab). So gekoppelt, dass EIN Fill ~⌀950 Kollisionen liefert →
-// 5σ-Entdeckung (größtes target=600) wird vor dem Dump erreicht; bleibt über
-// Dumps erhalten (mehrere Fills summieren sich, real). Tempo-gekoppelt via dtScale.
+// Kandidaten-Akkumulation der Datennahme ∝ integrierte Luminosität (∫L·dt). Die
+// Signifikanz ist 5·√(Kandidaten/target) → wächst damit ∝ √(∫L·dt): STEIL am
+// Anfang, dann zunehmend FLACHER (echtes √-Gesetz), zusätzlich durch den Burn-off
+// (L ∝ N² fällt) gedämpft. So kalibriert, dass EIN guter Fill den schwersten
+// Kanal (CMS-Higgs: target 90 bei rate 0.12) knapp vor dem Dump auf 5σ bringt;
+// leichtere Kanäle (Z⁰) früher. Slider skalieren die Rate zusätzlich ∝ N²/β*
+// (engine.js#startAutoCollide, normiert auf den Preset-Arbeitspunkt).
+// collStore wird KONTINUIERLICH (float) erhöht → glatte Kurve, keine
+// Integer-Sprünge. Bleibt über Dumps erhalten (mehrere Fills summieren sich, real).
 export const STAT_RATE = 0.04;
 
 export const App = {

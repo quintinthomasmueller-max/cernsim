@@ -5,12 +5,13 @@
 import { App } from './core.js';
 
 Object.assign(App.state, {
-  isIon: false, injecting: false, ramped: false, filling: false,
+  isIon: false, ramped: false, filling: false,
   b1Count: 0, b2Count: 0,         // umlaufende Züge je Strahl
   b1Batches: 0, b2Batches: 0,     // angekommene PS-Batches je Strahl (→ Bunches-Anzeige)
   collisions: 0,
   dtElapsed: 0, intensity0: 0, intensityNow: 0,   // Datennahme: vergangene reale Zeit + Strahl-Intensität (Burn-off)
-  statAcc: 0,                                     // Bruchteil-Akkumulator für Statistik (∝ ∫L·dt)
+  dumping: false,                 // Strahl-Dump läuft (gated Kollisionen/Neustart bis zum Reset)
+  fillGen: 0,                     // Füll-Generation (Zombie-Batch-Schutz bei Reset+Neustart)
   spsDots: { b1: [], b2: [] }, spsAngle: 0, spsRunning: false, spsLastT: null,  // im SPS akkumulierende Batches
   lhcDots: { b1: [], b2: [] },
   lhcSpeed: 0.0078,          // rad/ms bei Injektionsenergie (Proton)
@@ -18,10 +19,11 @@ Object.assign(App.state, {
   lhcEnergy: 450,            // GeV
   // Per-Detektor-Datenspeicher: jeder Detektor akkumuliert NUR sein eigenes Spektrum.
   massStore: { ATLAS: [], CMS: [], ALICE: [], LHCB: [] },
-  collStore: { ATLAS: 0, CMS: 0, ALICE: 0, LHCB: 0 },
+  collStore: { ATLAS: 0, CMS: 0, ALICE: 0, LHCB: 0 },   // Kandidaten je Detektor (Signifikanz ∝ √)
+  histAcc:   { ATLAS: 0, CMS: 0, ALICE: 0, LHCB: 0 },   // Bruchteil-Akku fürs Histogramm je Detektor
+  histSeen:  { ATLAS: 0, CMS: 0, ALICE: 0, LHCB: 0 },   // gesehene Einträge (Reservoir-Sampling am HIST_CAP)
   lastEvent: null, goldenEvent: null, higgsCands: 0,
   selDet: 'ATLAS',
-  activePhysicsMode: 'HIGGS', // HIGGS|QGP|LHCB|PILOT (entkoppelt vom Detektor-Tab)
   isFastMode: true,
   // CCC-Operator-Parameter
   paramEnergy: 6.8,          // Ziel-Energie (TeV)
@@ -31,30 +33,25 @@ Object.assign(App.state, {
   squeezing: false, squeezed: false, cryoRecovery: false,
   autoCollInterval: null,
   // Ablaufsteuerung (vormals implizite Globals im IIFE-Closure)
-  resetFlag: false, autopilotActive: false,
+  resetFlag: false,
   // Canvas-Maße / High-DPI (dpr bei Boot aus window.devicePixelRatio gesetzt)
   dpr: 1, evW: 340, evH: 180, histW: 340, histH: 130,
 });
 
-// Didaktisches Geschwindigkeitsmodell: visuelle Bahngeschwindigkeit steigt monoton
-// durch die Kette (LINAC→PSB→PS→SPS→TI), LHC-Ring ist immer am schnellsten.
-// Dauer = Pfadlänge / Geschwindigkeit. Nutzt App.timeScale() (engine.js).
-export function getDurations() {
+// ── Kohärentes Tempo-Modell: EINE Geschwindigkeits-Leiter (Bildschirm-px je ms) ──
+// Die visuelle Bahngeschwindigkeit steigt MONOTON durch die Kette
+// (LINAC→PSB/LEIR→Transfer→PS→Transfer→SPS→TI), der LHC-Ring (via lhcSpeed) ist
+// immer am schnellsten. Frühere Version gab PRO STUFE eine feste DAUER vor —
+// entkoppelt von der echten Pfadlänge. Kurze Transferlinien (PS→SPS ≈ 15 px)
+// „dauerten" dadurch genauso lang wie ganze Ring-Umläufe → der Punkt KROCH dort
+// (vom Nutzer als „Stau zwischen PS und SPS" wahrgenommen). Jetzt gilt überall
+// dur = Pfadlänge / Geschwindigkeit (engine.js#moveAlongPath/orbitRing); die
+// Geschwindigkeit steigt monoton → kein Tempo-Sprung/Stau an Übergängen. Dieselbe
+// Leiter speist auch den SPS-Akkumulations-Umlauf (engine.js#startSpsLoop).
+const STAGE_VPX = { linac: 0.30, ring1: 0.34, trToPs: 0.40, ps: 0.46, trToSps: 0.54, sps: 0.66, ti: 0.82 };
+export function getStageVel(key) {
   const s = App.state;
-  const V = { linac: 0.52, psb: 0.75, trPs: 0.75, ps: 0.93, trSps: 0.93, sps: 1.12, ti: 1.32 };
-  const LEN = { linac: 94, psb: 112 * 3, trPs: 56, ps: 238 * 3, trSps: 138, sps: 408 * 2, ti: 182 };
-  const slow = App.timeScale();
-  const ion = s.isIon ? 1.6 : 1.0;
-  const d = (len, v) => Math.round(len / v * slow * ion);
-  return {
-    linac: d(LEN.linac, V.linac),
-    ring1: d(LEN.psb, V.psb),
-    trToPs: d(LEN.trPs, V.trPs),
-    ps: d(LEN.ps, V.ps),
-    trToSps: d(LEN.trSps, V.trSps),
-    sps: d(LEN.sps, V.sps),
-    ti: d(LEN.ti, V.ti),
-    autoDelay: s.isFastMode ? 150 : 600,
-  };
+  const ion = s.isIon ? 0.72 : 1.0;                          // Ionen schwerer → etwas langsamer
+  return (STAGE_VPX[key] || 0.5) * ion / App.timeScale();    // slow-Modus (ts=2.6) → langsamer
 }
-App.getDurations = getDurations;
+App.getStageVel = getStageVel;

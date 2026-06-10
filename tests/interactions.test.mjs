@@ -24,6 +24,17 @@ describe('Interaktionen (esbuild-Bundle, jsdom)', () => {
     }
   });
 
+  it('Großansicht-Button togglet den Vollbild-Ring (diagram-full) am Handy', () => {
+    const btn = $('btn-diagram-full'), root = $('cern-v4');
+    expect(root.classList.contains('diagram-full')).toBe(false);
+    btn.click();
+    expect(root.classList.contains('diagram-full')).toBe(true);
+    expect(btn.textContent).toMatch(/Schließen/);
+    btn.click();
+    expect(root.classList.contains('diagram-full')).toBe(false);
+    expect(btn.textContent).toMatch(/Großansicht/);
+  });
+
   it('SVG-Detektor-Klick (ATLAS) öffnet Info-Panel + wählt Detektor', () => {
     clickEl($('grp-atlas'));
     expect($('info-panel').classList.contains('visible')).toBe(true);
@@ -60,9 +71,9 @@ describe('Interaktionen (esbuild-Bundle, jsdom)', () => {
     expect(b.textContent).toMatch(/Zeitraffer/);
   });
 
-  it('Energie-Slider aktualisiert das Label', () => {
+  it('Energie-Slider aktualisiert das Label (Einheit modusabhängig)', () => {
     fireInput($('sli-energy'), 3.5);
-    expect($('lbl-energy').textContent).toMatch(/3[.,]5\s*TeV/);
+    expect($('lbl-energy').textContent).toMatch(/3[.,]50?\s*TeV/);   // "3.50 TeV" (Protonen)
   });
 
   it('Ramp-Speed-Slider warnt ab Quench-Risiko (> 0.10 T/s)', () => {
