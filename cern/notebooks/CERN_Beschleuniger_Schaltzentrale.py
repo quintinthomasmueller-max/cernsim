@@ -139,12 +139,18 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
 .cv4-sel-tab:hover{border-color:var(--tx-dim)}
 .cv4-sel-tab.act-p{background:rgba(88,166,255,.16);border-color:var(--blue);color:var(--blue)}
 .cv4-sel-tab.act-i{background:rgba(227,119,194,.16);border-color:var(--pink);color:var(--pink)}
-.cv4-grid{display:grid;grid-template-columns:1fr 320px;gap:18px}
-.cv4-svg-wrap{background:var(--screen);border-radius:14px;border:1px solid var(--bd-soft);height:auto;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
-/* SVG fluid: skaliert über viewBox responsiv (LHC-Ring am Handy voll sichtbar,
-   statt mittig abgeschnitten). Auf Desktop bleibt der Wrap 500px hoch (s.u.). */
-#svg{width:100%;height:auto;max-width:700px;display:block;margin:0 auto}
-@media(min-width:861px){.cv4-svg-wrap{height:500px}}
+/* Linke Spalte (.cv4-colL) = Beschleuniger-Ansicht + direkt darunter die Live-
+   MESSWERTE; rechts das Bedien-Panel. align-items:start = jede Spalte behält ihre
+   Inhaltshöhe. Vorher klaffte unter dem Diagramm eine große Lücke neben dem hohen
+   Panel — die Messwerte füllen sie jetzt. */
+.cv4-grid{display:grid;grid-template-columns:1fr 320px;gap:18px;align-items:start}
+.cv4-colL{display:flex;flex-direction:column;gap:14px;min-width:0}
+.cv4-svg-wrap{background:var(--screen);border-radius:14px;border:1px solid var(--bd-soft);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.cv4-readouts{background:var(--panel);border:1px solid var(--bd);border-radius:16px;padding:12px 16px}
+.cv4-rg{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+/* SVG fluid: skaliert über die viewBox (Ring am Handy voll sichtbar). Auf dem
+   Desktop füllt es die linke Spalte → größeres Diagramm, weniger Leerraum. */
+#svg{width:100%;height:auto;display:block;margin:0 auto}
 .cv4-panel{background:var(--panel);border-radius:16px;border:1px solid var(--bd);padding:16px;display:flex;flex-direction:column;gap:16px}
 .cv4-ptitle{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--tx-dim);border-bottom:1px solid var(--bd-soft);padding-bottom:6px;margin-bottom:8px;font-weight:700}
 .cv4-btn{background:var(--card);color:var(--tx);border:1px solid var(--bd);padding:9px 14px;border-radius:9px;cursor:pointer;font-size:12px;font-weight:600;transition:all .2s;text-align:center}
@@ -270,7 +276,9 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
 .cv4-preset-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:8px}
 @media(max-width:860px){
  #cern-v4{padding:13px}
+ /* Einspaltig: Diagramm + Messwerte (colL), dann Steuerung. */
  .cv4-grid{grid-template-columns:1fr}
+ .cv4-rg{grid-template-columns:1fr 1fr}      /* Messwerte 2×2 statt 4er-Reihe */
  .cv4-hdr{flex-wrap:wrap;gap:8px}
  .cv4-bottom{grid-template-columns:1fr}           /* Event-Display + Spektrum untereinander */
  .cv4-preset-grid{grid-template-columns:1fr 1fr}
@@ -309,6 +317,8 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
 </div>
 
 <div class=&quot;cv4-grid&quot;>
+ <!-- Linke Spalte: Beschleuniger-Ansicht + direkt darunter die Live-Messwerte. -->
+ <div class=&quot;cv4-colL&quot;>
  <div class=&quot;cv4-svg-wrap&quot;>
   <!-- Interactive Absolute Overlay Reset Zoom Button -->
   <button class=&quot;cv4-btn off&quot; id=&quot;btn-zoom-out&quot; style=&quot;position:absolute;top:12px;left:12px;padding:5px 10px;font-size:10px;background:rgba(28,37,49,0.92);border-color:#3c4a5c;z-index:10;transition:all 0.2s&quot;>🔍 Ansicht zurücksetzen</button>
@@ -448,6 +458,19 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
   </svg>
  </div>
 
+ <!-- MESSWERTE (LIVE): direkt unter dem Diagramm (linke Spalte) — füllt die Lücke
+      neben dem hohen Bedien-Panel. IDs unverändert (engine#updateReadouts). -->
+ <div class=&quot;cv4-readouts&quot;>
+  <div class=&quot;cv4-ptitle&quot;>📊 MESSWERTE (LIVE)</div>
+  <div class=&quot;cv4-rg&quot;>
+   <div class=&quot;cv4-ro&quot;><span class=&quot;cv4-ro-l&quot;>Energie/Beam</span><span class=&quot;cv4-ro-v&quot; id=&quot;v-e&quot;>0.00 TeV</span></div>
+   <div class=&quot;cv4-ro&quot;><span class=&quot;cv4-ro-l&quot;>Magnetfeld B</span><span class=&quot;cv4-ro-v&quot; id=&quot;v-b&quot;>0.000 T</span></div>
+   <div class=&quot;cv4-ro&quot;><span class=&quot;cv4-ro-l&quot;>Lorentz γ</span><span class=&quot;cv4-ro-v&quot; id=&quot;v-g&quot;>1</span></div>
+   <div class=&quot;cv4-ro&quot;><span class=&quot;cv4-ro-l&quot;>Teilchen</span><span class=&quot;cv4-ro-v&quot; id=&quot;v-t&quot; style=&quot;color:#58a6ff&quot;>Proton</span></div>
+  </div>
+ </div>
+ </div><!-- /.cv4-colL -->
+
  <div class=&quot;cv4-panel&quot;>
   <div>
    <div class=&quot;cv4-ptitle&quot;>🔬 EXPERIMENT WÄHLEN — SCHNELLSTART</div>
@@ -516,15 +539,6 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
    </div>
   </div>
 
-  <div>
-   <div class=&quot;cv4-ptitle&quot;>📊 MESSWERTE (LIVE)</div>
-   <div class=&quot;cv4-rg&quot;>
-    <div class=&quot;cv4-ro&quot;><span class=&quot;cv4-ro-l&quot;>Energie/Beam</span><span class=&quot;cv4-ro-v&quot; id=&quot;v-e&quot;>0.00 TeV</span></div>
-    <div class=&quot;cv4-ro&quot;><span class=&quot;cv4-ro-l&quot;>Magnetfeld B</span><span class=&quot;cv4-ro-v&quot; id=&quot;v-b&quot;>0.000 T</span></div>
-    <div class=&quot;cv4-ro&quot;><span class=&quot;cv4-ro-l&quot;>Lorentz γ</span><span class=&quot;cv4-ro-v&quot; id=&quot;v-g&quot;>1</span></div>
-    <div class=&quot;cv4-ro&quot;><span class=&quot;cv4-ro-l&quot;>Teilchen</span><span class=&quot;cv4-ro-v&quot; id=&quot;v-t&quot; style=&quot;color:#58a6ff&quot;>Proton</span></div>
-   </div>
-  </div>
  </div>
 </div>
 

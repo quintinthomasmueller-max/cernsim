@@ -38,12 +38,18 @@
 .cv4-sel-tab:hover{border-color:var(--tx-dim)}
 .cv4-sel-tab.act-p{background:rgba(88,166,255,.16);border-color:var(--blue);color:var(--blue)}
 .cv4-sel-tab.act-i{background:rgba(227,119,194,.16);border-color:var(--pink);color:var(--pink)}
-.cv4-grid{display:grid;grid-template-columns:1fr 320px;gap:18px}
-.cv4-svg-wrap{background:var(--screen);border-radius:14px;border:1px solid var(--bd-soft);height:auto;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
-/* SVG fluid: skaliert über viewBox responsiv (LHC-Ring am Handy voll sichtbar,
-   statt mittig abgeschnitten). Auf Desktop bleibt der Wrap 500px hoch (s.u.). */
-#svg{width:100%;height:auto;max-width:700px;display:block;margin:0 auto}
-@media(min-width:861px){.cv4-svg-wrap{height:500px}}
+/* Linke Spalte (.cv4-colL) = Beschleuniger-Ansicht + direkt darunter die Live-
+   MESSWERTE; rechts das Bedien-Panel. align-items:start = jede Spalte behält ihre
+   Inhaltshöhe. Vorher klaffte unter dem Diagramm eine große Lücke neben dem hohen
+   Panel — die Messwerte füllen sie jetzt. */
+.cv4-grid{display:grid;grid-template-columns:1fr 320px;gap:18px;align-items:start}
+.cv4-colL{display:flex;flex-direction:column;gap:14px;min-width:0}
+.cv4-svg-wrap{background:var(--screen);border-radius:14px;border:1px solid var(--bd-soft);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.cv4-readouts{background:var(--panel);border:1px solid var(--bd);border-radius:16px;padding:12px 16px}
+.cv4-rg{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+/* SVG fluid: skaliert über die viewBox (Ring am Handy voll sichtbar). Auf dem
+   Desktop füllt es die linke Spalte → größeres Diagramm, weniger Leerraum. */
+#svg{width:100%;height:auto;display:block;margin:0 auto}
 .cv4-panel{background:var(--panel);border-radius:16px;border:1px solid var(--bd);padding:16px;display:flex;flex-direction:column;gap:16px}
 .cv4-ptitle{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--tx-dim);border-bottom:1px solid var(--bd-soft);padding-bottom:6px;margin-bottom:8px;font-weight:700}
 .cv4-btn{background:var(--card);color:var(--tx);border:1px solid var(--bd);padding:9px 14px;border-radius:9px;cursor:pointer;font-size:12px;font-weight:600;transition:all .2s;text-align:center}
@@ -169,7 +175,9 @@
 .cv4-preset-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:8px}
 @media(max-width:860px){
  #cern-v4{padding:13px}
+ /* Einspaltig: Diagramm + Messwerte (colL), dann Steuerung. */
  .cv4-grid{grid-template-columns:1fr}
+ .cv4-rg{grid-template-columns:1fr 1fr}      /* Messwerte 2×2 statt 4er-Reihe */
  .cv4-hdr{flex-wrap:wrap;gap:8px}
  .cv4-bottom{grid-template-columns:1fr}           /* Event-Display + Spektrum untereinander */
  .cv4-preset-grid{grid-template-columns:1fr 1fr}

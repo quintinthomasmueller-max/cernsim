@@ -23,6 +23,8 @@
 </div>
 
 <div class="cv4-grid">
+ <!-- Linke Spalte: Beschleuniger-Ansicht + direkt darunter die Live-Messwerte. -->
+ <div class="cv4-colL">
  <div class="cv4-svg-wrap">
   <!-- Interactive Absolute Overlay Reset Zoom Button -->
   <button class="cv4-btn off" id="btn-zoom-out" style="position:absolute;top:12px;left:12px;padding:5px 10px;font-size:10px;background:rgba(28,37,49,0.92);border-color:#3c4a5c;z-index:10;transition:all 0.2s">🔍 Ansicht zurücksetzen</button>
@@ -162,6 +164,19 @@
   </svg>
  </div>
 
+ <!-- MESSWERTE (LIVE): direkt unter dem Diagramm (linke Spalte) — füllt die Lücke
+      neben dem hohen Bedien-Panel. IDs unverändert (engine#updateReadouts). -->
+ <div class="cv4-readouts">
+  <div class="cv4-ptitle">📊 MESSWERTE (LIVE)</div>
+  <div class="cv4-rg">
+   <div class="cv4-ro"><span class="cv4-ro-l">Energie/Beam</span><span class="cv4-ro-v" id="v-e">0.00 TeV</span></div>
+   <div class="cv4-ro"><span class="cv4-ro-l">Magnetfeld B</span><span class="cv4-ro-v" id="v-b">0.000 T</span></div>
+   <div class="cv4-ro"><span class="cv4-ro-l">Lorentz γ</span><span class="cv4-ro-v" id="v-g">1</span></div>
+   <div class="cv4-ro"><span class="cv4-ro-l">Teilchen</span><span class="cv4-ro-v" id="v-t" style="color:#58a6ff">Proton</span></div>
+  </div>
+ </div>
+ </div><!-- /.cv4-colL -->
+
  <div class="cv4-panel">
   <div>
    <div class="cv4-ptitle">🔬 EXPERIMENT WÄHLEN — SCHNELLSTART</div>
@@ -230,15 +245,6 @@
    </div>
   </div>
 
-  <div>
-   <div class="cv4-ptitle">📊 MESSWERTE (LIVE)</div>
-   <div class="cv4-rg">
-    <div class="cv4-ro"><span class="cv4-ro-l">Energie/Beam</span><span class="cv4-ro-v" id="v-e">0.00 TeV</span></div>
-    <div class="cv4-ro"><span class="cv4-ro-l">Magnetfeld B</span><span class="cv4-ro-v" id="v-b">0.000 T</span></div>
-    <div class="cv4-ro"><span class="cv4-ro-l">Lorentz γ</span><span class="cv4-ro-v" id="v-g">1</span></div>
-    <div class="cv4-ro"><span class="cv4-ro-l">Teilchen</span><span class="cv4-ro-v" id="v-t" style="color:#58a6ff">Proton</span></div>
-   </div>
-  </div>
  </div>
 </div>
 
