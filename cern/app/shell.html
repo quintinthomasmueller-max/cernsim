@@ -29,18 +29,6 @@
   <button class="cv4-btn" id="btn-diagram-full" style="position:absolute;top:12px;right:12px;padding:5px 10px;font-size:11px;background:rgba(28,37,49,0.92);border-color:#58a6ff;color:#58a6ff;z-index:9999;transition:all 0.2s">⛶ Großansicht</button>
   <div class="cv4-fs-hint">↻ Querformat zeigt mehr Detail · ⛶ schließt</div>
 
-  <!-- INFO PANEL -->
-  <div id="info-panel" class="cv4-info-panel">
-   <button class="cv4-info-close" id="info-close">✕</button>
-   <div id="info-hdr"></div>
-   <div class="cv4-info-body">
-    <div class="cv4-info-title" id="info-title"></div>
-    <div class="cv4-info-sub" id="info-sub"></div>
-    <div class="cv4-info-stats-grid" id="info-stats"></div>
-    <div class="cv4-info-text" id="info-text"></div>
-   </div>
-  </div>
-
   <svg id="svg" width="700" height="480" viewBox="0 0 700 480" style="background:#0e141d"><!-- = --screen -->
    <!-- Architectural Grid for tech style -->
    <defs>
@@ -126,19 +114,19 @@
 
    <!-- LHC Detector Groups (DIDAKTIK): an den Kardinalpunkten = Überkreuzungen der
         Strahlrohre (lhc-pipe1/2). Der Geo-Modus zeichnet die ECHTEN IP-Lagen separat. -->
-   <g id="grp-atlas" style="cursor:pointer">
+   <g id="grp-atlas" pointer-events="none">
     <circle id="d-atlas" cx="350" cy="420" r="14" class="svg-node"/>
     <text x="350" y="448" class="svg-lbl" style="fill:#e6edf3;font-weight:bold">ATLAS (IP1)</text>
    </g>
-   <g id="grp-cms" style="cursor:pointer">
+   <g id="grp-cms" pointer-events="none">
     <circle id="d-cms" cx="350" cy="60" r="14" class="svg-node"/>
     <text x="350" y="42" class="svg-lbl" style="fill:#e6edf3;font-weight:bold">CMS (IP5)</text>
    </g>
-   <g id="grp-alice" style="cursor:pointer">
+   <g id="grp-alice" pointer-events="none">
     <circle id="d-alice" cx="170" cy="240" r="12" class="svg-node"/>
     <text x="134" y="240" class="svg-lbl" style="fill:#e6edf3;font-weight:bold">ALICE (IP2)</text>
    </g>
-   <g id="grp-lhcb" style="cursor:pointer">
+   <g id="grp-lhcb" pointer-events="none">
     <circle id="d-lhcb" cx="530" cy="240" r="12" class="svg-node"/>
     <text x="567" y="240" class="svg-lbl" style="fill:#e6edf3;font-weight:bold">LHCb (IP8)</text>
    </g>
@@ -151,10 +139,15 @@
    <circle id="hit-lhc" cx="350" cy="240" r="180" fill="none" stroke="rgba(88,166,255,0.01)" stroke-width="22" pointer-events="stroke" class="info-hit-ring"/>
    <circle id="hit-sps" cx="345" cy="350" r="58" fill="rgba(0,0,0,0.01)" class="info-hit"/>
    <circle id="hit-ps"  cx="242" cy="332" r="48" fill="rgba(0,0,0,0.01)" class="info-hit"/>
-   <circle id="hit-psb" cx="142" cy="390" r="24" fill="rgba(0,0,0,0.01)" class="info-hit"/>
-   <circle id="hit-leir" cx="142" cy="265" r="24" fill="rgba(0,0,0,0.01)" class="info-hit"/>
-   <circle id="hit-linac4" cx="55" cy="385" r="32" fill="rgba(0,0,0,0.01)" class="info-hit"/>
-   <circle id="hit-linac3" cx="55" cy="275" r="32" fill="rgba(0,0,0,0.01)" class="info-hit"/>
+   <circle id="hit-psb" cx="142" cy="385" r="24" fill="rgba(0,0,0,0.01)" class="info-hit"/>
+   <circle id="hit-leir" cx="142" cy="275" r="24" fill="rgba(0,0,0,0.01)" class="info-hit"/>
+   <circle id="hit-linac4" cx="30" cy="385" r="24" fill="rgba(0,0,0,0.01)" class="info-hit"/>
+   <circle id="hit-linac3" cx="30" cy="275" r="24" fill="rgba(0,0,0,0.01)" class="info-hit"/>
+   <!-- Detektor-Hits: nach hit-lhc → höchste z-Order → Vorrang vor dem LHC-Ring -->
+   <circle id="hit-atlas" cx="350" cy="420" r="20" fill="rgba(0,0,0,0.01)" class="info-hit"/>
+   <circle id="hit-cms"   cx="350" cy="60"  r="20" fill="rgba(0,0,0,0.01)" class="info-hit"/>
+   <circle id="hit-alice" cx="170" cy="240" r="18" fill="rgba(0,0,0,0.01)" class="info-hit"/>
+   <circle id="hit-lhcb"  cx="530" cy="240" r="18" fill="rgba(0,0,0,0.01)" class="info-hit"/>
    </g><!-- /#schematic -->
   </svg>
  </div>
@@ -174,7 +167,7 @@
  <div class="cv4-readouts">
   <div class="cv4-ptitle">📊 MESSWERTE (LIVE)</div>
   <div class="cv4-rg">
-   <div class="cv4-ro"><span class="cv4-ro-l">Energie/Beam</span><span class="cv4-ro-v" id="v-e">0.00 TeV</span></div>
+   <div class="cv4-ro"><span class="cv4-ro-l">Energie/Strahl</span><span class="cv4-ro-v" id="v-e">0,00 TeV</span></div>
    <div class="cv4-ro"><span class="cv4-ro-l">Magnetfeld B</span><span class="cv4-ro-v" id="v-b">0.000 T</span></div>
    <div class="cv4-ro"><span class="cv4-ro-l">Lorentz γ</span><span class="cv4-ro-v" id="v-g">1</span></div>
    <!-- Versteckter Toggle: Klick wechselt Protonen ⟷ Blei-Ionen (ersetzt die früheren Auswahl-Tabs). -->
@@ -187,19 +180,19 @@
  <div class="cv4-params">
   <div class="cv4-ptitle">🎛️ STRAHL-EINSTELLUNGEN</div>
 
-  <div class="cv4-sli-lbl"><span>Ziel-Energie: <button class="cv4-pi-btn" data-pi="energy">ⓘ</button></span><span id="lbl-energy">6.8 TeV</span></div>
+  <div class="cv4-sli-lbl"><span>Ziel-Energie: <button class="cv4-pi-btn" data-pi="energy">ⓘ</button></span><span id="lbl-energy">6,80 TeV</span></div>
   <div class="cv4-param-info" id="pi-energy"></div>
   <input type="range" class="cv4-sli" id="sli-energy" min="0.45" max="7.0" step="0.05" value="6.8">
 
-  <div class="cv4-sli-lbl" style="margin-top:8px"><span>Bunch-Intensität: <button class="cv4-pi-btn" data-pi="intensity">ⓘ</button></span><span id="lbl-intensity">1.15e11 p</span></div>
+  <div class="cv4-sli-lbl" style="margin-top:8px"><span>Bunch-Intensität: <button class="cv4-pi-btn" data-pi="intensity">ⓘ</button></span><span id="lbl-intensity">1,15·10¹¹ p</span></div>
   <div class="cv4-param-info" id="pi-intensity"></div>
   <input type="range" class="cv4-sli" id="sli-intensity" min="0.1" max="1.8" step="0.05" value="1.15">
 
-  <div class="cv4-sli-lbl" style="margin-top:8px"><span>Strahl-Fokus β*: <button class="cv4-pi-btn" data-pi="beta">ⓘ</button></span><span id="lbl-beta">1.50 m</span></div>
+  <div class="cv4-sli-lbl" style="margin-top:8px"><span>Strahl-Fokus β*: <button class="cv4-pi-btn" data-pi="beta">ⓘ</button></span><span id="lbl-beta">1,50 m</span></div>
   <div class="cv4-param-info" id="pi-beta"></div>
   <input type="range" class="cv4-sli" id="sli-beta" min="0.3" max="1.5" step="0.1" value="1.5" disabled>
 
-  <div class="cv4-sli-lbl" style="margin-top:8px"><span>Ramp-Rate dB/dt: <button class="cv4-pi-btn" data-pi="rampspeed">ⓘ</button></span><span id="lbl-rampspeed" style="color:#58a6ff">0.05 T/s (Sicher)</span></div>
+  <div class="cv4-sli-lbl" style="margin-top:8px"><span>Ramp-Rate dB/dt: <button class="cv4-pi-btn" data-pi="rampspeed">ⓘ</button></span><span id="lbl-rampspeed" style="color:#58a6ff">0,05 T/s (sicher)</span></div>
   <div class="cv4-param-info" id="pi-rampspeed"></div>
   <input type="range" class="cv4-sli" id="sli-rampspeed" min="0.02" max="0.15" step="0.01" value="0.05">
  </div>
@@ -240,6 +233,18 @@
      <button class="cv4-btn danger off" id="btn-coll" style="flex:1;font-size:10.5px;padding:9px 2px">💥 Kollision (manuell)</button>
      <button class="cv4-btn off" id="btn-autocoll" style="flex:1.2;background:rgba(248,81,73,.08);border-color:rgba(248,81,73,.4);color:#f85149;font-size:10.5px;padding:9px 2px">▶️ Auto-Datennahme</button>
     </div>
+   </div>
+  </div>
+
+  <!-- INFO PANEL — erscheint im freien Raum der rechten Spalte unter Schritt 2 -->
+  <div id="info-panel" class="cv4-info-panel">
+   <button class="cv4-info-close" id="info-close">✕</button>
+   <div id="info-hdr"></div>
+   <div class="cv4-info-body">
+    <div class="cv4-info-title" id="info-title"></div>
+    <div class="cv4-info-sub" id="info-sub"></div>
+    <div class="cv4-info-stats-grid" id="info-stats"></div>
+    <div class="cv4-info-text" id="info-text"></div>
    </div>
   </div>
 

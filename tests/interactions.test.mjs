@@ -36,7 +36,7 @@ describe('Interaktionen (esbuild-Bundle, jsdom)', () => {
   });
 
   it('SVG-Detektor-Klick (ATLAS) öffnet Info-Panel + wählt Detektor', () => {
-    clickEl($('grp-atlas'));
+    clickEl($('hit-atlas'));
     expect($('info-panel').classList.contains('visible')).toBe(true);
     expect($('info-title').textContent).toMatch(/ATLAS/);
     expect($('dt-atlas').classList.contains('act')).toBe(true);
@@ -78,9 +78,9 @@ describe('Interaktionen (esbuild-Bundle, jsdom)', () => {
 
   it('Ramp-Speed-Slider warnt ab Quench-Risiko (> 0.10 T/s)', () => {
     fireInput($('sli-rampspeed'), 0.14);
-    expect($('lbl-rampspeed').textContent).toMatch(/RISIKO/);
+    expect($('lbl-rampspeed').textContent).toMatch(/Risiko/i);
     fireInput($('sli-rampspeed'), 0.05);
-    expect($('lbl-rampspeed').textContent).toMatch(/Sicher/);
+    expect($('lbl-rampspeed').textContent).toMatch(/sicher/i);
   });
 
   it('Pilot-Preset: 0.45 TeV + keine Signifikanz (Inbetriebnahme)', () => {

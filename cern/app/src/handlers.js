@@ -130,7 +130,7 @@ async function fuellProtokoll(){
  E.btnAuto.classList.remove("off");
  if(s.b1Batches>=totB && s.b2Batches>=totB){
   E.btnRamp.classList.remove("off");
-  App.setStatus(`LHC GEFÜLLT — ${totalStr()} Bunches/Strahl (${sizes.length} Züge), beide Strahlen stabil. Ramping möglich!`,"on");
+  App.setStatus(`LHC GEFÜLLT — ${totalStr()} Bunches/Strahl (${sizes.length} Züge), beide Strahlen stabil. Energie-Ramping möglich!`,"on");
  } else {
   App.setStatus(`Füllung beendet: B1 ${fmtBunch(1)}/${totalStr()}, B2 ${fmtBunch(2)}/${totalStr()} Bunches.`,"on");
  }
@@ -202,10 +202,10 @@ export function wireHandlers(){
   document.addEventListener("keydown", e=>{ if(e.key==="Escape" && root.classList.contains("diagram-full")) setFull(false); });
  }
 
- E.grpAtlas.addEventListener("click", () => { App.showInfo("ATLAS"); zoomToDetector("ATLAS"); });
- E.grpCms.addEventListener("click",   () => { App.showInfo("CMS");   zoomToDetector("CMS");   });
- E.grpAlice.addEventListener("click", () => { App.showInfo("ALICE"); zoomToDetector("ALICE"); });
- E.grpLhcb.addEventListener("click",  () => { App.showInfo("LHCB");  zoomToDetector("LHCB");  });
+ $("hit-atlas").addEventListener("click", () => { App.showInfo("ATLAS"); zoomToDetector("ATLAS"); });
+ $("hit-cms").addEventListener("click",   () => { App.showInfo("CMS");   zoomToDetector("CMS");   });
+ $("hit-alice").addEventListener("click", () => { App.showInfo("ALICE"); zoomToDetector("ALICE"); });
+ $("hit-lhcb").addEventListener("click",  () => { App.showInfo("LHCB");  zoomToDetector("LHCB");  });
 
  // INFO PANEL — Beschleuniger-Knoten
  $("hit-linac4").addEventListener("click", () => App.showInfo("LINAC4"));
@@ -249,34 +249,34 @@ export function wireHandlers(){
  E.btnPrePp.addEventListener("click",()=>{
   App.setMode(false); // Protonen
   App.resetLHC();
-  E.sliEnergy.value = 6.8; s.paramEnergy = 6.8; E.lblEnergy.innerText = "6.8 TeV";
-  E.sliIntensity.value = 1.40; s.paramIntensity = 1.40; E.lblIntensity.innerText = "1.40e11 p";
-  E.sliBeta.value = 0.3; s.paramBetaStar = 0.3; E.lblBeta.innerText = "0.30 m";
-  E.sliRampSpeed.value = 0.05; s.paramRampSpeed = 0.05; E.lblRampSpeed.innerText = "0.05 T/s (Sicher)"; E.lblRampSpeed.style.color = "#58a6ff";
+  E.sliEnergy.value = 6.8; s.paramEnergy = 6.8; E.lblEnergy.innerText = App.fmtEnergy(6.8);
+  E.sliIntensity.value = 1.40; s.paramIntensity = 1.40; E.lblIntensity.innerText = App.fmtIntensity(1.40);
+  E.sliBeta.value = 0.3; s.paramBetaStar = 0.3; E.lblBeta.innerText = App.de(0.3,2) + " m";
+  E.sliRampSpeed.value = 0.05; s.paramRampSpeed = 0.05; E.lblRampSpeed.innerText = App.de(0.05,2) + " T/s (sicher)"; E.lblRampSpeed.style.color = "#58a6ff";
   App.updateReadouts(); selectDetector("CMS");   // CMS = Higgs-Goldkanal H→ZZ*→4ℓ
-  App.setStatus("PRESET: Protonen-Physik (Run 3 · 13.6 TeV) — Higgs (CMS), Z⁰ (ATLAS) & CP (LHCb) laufen GLEICHZEITIG auf diesem Strahl (Tab wechseln zeigt jeden Stand). Spektren: echte CMS-Open-Data — μμ (Record 545) UND die 278 echten 4ℓ-Higgs-Kandidaten (Record 5200).", "on");
+  App.setStatus("Preset Protonen-Physik (Run 3 · √s = 13,6 TeV) — Higgs (CMS), Z⁰ (ATLAS) & CP-Verletzung (LHCb) laufen gleichzeitig auf demselben Strahl. Tab wechseln zeigt jeden Stand. (Spektren: echte CMS-Open-Data.)", "on");
  });
 
  E.btnPreQgp.addEventListener("click",()=>{
   App.setMode(true); // Blei-Ionen
   App.resetLHC();
-  E.sliEnergy.value = 2.7; s.paramEnergy = 2.7; E.lblEnergy.innerText = "2.70 TeV/u";
-  E.sliIntensity.value = 0.90; s.paramIntensity = 0.90; E.lblIntensity.innerText = "0.90e11 p";
-  E.sliBeta.value = 0.5; s.paramBetaStar = 0.5; E.lblBeta.innerText = "0.50 m";
-  E.sliRampSpeed.value = 0.05; s.paramRampSpeed = 0.05; E.lblRampSpeed.innerText = "0.05 T/s (Sicher)"; E.lblRampSpeed.style.color = "#58a6ff";
+  E.sliEnergy.value = 2.7; s.paramEnergy = 2.7; E.lblEnergy.innerText = App.fmtEnergy(2.7);
+  E.sliIntensity.value = 0.90; s.paramIntensity = 0.90; E.lblIntensity.innerText = App.fmtIntensity(0.90);
+  E.sliBeta.value = 0.5; s.paramBetaStar = 0.5; E.lblBeta.innerText = App.de(0.5,2) + " m";
+  E.sliRampSpeed.value = 0.05; s.paramRampSpeed = 0.05; E.lblRampSpeed.innerText = App.de(0.05,2) + " T/s (sicher)"; E.lblRampSpeed.style.color = "#58a6ff";
   App.updateReadouts(); selectDetector("ALICE");
-  App.setStatus("PRESET: Schwerionen (Pb-Pb · 2.7 TeV/u, √s_NN=5.36 TeV) → ALICE: J/ψ-QGP-Unterdrückung · CMS: Υ-Sequenzunterdrückung · ATLAS: Z⁰-Standardkerze · LHCb spezialisiert. Massen echt (CMS-p-p), QGP-Unterdrückung modelliert.", "on");
+  App.setStatus("Preset Schwerionen (Pb-Pb · √s_NN = 5,36 TeV) — ALICE & CMS messen das Aufschmelzen gebundener Quark-Paare im Quark-Gluon-Plasma, ATLAS das Z⁰ als Vergleichsmaßstab. Massen echt (CMS), Plasma-Unterdrückung modelliert.", "on");
  });
 
  E.btnPrePilot.addEventListener("click",()=>{
   App.setMode(false); // Protonen
   App.resetLHC();
-  E.sliEnergy.value = 0.45; s.paramEnergy = 0.45; E.lblEnergy.innerText = "0.45 TeV (Injektion)";
-  E.sliIntensity.value = 0.10; s.paramIntensity = 0.10; E.lblIntensity.innerText = "0.10e11 p";
-  E.sliBeta.value = 1.5; s.paramBetaStar = 1.5; E.lblBeta.innerText = "1.50 m";
-  E.sliRampSpeed.value = 0.02; s.paramRampSpeed = 0.02; E.lblRampSpeed.innerText = "0.02 T/s (Sicher)"; E.lblRampSpeed.style.color = "#58a6ff";
+  E.sliEnergy.value = 0.45; s.paramEnergy = 0.45; E.lblEnergy.innerText = App.fmtEnergy(0.45);
+  E.sliIntensity.value = 0.10; s.paramIntensity = 0.10; E.lblIntensity.innerText = App.fmtIntensity(0.10);
+  E.sliBeta.value = 1.5; s.paramBetaStar = 1.5; E.lblBeta.innerText = App.de(1.5,2) + " m";
+  E.sliRampSpeed.value = 0.02; s.paramRampSpeed = 0.02; E.lblRampSpeed.innerText = App.de(0.02,2) + " T/s (sicher)"; E.lblRampSpeed.style.color = "#58a6ff";
   App.updateReadouts(); selectDetector("ATLAS");
-  App.setStatus("PRESET GELADEN: Pilot-Strahl (Inbetriebnahme · 0.45 TeV — zu wenig Energie für Entdeckungen)", "on");
+  App.setStatus("Preset Pilot-Strahl (Inbetriebnahme · 0,45 TeV) — zu wenig Energie für Entdeckungen; im Spektrum erscheint nur Untergrund.", "on");
  });
 
  E.btnAutoColl.addEventListener("click", App.toggleAutoCollide);
@@ -285,24 +285,24 @@ export function wireHandlers(){
  // SLIDERS
  E.sliEnergy.addEventListener("input",()=>{
   s.paramEnergy = parseFloat(E.sliEnergy.value);
-  E.lblEnergy.innerText = App.fmtEnergy(s.paramEnergy);   // Einheit modusabhängig (Ionen: TeV/u)
+  E.lblEnergy.innerText = App.fmtEnergy(s.paramEnergy);   // Einheit modusabhängig (Ionen: TeV/Nukleon)
   App.updateReadouts();
   App.drawHist();   // Energie formt das Spektrum (Erzeugbarkeit/Signifikanz) → sofortiges Feedback
  });
  E.sliIntensity.addEventListener("input",()=>{
   s.paramIntensity = parseFloat(E.sliIntensity.value);
-  E.lblIntensity.innerText = s.paramIntensity.toFixed(2) + "e11 p";
+  E.lblIntensity.innerText = App.fmtIntensity(s.paramIntensity);   // Einheit modusabhängig (Ionen: ·10⁸ Ionen)
  });
  E.sliBeta.addEventListener("input",()=>{
-  E.lblBeta.innerText = parseFloat(E.sliBeta.value).toFixed(2) + " m";
+  E.lblBeta.innerText = App.de(parseFloat(E.sliBeta.value),2) + " m";
  });
  E.sliRampSpeed.addEventListener("input",()=>{
   s.paramRampSpeed = parseFloat(E.sliRampSpeed.value);
   if(s.paramRampSpeed > 0.10) {
-   E.lblRampSpeed.innerText = s.paramRampSpeed.toFixed(2) + " T/s (⚠️ RISIKO)";
+   E.lblRampSpeed.innerText = App.de(s.paramRampSpeed,2) + " T/s (⚠️ Risiko)";
    E.lblRampSpeed.style.color = "#f85149";
   } else {
-   E.lblRampSpeed.innerText = s.paramRampSpeed.toFixed(2) + " T/s (Sicher)";
+   E.lblRampSpeed.innerText = App.de(s.paramRampSpeed,2) + " T/s (sicher)";
    E.lblRampSpeed.style.color = "#58a6ff";
   }
  });

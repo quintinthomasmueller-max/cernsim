@@ -355,13 +355,13 @@ function drawHist() {
  ctxHist.beginPath(); ctxHist.moveTo(30, 10); ctxHist.lineTo(30, h - 16); ctxHist.lineTo(w - 8, h - 16); ctxHist.stroke();
  ctxHist.fillStyle = "#aab8c7"; ctxHist.font = "8px sans-serif";
  let [mn, mx] = sp.range;
- ctxHist.fillText(mn + " GeV", 30, h - 4); ctxHist.fillText(mx + " GeV", w - 44, h - 4);
+ ctxHist.fillText((""+mn).replace(".",",") + " GeV", 30, h - 4); ctxHist.fillText((""+mx).replace(".",",") + " GeV", w - 44, h - 4);
 
  let sig = getSignificance();
  const prim = primaryReson(sp);
  const specialized = !sp.disco;                       // LHCb im Pb-Pb (spezialisiert)
  const notProd = !specialized && prodVis(prim) <= 0;  // Energie zu gering
- $("lbl-sig").innerText = sig.toFixed(2) + " σ";
+ $("lbl-sig").innerText = App.de(sig,2) + " σ";
 
  // ── Kopf-/Fuß-Texte als HTML AUSSERHALB des Canvas (nicht mehr über die Balken
  //    gemalt → lesbar, hell). drawHist setzt sie bei jedem Neuzeichnen. ──
@@ -392,10 +392,10 @@ function drawHist() {
  // Detail-Status + „was man real misst" + Datenherkunft → HTML-Fuß (war im Canvas).
  let statusTxt;
  if (specialized)        statusTxt = "ℹ️ " + sp.note;
- else if (notProd)       statusTxt = "⚠️ " + prim.label + "-Produktionsrate bei " + s.paramEnergy.toFixed(2) + " TeV/Strahl zu gering für eine Messung — wird ab ~" + prim.thr.toFixed(1) + " TeV/Strahl sichtbar (Raten-Modell).";
- else if (sp.supp)       statusTxt = "QGP-Unterdrückung (Modell): R_AA Υ(1S) ≈ 0,45, sequenziell · Signifikanz " + sig.toFixed(1) + " σ / 5 σ.";
- else if (sp.reference)  statusTxt = "p-p-Referenz: unverdrängte Quarkonia (Vakuum). Die QGP-Unterdrückung (R_AA<1) erscheint erst im Pb-Pb-Lauf.";
- else                    statusTxt = "Sammle Statistik (Signifikanz " + sig.toFixed(1) + " σ von 5,0 σ).";
+ else if (notProd)       statusTxt = "⚠️ " + prim.label + "-Produktionsrate bei " + App.de(s.paramEnergy,2) + " TeV pro Strahl zu gering für eine Messung — wird ab ~" + App.de(prim.thr,1) + " TeV pro Strahl sichtbar (Raten-Modell).";
+ else if (sp.supp)       statusTxt = "QGP-Unterdrückung (Modell): R_AA Υ(1S) ≈ 0,45, sequenziell · Signifikanz " + App.de(sig,1) + " σ / 5 σ.";
+ else if (sp.reference)  statusTxt = "p-p-Referenz: unverdrängte Quarkonia (Vakuum). Die QGP-Unterdrückung (R_AA < 1) erscheint erst im Pb-Pb-Lauf.";
+ else                    statusTxt = "Sammle Statistik (Signifikanz " + App.de(sig,1) + " σ von 5,0 σ).";
  const elStat = $("sp-status"); if (elStat) elStat.textContent = statusTxt;
  let realTxt = "➜ " + sp.real;
  if (sp.channel === "4l") realTxt += " · Higgs-Fenster (120–130 GeV): " + s.higgsCands + " 4ℓ-Kandidaten";

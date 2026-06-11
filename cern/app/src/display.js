@@ -12,27 +12,27 @@ const s = App.state, E = App.els;
 const DETKONFIG = {
  // bend = visuelle Krümmungsstärke (skaliert mit B-Feld: CMS 3.8T > ATLAS 2T > ALICE 0.5T)
  // realRmu = echter Außenradius (m) der Myonlage → Maßstab (Mensch/Meterleiste)
- ATLAS: { typ:'barrel', farbe:'#58a6ff', rolle:'Allzweck · 2T Solenoid + Toroid-Myon-System', bend:0.80,
+ ATLAS: { typ:'barrel', farbe:'#58a6ff', rolle:'Allzweck-Detektor · 2 T Solenoid + Toroid-Myonsystem', bend:0.80,
    realRmu:12.5, fakt:'46 m lang · Ø 25 m · 7 000 t',
    lagen:[ {r:26,name:'Spurdetektor',kind:'track',job:'Spuren geladener Teilchen',infoKey:'L_TRACK'},
            {r:38,name:'EM-Kalorimeter',kind:'em',job:'stoppt e⁻ & Photonen',infoKey:'L_EM'},
            {r:52,name:'Hadron-Kalorimeter',kind:'had',job:'stoppt Protonen & Co.',infoKey:'L_HAD'},
            {r:62,name:'Toroid-Magnet',kind:'coil',job:'krümmt die Bahnen',infoKey:'L_COIL'},
            {r:86,name:'Myonkammern',kind:'muon',job:'nur Myonen kommen an',infoKey:'L_MUON'} ] },
- CMS: { typ:'barrel', farbe:'#f85149', rolle:'kompakt · 3.8 T Solenoid · Kristall-ECAL', bend:1.40,
+ CMS: { typ:'barrel', farbe:'#f85149', rolle:'Allzweck-Detektor · 3,8 T Solenoid · Kristall-Kalorimeter', bend:1.40,
    realRmu:7.4, fakt:'21 m lang · Ø 15 m · 14 000 t (schwerer als der Eiffelturm)',
    lagen:[ {r:30,name:'Silizium-Tracker',kind:'track',job:'Spuren geladener Teilchen',infoKey:'L_TRACK'},
            {r:40,name:'ECAL (Kristalle)',kind:'em',job:'stoppt e⁻ & Photonen',infoKey:'L_EM'},
            {r:52,name:'HCAL (Messing)',kind:'had',job:'stoppt Protonen & Co.',infoKey:'L_HAD'},
            {r:60,name:'Solenoid-Magnet',kind:'coil',job:'krümmt die Bahnen · 3,8 T',infoKey:'L_COIL'},
            {r:86,name:'Myonkammern im Joch',kind:'muon',job:'nur Myonen kommen an',infoKey:'L_MUON'} ] },
- ALICE: { typ:'barrel', farbe:'#e377c2', rolle:'Schwerionen · TPC · hohe Multiplizität · 0.5T', bend:0.60,
+ ALICE: { typ:'barrel', farbe:'#e377c2', rolle:'Schwerionen · TPC · hohe Spurdichte · 0,5 T', bend:0.60,
    realRmu:8.0, fakt:'26 m lang · Ø 16 m · 10 000 t',
    lagen:[ {r:14,name:'ITS (Silizium-Pixel)',kind:'track',job:'Spur-Ursprung & Vertices',infoKey:'L_TRACK'},
            {r:58,name:'TPC (Gas-Kammer)',kind:'track',job:'3D-Spuren, bis zu 20 000',infoKey:'L_TPC'},
            {r:70,name:'TOF (Stoppuhr)',kind:'em',job:'identifiziert Teilchensorte',infoKey:'L_TOF'},
            {r:86,name:'Außenlagen',kind:'muon',job:'Myonen & Restsignale',infoKey:'L_MUON'} ] },
- LHCB: { typ:'forward', farbe:'#ff7f0e', rolle:'Vorwärtsspektrometer · Sekundärvertex',
+ LHCB: { typ:'forward', farbe:'#ff7f0e', rolle:'Vorwärts-Spektrometer · Sekundärvertex',
    realLen:21, fakt:'21 m lang · 5 600 t · misst nur den Vorwärtskegel',
    stationen:[ {x:34,name:'VELO',kind:'vtx',w:8,infoKey:'L_VTX'}, {x:80,name:'RICH1',kind:'rich',w:12,infoKey:'L_RICH'},
                {x:120,name:'TT',kind:'track',w:6,infoKey:'L_TRACK'},
@@ -60,7 +60,7 @@ function detGeo(){
  const evW=s.evW, evH=s.evH, D=DETKONFIG[s.selDet]||DETKONFIG.ATLAS;
  if(D.typ!=='barrel'){ const cy=evH/2; return {D,cx:evW/2,cy,Rmax:Math.min(evW,evH)/2-6,sc:1,lblX:0,lblW:0}; }
  const lblW=Math.max(92, Math.min(150, evW*0.30));
- const Rmax=Math.min(evH/2-8, (evW-lblW-26)/2);
+ const Rmax=Math.min(evH/2-22, (evW-lblW-26)/2);
  return {D, cx:(evW-lblW-10)/2, cy:evH/2, Rmax, sc:Rmax/86, lblX:(evW-lblW-10)/2+Rmax+12, lblW};
 }
 // Ehrliche Datenherkunft des Event-Displays (strahl-/kanalabhängig): Dimuon-
@@ -82,11 +82,11 @@ function drawLegend(){
  const ctxEv=E.ctxEv, evW=s.evW, evH=s.evH;
  // Legende mit Kurzinfo: was jede Farbe/Signatur bedeutet
  const items=[
-  ['μ (alle Lagen)','#2ea44f'],
-  ['e⁻ (→EM-Kal.)','#58a6ff'],
-  ['γ (→EM, kein Track)','#f1e05a'],
-  ['Had (→HAD-Kal.)','#ff7f0e'],
-  ['ν: fehl. E_T (MET)','#8b949e']
+  ['μ (alle Schichten)','#2ea44f'],
+  ['e⁻ → EM-Kal.','#58a6ff'],
+  ['γ → EM, keine Spur','#f1e05a'],
+  ['Hadron → Had-Kal.','#ff7f0e'],
+  ['ν (fehlende Energie)','#8b949e']
  ];
  const gap=Math.min(62,(evW-8)/items.length), y=evH-5;
  ctxEv.save(); ctxEv.font='6px sans-serif'; ctxEv.textAlign='left';
@@ -184,8 +184,15 @@ function drawParticleForward(vx,vy,slope,typ,pt,q,bg){
 }
 
 // ── Detektor-Hintergrund (Zwiebelschalen) ───────────────────────────────────
-// hl = optionale Liste hervorzuhebender Schicht-Arten (Signaturen-Tour):
-// genannte Schichten leuchten, alle anderen werden abgedimmt.
+// Liefert den kind-Wert zur infoKey eines Layers (für Ausgrau-Effekt).
+function kindForKey(key){
+ const D=DETKONFIG[s.selDet]||DETKONFIG.ATLAS;
+ const src=(D.lagen||[]).concat(D.stationen||[]);
+ const f=src.find(x=>x.infoKey===key); return f?f.kind:null;
+}
+
+// hl = optionale Liste hervorzuhebender Schicht-Arten (Signaturen-Tour oder
+// Einzelschicht-Klick). Ohne hl: s.activeLayerKey bestimmt die Hervorhebung.
 function drawBg(hl){
  const ctxEv=E.ctxEv, evW=s.evW, evH=s.evH;
  const {D,cx,cy,Rmax,sc,lblX}=detGeo();
@@ -195,6 +202,7 @@ function drawBg(hl){
  // Rolle + Realgröße + Datenherkunft als HTML unter dem Canvas (nicht über die Spuren).
  const cap=document.getElementById('ev-caption');
  if(cap) cap.textContent = D.rolle + " · " + D.fakt + " · Daten: " + evProvenance();
+ if(!hl && s.activeLayerKey){ const ak=kindForKey(s.activeLayerKey); if(ak) hl=[ak]; }
  const mode=(k)=> hl ? (hl.indexOf(k)>=0?'hi':'lo') : null;
 
  if(D.typ==='barrel'){
@@ -375,8 +383,8 @@ function drawCollisionEvent(ev){
 
  // Kandidaten-Beschriftung (mit Hintergrund) – kohärent mit dem Histogramm-Peak.
  if(evd){
-  let lbl = evd.name ? (evd.name+" → "+(evd.channel==="4l"?"ZZ*→4ℓ":"μ⁺μ⁻")+"  M="+(+evd.M).toFixed(1)+" GeV")
-                     : ("Untergrund  M="+(+evd.M).toFixed(1)+" GeV");
+  let lbl = evd.name ? (evd.name+" → "+(evd.channel==="4l"?"ZZ*→4ℓ":"μ⁺μ⁻")+"  M="+App.de(+evd.M,1)+" GeV")
+                     : ("Untergrund  M="+App.de(+evd.M,1)+" GeV");
   ctxEv.font="8px sans-serif"; ctxEv.textAlign='left';
   ctxEv.fillStyle='rgba(13,17,23,0.78)'; ctxEv.fillRect(4,evH-30,evW-8,12);
   ctxEv.fillStyle = evd.signal ? "#f0f6fc" : "rgba(240,246,252,0.6)";
@@ -386,9 +394,15 @@ function drawCollisionEvent(ev){
   ctxEv.fillText("★ GOLDEN", evW-6, 11); ctxEv.textAlign='left'; }
 }
 
+function setActiveLayer(key){
+ s.activeLayerKey = key || null;
+ if(!s.tourStep) drawBg();
+}
+
 App.drawDetBg = drawDetBg;
 App.drawCollisionEvent = drawCollisionEvent;
 App.evLayerHit = evLayerHit;
 App.evTourAdvance = evTourAdvance;
 App.evTourEnd = evTourEnd;
 App.evTourDraw = evTourDraw;
+App.setActiveLayer = setActiveLayer;

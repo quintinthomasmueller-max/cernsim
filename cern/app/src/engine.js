@@ -40,9 +40,17 @@ function resizeCanvases(){
  const hi = fitCanvas(E.cvHist, E.ctxHist, 340, 130); s.histW = hi.w; s.histH = hi.h;
 }
 
-// Energie-Label mit modusabhängiger Einheit (Ionen: TeV pro Nukleon).
-function fmtEnergy(v){ return v.toFixed(2) + (s.isIon ? " TeV/u" : " TeV"); }
+// Deutsche Zahlformatierung (Komma als Dezimaltrennzeichen) — einheitlich für
+// alle physikalischen Anzeigewerte (Energie, Feld, Fokus, Intensität).
+const de = (v, d) => v.toLocaleString("de-DE", { minimumFractionDigits: d, maximumFractionDigits: d });
+App.de = de;
+// Energie-Label mit modusabhängiger Einheit (Ionen: pro Nukleon, NICHT /u — u ist
+// nur näherungsweise die Nukleonmasse).
+function fmtEnergy(v){ return de(v, 2) + (s.isIon ? " TeV/Nukleon" : " TeV"); }
+// Bunch-Intensität: Protonen ~10¹¹/Bunch, Blei-Ionen ~10⁸/Bunch (anderer Maßstab).
+function fmtIntensity(v){ return de(v, 2) + (s.isIon ? "·10⁸ Ionen" : "·10¹¹ p"); }
 App.fmtEnergy = fmtEnergy;
+App.fmtIntensity = fmtIntensity;
 
 function setMode(ion){
  if(s.isIon===ion && s.b1Count===0 && s.b2Count===0) return;
@@ -83,7 +91,7 @@ function resetLHC(keepData=false){
  s.spsRunning=false; s.spsDots.b1.forEach(d=>d.el.remove()); s.spsDots.b2.forEach(d=>d.el.remove()); s.spsDots={b1:[],b2:[]};
  s.lhcDots={b1:[],b2:[]}; s.b1Count=0; s.b2Count=0; s.b1Batches=0; s.b2Batches=0;
  if(!keepData){ s.collisions=0; App.resetSpectrumData(); E.spInfo.innerText=`Kandidaten (${s.selDet}): 0`; }
- s.dtElapsed=0; s.intensityNow=0; E.lblIntensity.innerText=s.paramIntensity.toFixed(2)+"e11 p";   // Burn-off-Anzeige zurück auf Sollwert
+ s.dtElapsed=0; s.intensityNow=0; E.lblIntensity.innerText=fmtIntensity(s.paramIntensity);   // Intensitäts-Anzeige zurück auf Sollwert
  s.ramped=false; s.squeezed=false; s.squeezing=false;
  s.lhcEnergy=s.isIon?177:450; s.lhcSpeed=s.isIon?0.0050:0.0078;
  s.paramBetaStar=1.5;
@@ -92,7 +100,7 @@ function resetLHC(keepData=false){
  E.btnRamp.classList.add("off"); E.btnSqueeze.classList.add("off"); E.btnColl.classList.add("off");
  E.btnAutoColl.classList.add("off");
  E.sliEnergy.disabled = false; E.sliIntensity.disabled = false; E.sliBeta.value = 1.5; E.sliBeta.disabled = true; E.sliRampSpeed.disabled = false;
- E.lblBeta.innerText = "1.50 m";
+ E.lblBeta.innerText = de(1.5,2) + " m";
  updateReadouts();
  Object.values(g.paths).forEach(p=>{p.classList.remove("lit","lit-i","lit-b2")});
  Object.values(g.nodes).forEach(n=>{n.classList.remove("glow","glow-i","flash")});
@@ -269,7 +277,7 @@ async function doRamp(){
  if(s.ramped||s.filling||s.cryoRecovery) return;
  E.btnRamp.classList.add("off"); E.btnAuto.classList.add("off");
  E.sliEnergy.disabled = true; E.sliIntensity.disabled = true; E.sliRampSpeed.disabled = true;
- setStatus("RAMPING MAGNETFELD & ENERGIE...","on");
+ setStatus("HOCHFAHREN — Magnetfeld & Energie steigen …","on");
  const startE=s.isIon?177:450;
  const maxE=s.isIon?2760:7000;   // Ionen: 7 TeV·(82/208) ≈ 2,76 TeV/u (gleiche Dipol-Steifigkeit)
  const targetE=Math.max(s.paramEnergy*1000, startE);   // nie unter Injektionsenergie -> Ramping BESCHLEUNIGT immer
@@ -298,19 +306,19 @@ async function doRamp(){
  });
  if(quenched) { triggerQuench(); return; }
  s.ramped=true; E.btnSqueeze.classList.remove("off"); E.sliBeta.disabled = false;
- setStatus("RAMPING BEENDET — Squeeze-Phase einleiten!","on");
+ setStatus("HOCHFAHREN ABGESCHLOSSEN — jetzt Beam Squeeze starten!","on");
 }
 
 function triggerQuench(){
  s.cryoRecovery = true; stopAutoCollide();
- setStatus("💥 MAGNET-QUENCH DETEKTIERT! T > 1.9 K - Strahl gedumpt!", "danger");
+ setStatus("💥 QUENCH! Ein Magnet hat seine Supraleitung verloren — Strahl notabgeworfen!", "danger");
  E.sdot.className = "cv4-dot flash";
  E.svg.style.transition = "filter 0.5s";
  E.svg.style.filter = "sepia(1) saturate(3) hue-rotate(320deg)";
  let secLeft = 5;
  function cryoTick(){
-  if(secLeft > 0){ setStatus(`💥 MAGNET-QUENCH! Helium-Kühlung läuft... (${secLeft}s)`, "danger"); secLeft--; setTimeout(cryoTick, 1000); }
-  else { E.svg.style.filter = "none"; s.cryoRecovery = false; resetLHC(); setStatus("KÜHLUNG ERFOLGREICH — LHC BEREIT", "on"); }
+  if(secLeft > 0){ setStatus(`💥 QUENCH — Helium-Kühlung fährt die Magnete wieder herunter … (${secLeft} s)`, "danger"); secLeft--; setTimeout(cryoTick, 1000); }
+  else { E.svg.style.filter = "none"; s.cryoRecovery = false; resetLHC(); setStatus("KÜHLUNG ABGESCHLOSSEN — LHC wieder bereit", "on"); }
  }
  cryoTick();
 }
@@ -318,14 +326,14 @@ function triggerQuench(){
 async function doSqueeze(){
  if(!s.ramped||s.squeezed||s.squeezing||s.cryoRecovery) return;
  s.squeezing = true; E.btnSqueeze.classList.add("off"); E.sliBeta.disabled = true;
- setStatus("🗜️ BEAM SQUEEZE: Fokussiere Strahlen an den IPs...","on");
+ setStatus("🗜️ BEAM SQUEEZE — bündele die Strahlen an den Kollisionspunkten …","on");
  let t0 = null; const dur = 2000; const targetBeta = parseFloat(E.sliBeta.value);
  await new Promise(res=>{
   function step(ts){
    if(!t0) t0=ts;
    let p=Math.min((ts-t0)/dur,1);
    s.paramBetaStar = 1.5 - p * (1.5 - targetBeta);
-   E.lblBeta.innerText = s.paramBetaStar.toFixed(2) + " m";
+   E.lblBeta.innerText = de(s.paramBetaStar,2) + " m";
    p<1 ? requestAnimationFrame(step) : res();
   }
   requestAnimationFrame(step);
@@ -333,7 +341,7 @@ async function doSqueeze(){
  s.squeezing = false; s.squeezed = true; E.btnColl.classList.remove("off"); E.btnAutoColl.classList.remove("off");
  [g.nodes.atlas,g.nodes.cms,g.nodes.alice,g.nodes.lhcb].forEach(n=>n.classList.add("glow"));
  g.paths.lhc.classList.add(s.isIon?"lit-i":"lit");
- setStatus("STABLE BEAMS — Strahlen fokussiert! Kollisionen bereit.","on");
+ setStatus("STABLE BEAMS — Strahlen gebündelt, bereit für Kollisionen!","on");
 }
 
 function addPermanentDot(beam){
@@ -416,7 +424,7 @@ function startAutoCollide(){
  // Burn-off-Uhr läuft PRO FILL: nur beim ersten Start nach dem Füllen auf null
  // (Pause/Weiter verjüngt den Strahl NICHT — sonst „Unendlich-Fill"-Exploit).
  if(s.dtElapsed === 0) s.intensity0 = s.paramIntensity;   // Stable Beams: N₀ = Intensität bei Fill-Start
- setStatus(`DATENNAHME (1 s ≈ ${dtLabel()} real) — Burn-off läuft …`, "on");
+ setStatus(`DATENNAHME (1 s ≈ ${dtLabel()} real) — der Strahl verbraucht sich langsam …`, "on");
  const tau = BEAM_LIFETIME_H * 3600;                    // Intensitäts-Lebensdauer in s
  let lastTick = performance.now();
  s.autoCollInterval = setInterval(()=>{
@@ -432,7 +440,7 @@ function startAutoCollide(){
   const frac = Math.exp(-s.dtElapsed / tau);            // N/N₀
   const L = frac * frac;                                // relative Luminosität (Burn-off)
   s.intensityNow = s.intensity0 * frac;
-  E.lblIntensity.innerText = s.intensityNow.toFixed(2) + "e11 p";
+  E.lblIntensity.innerText = fmtIntensity(s.intensityNow);
   // Bunches verblassen (Intensitätsverlust pro Bunch, NICHT Anzahl): opacity ∝ N.
   const op = (0.2 + 0.8 * frac).toFixed(3);
   s.lhcDots.b1.forEach(d=>d.el.setAttribute("opacity", op));
@@ -465,7 +473,7 @@ function startAutoCollide(){
   }
   App.drawHist();
   E.spInfo.innerText = `Kandidaten (${s.selDet}): ${Math.round(s.collStore[s.selDet]).toLocaleString("de-DE")} · L ${Math.round(L*100)} %`;
-  setStatus(`📉 DATENNAHME (1 s ≈ ${dtLabel()} real) — N ${s.intensityNow.toFixed(2)}e11 (${Math.round(frac*100)} %) · L ${Math.round(L*100)} %`, "on");
+  setStatus(`📉 DATENNAHME (1 s ≈ ${dtLabel()} real) — N ${fmtIntensity(s.intensityNow)} (${Math.round(frac*100)} %) · L ${Math.round(L*100)} %`, "on");
   if(frac <= DUMP_FRAC) beamDump();
  }, 125);
 }
@@ -474,25 +482,25 @@ function startAutoCollide(){
 function beamDump(){
  s.dumping = true;   // Gate: bis zum Reset KEINE manuellen Kollisionen / kein Neustart
  stopAutoCollide();  // (der Strahl ist weg — ramped/squeezed sind nur noch Restzustand)
- setStatus(`💥 STRAHL-DUMP — N < ${Math.round(DUMP_FRAC*100)} % (L < ${Math.round(DUMP_FRAC*DUMP_FRAC*100)} %): Strahl verbraucht, neuer Fill nötig.`, "danger");
- // keepData=true: Spektrum/Signifikanz BLEIBEN (mehrere Fills summieren sich zur Entdeckung).
- setTimeout(()=>{ if(!s.cryoRecovery){ resetLHC(true); setStatus("STRAHL GEDUMPT — Daten bleiben. Füllprotokoll für nächsten Fill starten.", "on"); } }, 1600);
+ setStatus(`💥 STRAHL-DUMP — N < ${Math.round(DUMP_FRAC*100)} % (L < ${Math.round(DUMP_FRAC*DUMP_FRAC*100)} %): Strahl verbraucht, neue Füllung nötig.`, "danger");
+ // keepData=true: Spektrum/Signifikanz BLEIBEN (mehrere Füllungen summieren sich zur Entdeckung).
+ setTimeout(()=>{ if(!s.cryoRecovery){ resetLHC(true); setStatus("STRAHL ABGEWORFEN — Daten bleiben erhalten. Füllprotokoll für die nächste Füllung starten.", "on"); } }, 1600);
 }
 
 function stopAutoCollide(){
  const had = !!s.autoCollInterval;
  if(had) { clearInterval(s.autoCollInterval); s.autoCollInterval = null; }
  E.btnAutoColl.innerText = "▶️ Auto-Datennahme"; E.btnAutoColl.classList.remove("act");
- if(had && !s.dumping) setStatus("DATENNAHME PAUSIERT — Burn-off-Uhr läuft beim Fortsetzen weiter", "on");
+ if(had && !s.dumping) setStatus("DATENNAHME PAUSIERT — die Verbrauchs-Uhr läuft beim Fortsetzen weiter", "on");
  // Manuelle Kollisionen nur freigeben, wenn der Strahl noch existiert (kein Dump).
  if(s.ramped && s.squeezed && !s.cryoRecovery && !s.dumping) E.btnColl.classList.remove("off");
 }
 
 function updateReadouts(){
- E.vE.innerText=(s.lhcEnergy/1000).toFixed(2)+" TeV"+(s.isIon?"/u":"");
+ E.vE.innerText=fmtEnergy(s.lhcEnergy/1000);
  // Dipolfeld: für Pb-Ionen Ladungs-zu-Massenzahl-Verhältnis (Z/A=82/208) berücksichtigen
  let rig=0.299792458*2803.95;
- let B=(s.isIon?(208/82):1)*s.lhcEnergy/rig; E.vB.innerText=B.toFixed(3)+" T";
+ let B=(s.isIon?(208/82):1)*s.lhcEnergy/rig; E.vB.innerText=de(B,3)+" T";
  // Lorentz-γ PRO NUKLEON: E_Nukleon / m_Nukleon (Ion: 0.9315 GeV, Proton: 0.938272 GeV)
  let gam=s.lhcEnergy/(s.isIon?0.9315:0.938272); E.vG.innerText=Math.round(gam).toLocaleString("de-DE");
 }
