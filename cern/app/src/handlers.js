@@ -176,6 +176,18 @@ export function wireHandlers(){
   const t=$("dt-"+d); if(t) t.addEventListener("click",()=>selectDetector(d.toUpperCase()));
  });
 
+ // EVENT-DISPLAY interaktiv: Klick auf eine Schicht → Info-Panel mit Foto;
+ // während der Signaturen-Tour schaltet jeder Canvas-Klick einen Schritt weiter.
+ E.cvEv.addEventListener("click", e=>{
+  if(s.tourStep){ App.evTourAdvance(); return; }
+  const r=E.cvEv.getBoundingClientRect();
+  const x=(e.clientX-r.left)*(s.evW/(r.width||s.evW));
+  const y=(e.clientY-r.top)*(s.evH/(r.height||s.evH));
+  const k=App.evLayerHit(x,y);
+  if(k) App.showInfo(k);
+ });
+ if(E.btnEvTour) E.btnEvTour.addEventListener("click", e=>{ e.stopPropagation(); App.evTourAdvance(); });
+
  E.btnZoomOut.addEventListener("click", resetView);
  E.btnZoomMeyrin.addEventListener("click", zoomMeyrin);
 
@@ -212,7 +224,18 @@ export function wireHandlers(){
    const key = btn.dataset.pi;
    const box = $('pi-' + key);
    if(!box) return;
-   if(!box.textContent && App.PARAM_INFO[key]) box.textContent = App.PARAM_INFO[key];
+   if(!box.dataset.filled){
+    if(App.PARAM_INFO[key]) box.textContent = App.PARAM_INFO[key];
+    // Optionales Vorbild-Bild (z. B. echte Higgs-Kandidaten 2012 unter „Bild lesen")
+    const fig = App.PARAM_INFO_FIG && App.PARAM_INFO_FIG[key];
+    if(fig){
+     const src = 'https://commons.wikimedia.org/wiki/Special:FilePath/' + encodeURIComponent(fig.img) + '?width=640';
+     box.insertAdjacentHTML('beforeend',
+      `<img class="cv4-pi-img" src="${src}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.display='none'">`
+      + `<div class="cv4-pi-cap">${fig.cap}<br>📷 ${fig.cred}</div>`);
+    }
+    box.dataset.filled = '1';
+   }
    const wasOpen = box.classList.contains('open');
    document.querySelectorAll('.cv4-param-info.open').forEach(x => x.classList.remove('open'));
    if(!wasOpen) box.classList.add('open');

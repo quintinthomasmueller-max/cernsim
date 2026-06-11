@@ -19,6 +19,25 @@
      Geschwindigkeits-Leiter `state.js#getStageVel`, dur = Pfadlänge/Geschwindigkeit; Stau weg).
 - **Entscheidungen:** gelockt (siehe „Gelockte Entscheidungen"). Modul-Modell = **leichter Namespace** (`App`-Objekt).
 - **Zuletzt erledigt (diese Session):**
+  - **Event-Display „Zwiebelschalen"-Ausbau (Didaktik Elternabend).** Die dünnen Ringe sind
+    jetzt GEFÜLLTE Materialschichten mit Klartext-Callout-Spalte rechts (Name + Aufgabe je
+    Schicht, Leader-Linien, alle 4 Detektoren; LHCb = gefüllte Stations-Platten + Flugrichtungs-
+    Pfeil). Maßstab: Meterleiste + Strichmännchen „Mensch (1,8 m)" in echter Relation
+    (`DETKONFIG.realRmu`), Realgrößen-Fakt in der Caption. **Interaktiv:** Klick auf eine
+    Schicht öffnet das Info-Panel mit ECHTEM Wikimedia-Foto (10 neue `INFO_DB`-Einträge
+    `L_TRACK/L_EM/L_HAD/L_COIL/L_MUON/L_TPC/L_TOF/L_VTX/L_RICH/L_MAGNET`, Dateinamen +
+    Lizenzen per Commons-API verifiziert); `display.js#evLayerHit` ist der Hit-Test (Ringe,
+    Label-Spalte, LHCb-Stationen). **Signaturen-Tour** (`#btn-ev-tour`, 6 Schritte über
+    `s.tourStep`): pro Schritt EIN Teilchen + leuchtende Ziel-Schicht (andere abgedimmt) +
+    Erklärtext in `#ev-caption`; Canvas-Klick schaltet weiter; externer `drawDetBg`-Aufruf
+    (Detektorwechsel/Reset) beendet die Tour sauber; Live-Events übermalen das Tour-Standbild
+    nicht (`drawCollisionEvent`-Guard). „ⓘ Bild lesen" zeigt zusätzlich das ECHTE Vorbild
+    (Higgs-Kandidaten 2012, ATLAS+CMS, via `PARAM_INFO_FIG`). 4 neue Interaktions-Tests.
+    **ALTERNATIVE (falls Zwiebelschalen visuell nicht überzeugen): „Halb-Schnitt"** — obere
+    Canvas-Hälfte = beschrifteter Lehrbuch-Querschnitt (gefüllte Schichten, statisch), untere
+    Hälfte = Live-Event. Maximal didaktisch, kostet aber 50 % Event-Fläche. Bei Bedarf:
+    `drawBg()` in zwei Halbkreis-Pfade teilen (clip auf `y<cy` bzw. `y>cy`), Callouts nur oben,
+    Spuren nur unten spiegeln — Geometrie (`detGeo`) und Hit-Test können bleiben.
   - **Backend-Audit (Logik/Physik/Effizienz) komplett umgesetzt, Tests 77 grün.**
     Physik: (A1) Resonanzbreiten in `physics.json` waren für Quarkonia ×1000 zu groß
     (keV→GeV-Slip; J/ψ jetzt 9,3e-5 GeV) — propagierte in data.js.reso UND die

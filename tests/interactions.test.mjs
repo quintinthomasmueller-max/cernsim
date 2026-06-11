@@ -151,4 +151,38 @@ describe('Interaktionen (esbuild-Bundle, jsdom)', () => {
     // kein separater Inset-Kasten mehr (rect im geo-layer)
     expect($('geo-layer').querySelector('rect')).toBeNull();
   });
+
+  // ── Event-Display: klickbare Schichten + Signaturen-Tour ──────────────────
+  it('Klick in die Detektor-Mitte öffnet das Spurdetektor-Info-Panel', () => {
+    // jsdom-Fallback-Maße: evW=340, evH=180 → Barrel-Zentrum bei (114, 90)
+    $('cv-ev').dispatchEvent(new window.MouseEvent('click', { bubbles: true, clientX: 114, clientY: 90 }));
+    expect($('info-panel').classList.contains('visible')).toBe(true);
+    expect($('info-title').textContent).toMatch(/Spurdetektor/);
+  });
+
+  it('Signaturen-Tour: 6 Schritte mit Erklärtext, sauberes Ende', () => {
+    const btn = $('btn-ev-tour'), cap = $('ev-caption');
+    btn.click();
+    expect(cap.textContent).toMatch(/1\/6/);
+    expect(cap.textContent).toMatch(/Myon/);
+    for (let i = 0; i < 5; i++) btn.click();
+    expect(cap.textContent).toMatch(/6\/6/);
+    btn.click();   // letzter Klick beendet die Tour
+    expect(btn.textContent).toMatch(/Signaturen-Tour/);
+    expect(cap.textContent).not.toMatch(/Schritt/);
+  });
+
+  it('Detektorwechsel während der Tour beendet sie (kein Standbild)', () => {
+    $('btn-ev-tour').click();
+    $('dt-cms').click();                      // selectDetector → drawDetBg → Tour-Ende
+    expect($('btn-ev-tour').textContent).toMatch(/Signaturen-Tour/);
+  });
+
+  it('„Bild lesen"-Akkordeon enthält das echte Higgs-Event-Vorbild', () => {
+    document.querySelector('.cv4-pi-btn[data-pi="evRead"]').click();
+    const box = $('pi-evRead');
+    expect(box.classList.contains('open')).toBe(true);
+    expect(box.querySelector('img.cv4-pi-img')).toBeTruthy();
+    expect(box.textContent).toMatch(/Higgs-Kandidaten/);
+  });
 });

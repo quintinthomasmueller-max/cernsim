@@ -36,6 +36,7 @@ function initDom(){
  E.btnToggleGeo=$("btn-toggle-geo");
  E.btnPrePp=$("btn-pre-pp"); E.btnPreQgp=$("btn-pre-qgp"); E.btnPrePilot=$("btn-pre-pilot");
  E.btnZoomOut=$("btn-zoom-out"); E.btnZoomMeyrin=$("btn-zoom-meyrin"); E.btnDiagramFull=$("btn-diagram-full");
+ E.btnEvTour=$("btn-ev-tour");
  E.root=$("cern-v4");
  E.grpAtlas=$("grp-atlas"); E.grpCms=$("grp-cms"); E.grpAlice=$("grp-alice"); E.grpLhcb=$("grp-lhcb");
  E.svg=$("svg");
@@ -78,7 +79,8 @@ function start(){
  // Nach Resize das LETZTE Event wieder zeichnen (drawDetBg allein würde die
  // Spuren der letzten Kollision verwerfen, bis das nächste Event eintrifft).
  const redraw = ()=>{ App.resizeCanvases();
-  App.state.lastEvent ? App.drawCollisionEvent(App.state.lastEvent) : App.drawDetBg();
+  if(App.state.tourStep) App.evTourDraw();   // Tour-Standbild in neuer Größe neu zeichnen
+  else App.state.lastEvent ? App.drawCollisionEvent(App.state.lastEvent) : App.drawDetBg();
   App.drawHist(); };
  if(typeof ResizeObserver !== "undefined"){
   const ro = new ResizeObserver(redraw);

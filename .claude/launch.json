@@ -6,6 +6,12 @@
       "runtimeExecutable": "python3",
       "runtimeArgs": ["-m", "http.server", "8753", "--directory", "cern/app"],
       "port": 8753
+    },
+    {
+      "name": "share",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "8754", "--directory", "cern"],
+      "port": 8754
     }
   ]
 }

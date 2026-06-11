@@ -104,6 +104,96 @@ const INFO_DB = {
   cred: 'STFC · CC BY-SA 2.0',
   stats: [['Länge','21 m'],['Kollisions-E.','√s ≤ 14 TeV'],['Akzeptanz','η = 2–5']],
   text: 'LHCb misst bei p-p-Kollisionen (99,99999 % c) nur in einem engen Vorwärtskegel, wo B-Mesonen bevorzugt entstehen. Der VELO-Detektor nähert sich dem Kollisionspunkt bis auf 5,1 mm. RICH-Detektoren identifizieren Teilchen über Cherenkov-Strahlung. Ziel: die CP-Verletzung und die Asymmetrie zwischen Materie und Antimaterie im Universum verstehen.'
+ },
+
+ // ── Detektor-SCHICHTEN (Event-Display: Klick auf einen Ring / eine Station) ──
+ L_TRACK: {
+  title: 'Spurdetektor (Tracker)',
+  sub: 'Innerste Schicht · sieht geladene Teilchen',
+  color: '#58a6ff',
+  img: 'First half of the CMS inner tracking barrel. 2006, Courtesy of CERN. (10134648713).jpg',
+  cred: 'STFC/CERN · CC BY-SA 2.0',
+  stats: [['Material','Silizium (wie Kamerachips)'],['CMS-Pixel','124 Millionen'],['Präzision','~0,01 mm']],
+  text: 'Die innerste Zwiebelschale: Millionen Silizium-Sensoren — im Kern dieselbe Technik wie der Chip einer Handykamera. Jedes elektrisch geladene Teilchen hinterlässt eine Kette von Treffern, aus der der Computer seine Bahn rekonstruiert. Das Magnetfeld krümmt die Bahn: je gerader die Spur, desto höher der Impuls. Neutrale Teilchen (Photonen, Neutronen) bleiben hier unsichtbar.'
+ },
+ L_EM: {
+  title: 'Elektromagnetisches Kalorimeter (ECAL)',
+  sub: 'Schicht 2 · stoppt Elektronen & Photonen',
+  color: '#2ea44f',
+  img: 'One Ecal Endcap Dee Installed (2681999640).jpg',
+  cred: 'µµ (Flickr) · CC BY-SA 2.0',
+  stats: [['CMS-Kristalle','76 000 × PbWO₄'],['Stoppt','e⁻, e⁺, γ'],['Prinzip','Energie → Lichtblitz']],
+  text: 'Hier endet die Reise für Elektronen und Photonen: 76 000 Bleiwolframat-Kristalle (CMS) — glasklar, aber schwerer als Eisen. Schlägt ein Teilchen ein, erzeugt es einen winzigen Lichtblitz, dessen Helligkeit die Energie verrät. Ein Photon erkennt man genau daran, dass es hier Energie hinterlässt, OHNE vorher eine Spur im Tracker zu ziehen.'
+ },
+ L_HAD: {
+  title: 'Hadron-Kalorimeter (HCAL)',
+  sub: 'Schicht 3 · stoppt Protonen, Neutronen & Pionen',
+  color: '#ff7f0e',
+  img: 'CMS Hcal 26 01 2007.JPG',
+  cred: 'Wikimedia Commons · CC BY-SA 3.0',
+  stats: [['Material','Messing + Szintillator'],['Stoppt','p, n, π — ganze „Jets"'],['Kuriosum','Messing aus Marine-Granathülsen']],
+  text: 'Die dickste Bremsschicht: Platten aus Messing und Stahl, dazwischen Kunststoff, der beim Durchschuss aufleuchtet. Hadronen — Teilchen aus Quarks, wie Protonen und Pionen — zerplatzen hier zu ganzen Teilchen-Schauern („Jets"). Kuriosum: Ein Teil des CMS-Messings wurde aus eingeschmolzenen Granathülsen der russischen Marine gefertigt.'
+ },
+ L_COIL: {
+  title: 'Die Magnetspule',
+  sub: 'Solenoid (CMS) / Toroid (ATLAS) · krümmt alle Bahnen',
+  color: '#8b949e',
+  img: 'CERN toroid magnets and endcap.jpg',
+  cred: 'M. Formento · CC BY-SA 2.0',
+  stats: [['CMS-Solenoid','3,8 T ≈ 100 000 × Erdfeld'],['ATLAS-Toroide','8 Spulen à 25 m'],['Betrieb','supraleitend (−269 °C)']],
+  text: 'Der Grund, warum alle Spuren gebogen sind: eine supraleitende Riesenspule. CMS hat den stärksten Solenoid-Magneten der Welt (3,8 Tesla), ATLAS das markante achtarmige Toroid-System (Foto). Aus der Krümmung der Bahn berechnet der Computer den Impuls jedes Teilchens — ohne Magnet wüsste man nur die Richtung, nicht die „Wucht".'
+ },
+ L_MUON: {
+  title: 'Myonkammern',
+  sub: 'Äußerste Schicht · nur Myonen kommen so weit',
+  color: '#f85149',
+  img: 'CMS muon chambers.jpg',
+  cred: 'zipckr (Flickr) · CC BY 2.0',
+  stats: [['Position','äußerste Schale'],['CMS-Eisenjoch','12 500 t'],['Goldene Signatur','H→ZZ*→4μ']],
+  text: 'Alles andere ist längst steckengeblieben — was hier noch ankommt, MUSS ein Myon sein. Deshalb bilden die Myonkammern die äußerste und größte Schale (bei CMS ins 12 500-Tonnen-Eisenjoch eingebaut, das rote „Riesenrad" auf den Fotos). Vier Myonen gleichzeitig sind die goldene Higgs-Signatur — das Myon steht sogar im Namen: Compact MUON Solenoid.'
+ },
+ L_TPC: {
+  title: 'TPC — Zeitprojektionskammer',
+  sub: 'ALICE-Herzstück · 3D-Kamera für 20 000 Spuren',
+  color: '#e377c2',
+  img: 'ALICE TPC.jpg',
+  cred: 'A. Saba/CERN · CC BY-SA 3.0',
+  stats: [['Volumen','90 m³ Gas'],['Spuren pro Pb-Pb-Event','bis ~20 000'],['Prinzip','driftende Elektronen → 3D-Bild']],
+  text: 'Die größte „Gas-Kamera" der Welt: ein Zylinder mit 90 Kubikmetern Gas. Fliegt ein geladenes Teilchen hindurch, schlägt es aus den Gasatomen Elektronen heraus; die driften zu den Endplatten und ergeben ein dreidimensionales Bild der Bahn. Nur so kann ALICE die bis zu 20 000 Spuren einer einzigen Blei-Blei-Kollision entwirren.'
+ },
+ L_TOF: {
+  title: 'TOF — Flugzeit-Detektor',
+  sub: 'ALICE · Stoppuhr mit Pikosekunden-Genauigkeit',
+  color: '#2ea44f',
+  stats: [['Misst','Ankunftszeit (~10⁻¹² s genau)'],['Verrät','Teilchensorte (π/K/p)'],['Fläche','141 m²']],
+  text: 'Eine gigantische Stoppuhr: Der TOF misst auf Billionstel Sekunden genau, WANN ein Teilchen ankommt. Gleiche Bahn, aber später angekommen = schwereres Teilchen. So unterscheidet ALICE Pionen, Kaonen und Protonen — die „Volkszählung" im Quark-Gluon-Plasma.'
+ },
+ L_VTX: {
+  title: 'VELO — Vertex Locator',
+  sub: 'LHCb · nur 5 mm vom Strahl entfernt',
+  color: '#ff7f0e',
+  img: 'VELO.jpg',
+  cred: 'LHCb Collaboration · CC BY-SA 4.0',
+  stats: [['Abstand zum Strahl','5 mm'],['Sieht','Zerfalls-Vertices'],['B-Mesonen-Flugstrecke','mm bis cm']],
+  text: 'Der Detektor, der dem Kollisionspunkt am nächsten kommt: nur 5 Millimeter. So sieht LHCb, dass B-Mesonen erst ein paar Millimeter weit fliegen und DANN zerfallen — dieser Knick (Sekundär-Vertex) ist ihr Fingerabdruck und der Schlüssel zur Frage, warum es im Universum mehr Materie als Antimaterie gibt.'
+ },
+ L_RICH: {
+  title: 'RICH — Cherenkov-Ring-Detektor',
+  sub: 'LHCb · Teilchen-Ausweis per Lichtkegel',
+  color: '#58a6ff',
+  img: 'RICH-2.jpg',
+  cred: 'LHCb Collaboration · CC BY-SA 4.0',
+  stats: [['Prinzip','Cherenkov-Licht'],['Misst','Geschwindigkeit'],['Unterscheidet','π / K / p']],
+  text: 'Ist ein Teilchen in einem Medium schneller als das Licht dort, erzeugt es einen Lichtkegel — das optische Gegenstück zum Überschallknall. Aus dem Durchmesser des Lichtrings liest LHCb die Geschwindigkeit ab und bestimmt zusammen mit dem Impuls die Teilchensorte.'
+ },
+ L_MAGNET: {
+  title: 'LHCb-Dipolmagnet',
+  sub: 'LHCb · 1 600 t schwere Weiche für Teilchenbahnen',
+  color: '#f1e05a',
+  img: 'The LHCb magnet. 2008, Courtesy of CERN. (10134714863).jpg',
+  cred: 'STFC/CERN · CC BY-SA 2.0',
+  stats: [['Gewicht','1 600 t'],['Biegekraft','4 Tm'],['Zweck','Knick → Impulsmessung']],
+  text: 'Statt einer Spule um alles herum nutzt LHCb einen riesigen Dipolmagneten mitten im Strahlengang: Jede geladene Spur bekommt hier einen Knick. Je kleiner der Knick, desto größer der Impuls — dasselbe Prinzip wie die gekrümmten Spuren in den Ring-Detektoren, nur in Vorwärtsrichtung.'
  }
 };
 
@@ -124,8 +214,19 @@ const PARAM_INFO = {
  // ── Laien-Einstieg (Elternabend) ────────────────────────────────────────────
  introCern: 'Das CERN bei Genf betreibt den größten Teilchenbeschleuniger der Welt, den LHC: einen 27 km langen Ringtunnel 100 m unter der Erde. Darin werden zwei Strahlen winziger Teilchen (Protonen) fast auf Lichtgeschwindigkeit gebracht und an vier Punkten frontal zur Kollision gebracht. Aus der Energie der Kollision entstehen kurzlebig neue Teilchen (E = mc²) – große Detektoren (ATLAS, CMS, ALICE, LHCb) fotografieren sie. So wurde 2012 das Higgs-Boson entdeckt. Bis ein Strahl Energie hat, durchläuft er eine Kette von Vorbeschleunigern (LINAC → PSB/LEIR → PS → SPS → LHC) – genau diese Kette siehst du oben.',
  introUse: 'So bedienst du die Schaltzentrale: (1) Strahl wählen (Protonen oder Blei-Ionen). (2) Ein Experiment-Preset laden ODER von Hand: Füllprotokoll starten → Energie-Ramping → Beam Squeeze. (3) „Auto-Datennahme" sammelt Kollisionen. Unten siehst du links eine einzelne Kollision (Event-Display) und rechts, wie sich daraus das Massenspektrum aufbaut – findet ein Detektor 5 σ, gilt das Teilchen als entdeckt. Tipp: Auf jeden Ring/Detektor klicken zeigt ein Info-Fenster mit Foto und echten Kennzahlen.',
- evRead: 'Jede Linie ist die Spur EINES Teilchens, das aus einer einzigen Kollision im Zentrum nach außen fliegt. Die Farbe verrät die Teilchenart (siehe Legende unten): grün = Myon (durchquert alle Schichten), blau = Elektron, gelb = Photon, orange = Hadron-Schauer, grau gestrichelt = fehlende Energie (ein Neutrino ist unsichtbar entkommen). Die Krümmung der Spur kommt vom Magnetfeld – je gerader, desto höher der Impuls. Aus diesen Spuren rekonstruiert man, welches Teilchen zerfallen ist. (Spuren & Untergrund: echte CMS-Open-Data.)',
+ evRead: 'Der Detektor ist eine ZWIEBEL aus Materialschichten — die farbigen Ringe sind ihr Querschnitt. Jede Linie ist die Spur EINES Teilchens, das aus einer einzigen Kollision im Zentrum nach außen fliegt, und jede Teilchenart bleibt in „ihrer" Schicht stecken: grün = Myon (durchquert alle Schichten), blau = Elektron (stoppt im EM-Kalorimeter), gelb = Photon (EM-Kalorimeter, aber OHNE Spur), orange = Hadron-Schauer (Hadron-Kalorimeter), grau gestrichelt = fehlende Energie (ein Neutrino ist unsichtbar entkommen). Die Krümmung der Spur kommt vom Magnetfeld – je gerader, desto höher der Impuls. Aus diesem Muster rekonstruiert man, welches Teilchen zerfallen ist. (Spuren & Untergrund: echte CMS-Open-Data.) Tipp: Klicke im Bild auf eine Schicht für Foto & Erklärung — oder starte die ▶ Signaturen-Tour.',
  spRead: 'Hier „wiegen" wir Teilchen: Aus den Spuren jeder Kollision berechnen wir die invariante Masse des zerfallenen Teilchens und tragen sie ins Histogramm ein (x-Achse = Masse in GeV, y-Achse = Häufigkeit). Ein echtes Teilchen (z. B. das Z⁰ bei 91 GeV) erscheint als scharfer „Berg" über dem glatten Untergrund. Die Signifikanz (in σ) misst, wie sicher der Berg echt und kein Zufall ist – ab 5 σ spricht man von einer Entdeckung (so wurde 2012 das Higgs gefunden). Je mehr Kollisionen, desto deutlicher der Berg: die Signifikanz wächst mit der Wurzel der Datenmenge (∝ √N).'
+};
+
+// Figuren für Param-Info-Akkordeons: echtes Vorbild-Bild unter dem Text.
+// evRead = die berühmten Higgs-Kandidaten von 2012 (CMS H→γγ oben, ATLAS H→4μ
+// unten) — „so sieht das Original der Physiker aus".
+const PARAM_INFO_FIG = {
+ evRead: {
+  img: 'Candidate Higgs Events in ATLAS and CMS.png',
+  cred: 'CERN, ATLAS/CMS · CC BY-SA 3.0',
+  cap: 'Das Original: zwei ECHTE Higgs-Kandidaten von 2012 — oben CMS (H→γγ: zwei grüne Energie-Bündel im Kristall-Kalorimeter), unten ATLAS (H→4μ: rote Spuren bis ganz nach außen). Unser Display zeichnet genau diese Art Bild vereinfacht nach.'
+ }
 };
 
 // Echtes Foto (Wikimedia Commons, CC) als Panel-Kopf — mit Farbverlauf-Tint,
@@ -171,6 +272,7 @@ function toggleParamInfo(id){
 }
 
 App.PARAM_INFO = PARAM_INFO;
+App.PARAM_INFO_FIG = PARAM_INFO_FIG;
 App.showInfo = showInfo;
 App.hideInfo = hideInfo;
 App.toggleParamInfo = toggleParamInfo;

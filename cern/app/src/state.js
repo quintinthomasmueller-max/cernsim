@@ -24,6 +24,7 @@ Object.assign(App.state, {
   histSeen:  { ATLAS: 0, CMS: 0, ALICE: 0, LHCB: 0 },   // gesehene Einträge (Reservoir-Sampling am HIST_CAP)
   lastEvent: null, goldenEvent: null, higgsCands: 0,
   selDet: 'ATLAS',
+  tourStep: 0,               // Signaturen-Tour im Event-Display (0 = aus, 1..6 = Schritt)
   isFastMode: true,
   // CCC-Operator-Parameter
   paramEnergy: 6.8,          // Ziel-Energie (TeV)
