@@ -14,8 +14,7 @@ PhytonNotebook/
 │   ├── notebooks/
 │   │   └── CERN_Beschleuniger_Schaltzentrale.ipynb
 │   ├── scripts/
-│   │   ├── cern_utils.py
-│   │   └── create_notebook.py
+│   │   └── cern_utils.py
 │   ├── data/
 │   ├── resources/
 │   └── output/
@@ -38,8 +37,14 @@ Interaktive Simulation und Visualisierung eines Teilchenbeschleunigers.
 - `notebooks/CERN_Beschleuniger_Schaltzentrale.py` – jupytext-Spiegel (`py:percent`, diffbar; via `jupytext --sync` gekoppelt)
 - `app/` – modulare Widget-Quellen (JS/CSS/HTML), gebündelt von `scripts/sync_widget.py` in Zelle 4
 - `scripts/cern_utils.py` – Hilfsfunktionen (Physik, Massenspektrum, Kollisionen)
-- `scripts/create_notebook.py` – Legacy-Generator (erzeugt das Notebook von Grund auf)
 - `data/`, `resources/`, `output/` – Daten, Ressourcen und Ausgaben
+
+Ist-Zustand/Status: `docs/MIGRATION.md`. Wiederverwendbare Anleitung, um ein weiteres Physik-
+Visualisierungs-Tool in derselben Form agentisch zu bauen: `docs/PLAYBOOK.md`.
+Historische Analyse-/Blueprint-Dokumente (überholt durch `CLAUDE.md` + `docs/MIGRATION.md`)
+liegen in `docs/legacy/`. Der frühere Notebook-Generator `create_notebook.py` wurde entfernt
+(das Notebook wird seit der App-First-Migration via jupytext + `scripts/sync_widget.py` gepflegt;
+ein Regenerieren von Grund auf hätte das kuratierte Curriculum überschrieben).
 
 ### Akkretions-Notebooks (`akkretion/`)
 Physik-Simulationen zur Akkretion.

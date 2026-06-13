@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """
-build_data.py — regeneriert cern/app/data.js (CERN_REAL) aus ECHTEN CMS-Open-Data.
+build_data.py — regeneriert cern/app/src/data.gen.js (CERN_REAL, ES-Modul) aus
+ECHTEN CMS-Open-Data. (Früher zweistufig: data.js + ESM-Spiegel im esbuild-Schritt —
+konsolidiert auf EINE Datei, die esbuild/Tests direkt importieren.)
 
 Quelle der Echtdaten: cern/data/cms_dimuon_subset.csv
   = CMS Open Data, Record 545, Run2011A DoubleMu, √s = 7 TeV (p-p), volle Kinematik.
@@ -23,7 +25,7 @@ import os, sys, csv, json, random
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CSV  = os.path.join(ROOT, "cern", "data", "cms_dimuon_subset.csv")
 H4L_DIR = os.path.join(ROOT, "cern", "data", "higgs4l")   # echte CMS-4ℓ-Kandidaten (Record 5200)
-OUT  = os.path.join(ROOT, "cern", "app", "data.js")
+OUT  = os.path.join(ROOT, "cern", "app", "src", "data.gen.js")
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import gen_constants  # reso_fragment() = byte-identischer reso-Block aus physics.json
 
@@ -184,7 +186,7 @@ def build():
         "// Kein echtes Pb-Pb vorhanden → QGP-Effekte werden im Widget modelliert (siehe meta).\n"
         "// reso aus physics.json (Single Source).\n"
     )
-    body = "const CERN_REAL = {" + ",".join(parts) + "};\n"
+    body = "export const CERN_REAL = {" + ",".join(parts) + "};\n"
     open(OUT, "w", encoding="utf-8").write(header + body)
     sizes = {k: len(v) for k, v in masses.items()}
     sizes["higgs4l" + ("(echt)" if not higgs4l_sim else "(sim)")] = len(higgs4l)

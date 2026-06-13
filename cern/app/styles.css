@@ -52,7 +52,7 @@
    Desktop füllt es die linke Spalte → größeres Diagramm, weniger Leerraum. */
 #svg{width:100%;height:auto;display:block;margin:0 auto}
 .cv4-panel{background:var(--panel);border-radius:16px;border:1px solid var(--bd);padding:16px;display:flex;flex-direction:column;gap:16px}
-/* flow-root: schließt die float:right-ⓘ-Buttons ein — sonst quetschen über-
+/* flow-root: schließt die float:right-Info-Buttons ein — sonst quetschen über-
    laufende Floats das darunterliegende offene Akkordeon (BFC) auf Minimalbreite */
 .cv4-ptitle{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--tx-dim);border-bottom:1px solid var(--bd-soft);padding-bottom:6px;margin-bottom:8px;font-weight:700;display:flow-root}
 .cv4-btn{background:var(--card);color:var(--tx);border:1px solid var(--bd);padding:9px 14px;border-radius:9px;cursor:pointer;font-size:12px;font-weight:600;transition:all .2s;text-align:center}
@@ -146,7 +146,7 @@
 /* Easter Egg FCC: Ring standardmäßig versteckt, erscheint beim Heraus-Zoom. */
 .geo-fcc{opacity:0;transition:opacity .8s}
 #svg.fcc-on .geo-fcc{opacity:1}
-/* Versteckter Auslöser (✦ im See) — klickbar trotz #geo-layer{pointer-events:none}. */
+/* Versteckter Auslöser (Punkt im See) — klickbar trotz #geo-layer{pointer-events:none}. */
 .fcc-trigger{pointer-events:auto;cursor:pointer;transition:fill .2s}
 .fcc-trigger:hover{fill:rgba(210,120,255,0.95)}
 .info-hit{cursor:pointer;transition:fill 0.18s}

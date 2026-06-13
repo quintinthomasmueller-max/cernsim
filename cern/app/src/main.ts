@@ -30,7 +30,7 @@ function initDom(){
  E.b1c=$("b1c"); E.b2c=$("b2c"); E.b1bar=$("b1bar"); E.b2bar=$("b2bar"); E.rbar=$("rbar");
  E.vE=$("v-e"); E.vB=$("v-b"); E.vG=$("v-g"); E.vT=$("v-t");
  E.spInfo=$("sp-info");
- E.sliEnergy=$("sli-energy"); E.sliIntensity=$("sli-intensity"); E.sliBeta=$("sli-beta"); E.sliRampSpeed=$("sli-rampspeed");
+ // Strahl-Parameter sind jetzt reine ANZEIGEN (Preset-gesteuert), keine Slider mehr.
  E.lblEnergy=$("lbl-energy"); E.lblIntensity=$("lbl-intensity"); E.lblBeta=$("lbl-beta"); E.lblRampSpeed=$("lbl-rampspeed");
  E.trInj=$("tr-inj");
  E.btnToggleGeo=$("btn-toggle-geo");
@@ -97,7 +97,7 @@ function ready(){
      && document.getElementById("btn-auto");
 }
 function boot(){
- const root = document.getElementById("cern-v4");
+ const root = document.getElementById("cern-v4") as any;  // __cernBooted = Custom-Boot-Flag
  if(!root || root.__cernBooted || !ready()) return !!(root && root.__cernBooted);
  root.__cernBooted = true;
  try { start(); }

@@ -105,21 +105,89 @@ describe('Gleichzeitige Datennahme: alle Experimente nehmen denselben Fill auf',
 });
 
 describe('QGP: Quarkonia-Unterdrückung im Ionen-Modus', () => {
-  // Anteil der J/ψ-Fenster-Events am ALICE-Spektrum (statistisch, große N).
-  function jpsiFraction(ion) {
+  // R_AA-Metrik: PEAK-zu-KONTINUUM-Verhältnis (das Rejection-Sampling hält das
+  // Kontinuum fest und senkt nur die Peak-Ausbeute — wie die echte Messung).
+  function jpsiToCont(ion) {
     App.resetSpectrumData();
     s.selDet = 'ALICE'; s.isIon = ion; s.paramEnergy = 2.5;   // J/ψ erzeugbar (Schwelle 0.4)
     s.paramIntensity = 2.0; s.paramBetaStar = 0.3;            // viele Events pro Kollision
     for (let i = 0; i < 250; i++) App.generateMassData();
     const data = s.massStore.ALICE;
-    const inJ = data.filter(m => Math.abs(m - 3.097) <= 0.5).length;
-    return inJ / data.length;
+    const peak = data.filter(m => Math.abs(m - 3.097) <= 0.35).length;
+    const cont = data.filter(m => (m > 1.5 && m < 2.5) || (m > 4.2 && m < 8.5)).length;
+    return peak / Math.max(1, cont);
   }
-  it('Pb-Pb unterdrückt den J/ψ-Peak gegenüber p-p', () => {
-    const pp  = jpsiFraction(false);
-    const PbPb = jpsiFraction(true);
-    expect(pp).toBeGreaterThan(0.1);          // p-p: klarer J/ψ-Peak
-    expect(PbPb).toBeLessThan(pp * 0.85);     // Pb-Pb: deutlich unterdrückt (QGP-Schmelzen)
+  it('Pb-Pb unterdrückt den J/ψ-Peak relativ zum Kontinuum (R_AA < 1)', () => {
+    const pp   = jpsiToCont(false);
+    const PbPb = jpsiToCont(true);
+    expect(pp).toBeGreaterThan(0.2);          // p-p: klarer J/ψ-Peak über dem Kontinuum
+    expect(PbPb).toBeLessThan(pp * 0.8);      // Pb-Pb: R_AA = 0.6 modelliert (± Statistik)
+  });
+});
+
+describe('Spektrum-Kurve passt zu den echten Daten (χ²-Formvergleich)', () => {
+  // Gewichtetes POOL-Histogramm (Gewicht = Überlebens-W'keit je Event) gegen die
+  // gezeichnete Kurve App.fitValFor — exakt das, was drawHist malt. Fehler aus
+  // Pool-Zählung (gewichtetes Poisson). Vor der Daten-Kalibrierung: χ²/ndf 14–157.
+  function chi2ndf(det, ion, E, pool, range, bins, windows) {
+    s.selDet = det; s.isIon = ion; s.paramEnergy = E;
+    const [mn, mx] = range;
+    const wOf = m => { for (const [c, hw, w] of windows) if (Math.abs(m - c) <= hw) return w; return 1; };
+    const binsD = Array(bins).fill(0), binsW2 = Array(bins).fill(0), model = Array(bins).fill(0);
+    pool.forEach(m => {
+      if (m < mn || m >= mx) return;
+      const i = Math.floor((m - mn) / (mx - mn) * bins);
+      const w = wOf(m); binsD[i] += w; binsW2[i] += w * w;
+    });
+    for (let i = 0; i < bins; i++) model[i] = App.fitValFor(det, mn + (i + 0.5) / bins * (mx - mn));
+    const sumD = binsD.reduce((a, b) => a + b, 0), sumM = model.reduce((a, b) => a + b, 0);
+    let chi2 = 0, ndf = 0;
+    for (let i = 0; i < bins; i++) {
+      const mi = model[i] / sumM * sumD;
+      if (mi < 1.5 && binsD[i] < 1.5) continue;
+      chi2 += (binsD[i] - mi) ** 2 / Math.max(binsW2[i], mi, 0.5); ndf++;
+    }
+    return chi2 / Math.max(1, ndf);
+  }
+  it('ATLAS p-p (Z⁰): Kurve folgt den echten μμ-Daten', () => {
+    expect(chi2ndf('ATLAS', false, 6.8, CERN_REAL.pp, [50, 150], 60, [])).toBeLessThan(3);
+  });
+  it('CMS p-p (4ℓ): Kurve folgt den echten 4ℓ-Kandidaten inkl. ZZ-Schulter', () => {
+    expect(chi2ndf('CMS', false, 6.8, CERN_REAL.higgs4l, [80, 200], 60, [])).toBeLessThan(3);
+  });
+  it('CMS Pb-Pb (Υ): Kurve folgt den R_AA-gewichteten Daten', () => {
+    const win = [[9.46, 0.40, 0.45], [10.02, 0.28, 0.12], [10.36, 0.26, 0.02]];
+    expect(chi2ndf('CMS', true, 2.7, CERN_REAL.ion, [7, 12], 50, win)).toBeLessThan(3);
+  });
+});
+
+describe('Nullhypothese-Overlay (Erwartung ohne Signal)', () => {
+  it('CMS p-p: „ohne Higgs" liegt im 125-Fenster UNTER dem Modell, außerhalb identisch', () => {
+    s.selDet = 'CMS'; s.isIon = false; s.paramEnergy = 6.8;
+    expect(App.nullValFor('CMS', 125)).toBeLessThan(App.fitValFor('CMS', 125) * 0.5);
+    expect(App.nullValFor('CMS', 160)).toBeCloseTo(App.fitValFor('CMS', 160), 9);
+  });
+  it('CMS Pb-Pb: „ohne QGP" zeigt den VOLLEN Υ-Peak über dem unterdrückten Modell', () => {
+    s.selDet = 'CMS'; s.isIon = true; s.paramEnergy = 2.7;
+    expect(App.nullValFor('CMS', 9.46)).toBeGreaterThan(App.fitValFor('CMS', 9.46) * 1.5);
+  });
+});
+
+describe('Energie-Gating: unterdrückte Events bleiben ECHTES Kontinuum', () => {
+  it('Pilot (0,45 TeV): ATLAS-Spektrum fällt (kein Uniform-Plateau aus Re-Smear)', () => {
+    s.selDet = 'ATLAS'; s.isIon = false; s.paramEnergy = 0.45;
+    s.paramIntensity = 2.0; s.paramBetaStar = 0.3;
+    for (let i = 0; i < 200; i++) App.generateMassData();
+    const d = s.massStore.ATLAS;
+    const lo = d.filter(m => m >= 50 && m < 100).length;
+    const hi = d.filter(m => m >= 100 && m < 150).length;
+    expect(lo).toBeGreaterThan(2 * hi);   // echtes Kontinuum fällt steil
+  });
+  it('Pilot: auch Z→4ℓ ist im sichtbaren 4ℓ-Event gegatet (nicht nur das H-Fenster)', () => {
+    s.selDet = 'CMS'; s.isIon = false; s.paramEnergy = 0.45;
+    let zWin = 0;
+    for (let i = 0; i < 2000; i++) { const ev = App.sampleEvent(); if (Math.abs(ev.M - 91.19) <= 6) zWin++; }
+    expect(zWin / 2000).toBeLessThan(0.02);   // Pool-Anteil wäre ~13 %
   });
 });
 

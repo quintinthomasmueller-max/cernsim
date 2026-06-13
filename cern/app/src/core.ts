@@ -59,14 +59,15 @@ export const DUMP_FRAC = 0.35;                         // Dump-Schwelle (N/N₀)
 // Integer-Sprünge. Bleibt über Dumps erhalten (mehrere Fills summieren sich, real).
 export const STAT_RATE = 0.04;
 
-export const App = {
-  state: {},   // mutable Querschnittsvariablen (state.js füllt via Object.assign)
-  els: {},     // DOM-Referenzen (main.js#initDom befüllt sie bei Boot)
-  g: {},       // SVG-Geometrie: { R, J, paths, nodes, svg } (geometry.js + boot)
-  // öffentliche Funktionen registrieren die Module hier (App.setStatus, App.drawHist, …)
+// Shapes: cern/app/src/types.d.ts. AppNamespace hat eine Index-Signatur → die von
+// den Modulen dynamisch registrierten Funktionen (App.setStatus/drawHist/…) sind `any`.
+export const App: AppNamespace = {
+  state: {} as AppState,   // mutable Querschnitt (state.ts füllt via Object.assign)
+  els: {},     // DOM-Referenzen (main.ts#initDom befüllt sie bei Boot)
+  g: {},       // SVG-Geometrie: { R, J, paths, nodes, svg } (geometry.ts + boot)
 };
 
-export const $ = (id) => document.getElementById(id);
+export const $ = (id: string): any => document.getElementById(id);  // Element-Shape Pilot-lenient
 
 export const SVG_NS = "http://www.w3.org/2000/svg";
 export const sleep = (ms) => new Promise((r) => setTimeout(r, ms));

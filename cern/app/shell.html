@@ -2,17 +2,17 @@
 {{STYLES}}
 
 <div class="cv4-hdr">
- <div><span class="cv4-logo">⚛️ CERN-Schaltzentrale</span><span class="cv4-badge">interaktives Modell</span></div>
+ <div><span class="cv4-logo">CERN-Schaltzentrale</span><span class="cv4-badge">interaktives Modell</span></div>
  <div style="display:flex;align-items:center;gap:12px">
-  <button class="cv4-btn" id="btn-toggle-geo" style="padding:5px 9px;font-size:10.5px">🌍 Reale Ansicht</button>
+  <button class="cv4-btn" id="btn-toggle-geo" style="padding:5px 9px;font-size:10.5px">Reale Ansicht</button>
   <div class="cv4-status"><span class="cv4-dot" id="sdot"></span><span id="stxt">OFFLINE</span></div>
  </div>
 </div>
 
 <div class="cv4-tagline">
  <b>Steuere den größten Teilchenbeschleuniger der Welt.</b> Beschleunige Teilchen fast auf Lichtgeschwindigkeit, bring sie zur Kollision und entdecke daraus neue Teilchen — wie im echten Kontrollzentrum (CCC) am CERN bei Genf.
- <span class="cv4-pi-btn" data-pi="introCern">ⓘ Was ist der CERN?</span>
- <span class="cv4-pi-btn" data-pi="introUse">ⓘ Wie bediene ich das?</span>
+ <span class="cv4-pi-btn" data-pi="introCern">Was ist der CERN?</span>
+ <span class="cv4-pi-btn" data-pi="introUse">Wie bediene ich das?</span>
 </div>
 <div class="cv4-param-info" id="pi-introCern"></div>
 <div class="cv4-param-info" id="pi-introUse"></div>
@@ -22,12 +22,12 @@
  <div class="cv4-colL">
  <div class="cv4-svg-wrap">
   <!-- Interactive Absolute Overlay Reset Zoom Button -->
-  <button class="cv4-btn off" id="btn-zoom-out" style="position:absolute;top:12px;left:12px;padding:5px 10px;font-size:10px;background:rgba(28,37,49,0.92);border-color:#3c4a5c;z-index:10;transition:all 0.2s">🔍 Ansicht zurücksetzen</button>
+  <button class="cv4-btn off" id="btn-zoom-out" style="position:absolute;top:12px;left:12px;padding:5px 10px;font-size:10px;background:rgba(28,37,49,0.92);border-color:#3c4a5c;z-index:10;transition:all 0.2s">Ansicht zurücksetzen</button>
   <!-- Zoom auf den Injektor-Komplex Meyrin (nur in der Realen Ansicht sichtbar) -->
-  <button class="cv4-btn" id="btn-zoom-meyrin" style="position:absolute;bottom:12px;left:12px;padding:5px 10px;font-size:10px;background:rgba(28,37,49,0.92);border-color:#2ea44f;color:#a3b4c6;z-index:10;transition:all 0.2s;display:none">🔬 Injektor-Komplex (Meyrin)</button>
+  <button class="cv4-btn" id="btn-zoom-meyrin" style="position:absolute;bottom:12px;left:12px;padding:5px 10px;font-size:10px;background:rgba(28,37,49,0.92);border-color:#2ea44f;color:#a3b4c6;z-index:10;transition:all 0.2s;display:none">Injektor-Komplex (Meyrin)</button>
   <!-- Großansicht/Vollbild des Plans (nur am Handy sichtbar, CSS schaltet display) -->
-  <button class="cv4-btn" id="btn-diagram-full" style="position:absolute;top:12px;right:12px;padding:5px 10px;font-size:11px;background:rgba(28,37,49,0.92);border-color:#58a6ff;color:#58a6ff;z-index:9999;transition:all 0.2s">⛶ Großansicht</button>
-  <div class="cv4-fs-hint">↻ Querformat zeigt mehr Detail · ⛶ schließt</div>
+  <button class="cv4-btn" id="btn-diagram-full" style="position:absolute;top:12px;right:12px;padding:5px 10px;font-size:11px;background:rgba(28,37,49,0.92);border-color:#58a6ff;color:#58a6ff;z-index:9999;transition:all 0.2s">Großansicht</button>
+  <div class="cv4-fs-hint">Querformat zeigt mehr Detail · Schaltfläche schließt</div>
 
   <svg id="svg" width="700" height="480" viewBox="0 0 700 480" style="background:#0e141d"><!-- = --screen -->
    <!-- Architectural Grid for tech style -->
@@ -154,56 +154,47 @@
 
  <!-- EXPERIMENT WÄHLEN — direkt nach der LHC-Ansicht (Schnellstart, erster Schritt). -->
  <div class="cv4-card">
-  <div class="cv4-ptitle">🔬 EXPERIMENT WÄHLEN — SCHNELLSTART</div>
+  <div class="cv4-ptitle">EXPERIMENT WÄHLEN — SCHNELLSTART</div>
   <!-- Die 3 realen LHC-Betriebsmodi: pp-Physik (Higgs/Z⁰/CP zusammen) · Schwerionen/QGP · Pilot. -->
   <div class="cv4-preset-grid">
-   <div><button class="cv4-btn" id="btn-pre-pp" style="background:rgba(88,166,255,.12);border-color:#58a6ff;color:#58a6ff;font-size:10.5px;padding:8px 3px;width:100%">Protonen-Physik<br><span style="font-size:8.5px;opacity:.8">13,6 TeV · Higgs/Z⁰/CP</span> <span class="cv4-pi-btn" data-pi="prePp">ⓘ</span></button><div class="cv4-param-info" id="pi-prePp"></div></div>
-   <div><button class="cv4-btn" id="btn-pre-qgp" style="background:rgba(227,119,194,.12);border-color:#e377c2;color:#e377c2;font-size:10.5px;padding:8px 3px;width:100%">Schwerionen / QGP<br><span style="font-size:8.5px;opacity:.8">Blei-Ionen · ALICE</span> <span class="cv4-pi-btn" data-pi="preQgp">ⓘ</span></button><div class="cv4-param-info" id="pi-preQgp"></div></div>
-   <div><button class="cv4-btn" id="btn-pre-pilot" style="background:rgba(23,190,207,.12);border-color:#17becf;color:#17becf;font-size:10.5px;padding:8px 3px;width:100%">Pilot-Strahl<br><span style="font-size:8.5px;opacity:.8">Inbetriebnahme · 0,45 TeV</span> <span class="cv4-pi-btn" data-pi="prePilot">ⓘ</span></button><div class="cv4-param-info" id="pi-prePilot"></div></div>
+   <div><button class="cv4-btn" id="btn-pre-pp" style="background:rgba(88,166,255,.12);border-color:#58a6ff;color:#58a6ff;font-size:10.5px;padding:8px 3px;width:100%">Protonen-Physik<br><span style="font-size:8.5px;opacity:.8">13,6 TeV · Higgs/Z⁰/CP</span> <span class="cv4-pi-btn" data-pi="prePp">Info</span></button><div class="cv4-param-info" id="pi-prePp"></div></div>
+   <div><button class="cv4-btn" id="btn-pre-qgp" style="background:rgba(227,119,194,.12);border-color:#e377c2;color:#e377c2;font-size:10.5px;padding:8px 3px;width:100%">Schwerionen / QGP<br><span style="font-size:8.5px;opacity:.8">Blei-Ionen · ALICE</span> <span class="cv4-pi-btn" data-pi="preQgp">Info</span></button><div class="cv4-param-info" id="pi-preQgp"></div></div>
+   <div><button class="cv4-btn" id="btn-pre-pilot" style="background:rgba(23,190,207,.12);border-color:#17becf;color:#17becf;font-size:10.5px;padding:8px 3px;width:100%">Pilot-Strahl<br><span style="font-size:8.5px;opacity:.8">Inbetriebnahme · 0,45 TeV</span> <span class="cv4-pi-btn" data-pi="prePilot">Info</span></button><div class="cv4-param-info" id="pi-prePilot"></div></div>
   </div>
  </div>
 
- <!-- MESSWERTE (LIVE): direkt unter dem Diagramm (linke Spalte). IDs unverändert (engine#updateReadouts). -->
+ <!-- MESSWERTE & STRAHL-PARAMETER: Live-Messwerte (oben) + preset-gesteuerte
+      Strahl-Parameter (unten), in EINEM Panel unter dem Diagramm (linke Spalte).
+      Die Parameter sind keine Regler mehr, sondern Anzeigen des gewählten Presets.
+      IDs unverändert (engine#updateReadouts / Preset-Handler). -->
  <div class="cv4-readouts">
-  <div class="cv4-ptitle">📊 MESSWERTE (LIVE)</div>
+  <div class="cv4-ptitle">MESSWERTE & STRAHL-PARAMETER</div>
   <div class="cv4-rg">
    <div class="cv4-ro"><span class="cv4-ro-l">Energie/Strahl</span><span class="cv4-ro-v" id="v-e">0,00 TeV</span></div>
    <div class="cv4-ro"><span class="cv4-ro-l">Magnetfeld B</span><span class="cv4-ro-v" id="v-b">0.000 T</span></div>
    <div class="cv4-ro"><span class="cv4-ro-l">Lorentz γ</span><span class="cv4-ro-v" id="v-g">1</span></div>
    <!-- Versteckter Toggle: Klick wechselt Protonen ⟷ Blei-Ionen (ersetzt die früheren Auswahl-Tabs). -->
    <div class="cv4-ro cv4-ro-toggle" id="ro-teilchen" title="Klicken: Protonen ⟷ Blei-Ionen-Strahl"><span class="cv4-ro-l">Teilchen ⇄</span><span class="cv4-ro-v" id="v-t" style="color:#58a6ff">Proton</span></div>
+   <!-- Preset-Parameter (Anzeige): vom gewählten Preset gesetzt, Info-Button erklärt jeden. -->
+   <div class="cv4-ro"><span class="cv4-ro-l">Ziel-Energie <button class="cv4-pi-btn" data-pi="energy">Info</button></span><span class="cv4-ro-v" id="lbl-energy">6,80 TeV</span></div>
+   <div class="cv4-ro"><span class="cv4-ro-l">Bunch-Intensität <button class="cv4-pi-btn" data-pi="intensity">Info</button></span><span class="cv4-ro-v" id="lbl-intensity">1,15·10¹¹ p</span></div>
+   <div class="cv4-ro"><span class="cv4-ro-l">Strahl-Fokus β* <button class="cv4-pi-btn" data-pi="beta">Info</button></span><span class="cv4-ro-v" id="lbl-beta">1,50 m</span></div>
+   <div class="cv4-ro"><span class="cv4-ro-l">Ramp-Rate dB/dt <button class="cv4-pi-btn" data-pi="rampspeed">Info</button></span><span class="cv4-ro-v" id="lbl-rampspeed" style="color:#58a6ff">0,05 T/s</span></div>
   </div>
- </div>
-
- <!-- STRAHL-EINSTELLUNGEN: die regelbaren Maschinen-Parameter, unter die Messwerte
-      gezogen (zugänglicher; war zuvor „Betriebsparameter (CCC)" im rechten Panel). -->
- <div class="cv4-params">
-  <div class="cv4-ptitle">🎛️ STRAHL-EINSTELLUNGEN</div>
-
-  <div class="cv4-sli-lbl"><span>Ziel-Energie: <button class="cv4-pi-btn" data-pi="energy">ⓘ</button></span><span id="lbl-energy">6,80 TeV</span></div>
+  <!-- Info-Akkordeons (volle Breite, unter dem Kachelraster) -->
   <div class="cv4-param-info" id="pi-energy"></div>
-  <input type="range" class="cv4-sli" id="sli-energy" min="0.45" max="7.0" step="0.05" value="6.8">
-
-  <div class="cv4-sli-lbl" style="margin-top:8px"><span>Bunch-Intensität: <button class="cv4-pi-btn" data-pi="intensity">ⓘ</button></span><span id="lbl-intensity">1,15·10¹¹ p</span></div>
   <div class="cv4-param-info" id="pi-intensity"></div>
-  <input type="range" class="cv4-sli" id="sli-intensity" min="0.1" max="1.8" step="0.05" value="1.15">
-
-  <div class="cv4-sli-lbl" style="margin-top:8px"><span>Strahl-Fokus β*: <button class="cv4-pi-btn" data-pi="beta">ⓘ</button></span><span id="lbl-beta">1,50 m</span></div>
   <div class="cv4-param-info" id="pi-beta"></div>
-  <input type="range" class="cv4-sli" id="sli-beta" min="0.3" max="1.5" step="0.1" value="1.5" disabled>
-
-  <div class="cv4-sli-lbl" style="margin-top:8px"><span>Ramp-Rate dB/dt: <button class="cv4-pi-btn" data-pi="rampspeed">ⓘ</button></span><span id="lbl-rampspeed" style="color:#58a6ff">0,05 T/s (sicher)</span></div>
   <div class="cv4-param-info" id="pi-rampspeed"></div>
-  <input type="range" class="cv4-sli" id="sli-rampspeed" min="0.02" max="0.15" step="0.01" value="0.05">
  </div>
  </div><!-- /.cv4-colL -->
 
  <div class="cv4-panel">
   <div>
-   <div class="cv4-ptitle">📡 SCHRITT 1 — STRAHL FÜLLEN</div>
+   <div class="cv4-ptitle">SCHRITT 1 — STRAHL FÜLLEN</div>
    <div style="display:flex;flex-direction:column;gap:6px">
-    <button class="cv4-btn" id="btn-speed-toggle" style="background:rgba(88,166,255,.08);border-color:rgba(88,166,255,.3);color:#58a6ff;font-size:10.5px;padding:6px 4px;margin-bottom:2px">⏱️ Tempo: Zeitraffer · 1 s ≈ 40 s real</button>
-    <button class="cv4-btn" id="btn-auto" style="background:rgba(46,164,79,.15);border-color:#2ea44f;color:#2ea44f">⚙️ Füllprotokoll starten</button>
+    <button class="cv4-btn" id="btn-speed-toggle" style="background:rgba(88,166,255,.08);border-color:rgba(88,166,255,.3);color:#58a6ff;font-size:10.5px;padding:6px 4px;margin-bottom:2px">Tempo: Didaktisch · Füllen 1 s ≈ 15 s · Datennahme 1 s ≈ 15 min</button>
+    <button class="cv4-btn" id="btn-auto" style="background:rgba(46,164,79,.15);border-color:#2ea44f;color:#2ea44f">Füllprotokoll starten</button>
    </div>
    <div class="cv4-tracker" id="tracker">
     <span class="step" id="tr-src">Quelle</span><span class="arr">→</span>
@@ -215,30 +206,30 @@
   </div>
 
   <div>
-   <div class="cv4-ptitle">🔋 LHC-FÜLLSTAND</div>
-   <div style="font-size:8.5px;color:#8b949e;margin:-2px 0 4px;line-height:1.35">1 Punkt = 1 PS-Batch (72 B). Das SPS bündelt bis 4 Batches zu 1 Zug (288 B) → ~10 Züge füllen den LHC (Pb-Ionen: nur 592 B)</div>
+   <div class="cv4-ptitle">LHC-FÜLLSTAND</div>
+   <div style="font-size:8.5px;color:#8b949e;margin:-2px 0 4px;line-height:1.35">1 Punkt = 1 Strahl-Paket: vor dem PS nur wenige Bunches, im PS zum 72-Bunch-Batch geformt (Punkt wächst). Im SPS rücken bis 4 Batches zu 1 Zug zusammen (≤288 B). 1 LHC-Punkt = 1 ganzer Zug, nicht ein einzelner Bunch. ~10 Züge füllen den LHC (Pb-Ionen: 592 B). Die Balken zählen die im LHC angekommenen Bunches.</div>
    <div class="cv4-fill-row"><span style="width:108px;font-size:9.5px">B1 <span id="b1c">0 / 2.808</span></span><div class="cv4-fill-bar"><div class="cv4-fill-bar-inner b1" id="b1bar" style="width:0%"></div></div></div>
    <div class="cv4-fill-row" style="margin-top:4px"><span style="width:108px;font-size:9.5px">B2 <span id="b2c">0 / 2.808</span></span><div class="cv4-fill-bar"><div class="cv4-fill-bar-inner b2" id="b2bar" style="width:0%"></div></div></div>
   </div>
 
   <div>
-   <div class="cv4-ptitle">⚡ SCHRITT 2 — BESCHLEUNIGEN & KOLLIDIEREN</div>
+   <div class="cv4-ptitle">SCHRITT 2 — BESCHLEUNIGEN & KOLLIDIEREN</div>
    <div style="display:flex;flex-direction:column;gap:6px">
-    <button class="cv4-btn off" id="btn-ramp">🚀 Energie-Ramping starten</button>
-    <div><button class="cv4-pi-btn" data-pi="ramp" style="font-size:9px">ⓘ Was ist Energie-Ramping?</button><div class="cv4-param-info" id="pi-ramp"></div></div>
+    <button class="cv4-btn off" id="btn-ramp">Energie-Ramping starten</button>
+    <div><button class="cv4-pi-btn" data-pi="ramp" style="font-size:9px">Was ist Energie-Ramping?</button><div class="cv4-param-info" id="pi-ramp"></div></div>
     <div class="cv4-fill-row"><span style="width:50px;font-size:10px">Ramp</span><div class="cv4-fill-bar"><div class="cv4-fill-bar-inner b1" id="rbar" style="width:0%"></div></div></div>
-    <button class="cv4-btn off" id="btn-squeeze" style="background:rgba(23,190,207,.15);border-color:#17becf;color:#17becf">🗜️ Beam Squeeze starten (β*)</button>
-    <div><button class="cv4-pi-btn" data-pi="squeeze" style="font-size:9px">ⓘ Was ist der Beam Squeeze?</button><div class="cv4-param-info" id="pi-squeeze"></div></div>
+    <button class="cv4-btn off" id="btn-squeeze" style="background:rgba(23,190,207,.15);border-color:#17becf;color:#17becf">Beam Squeeze starten (β*)</button>
+    <div><button class="cv4-pi-btn" data-pi="squeeze" style="font-size:9px">Was ist der Beam Squeeze?</button><div class="cv4-param-info" id="pi-squeeze"></div></div>
     <div style="display:flex;gap:4px">
-     <button class="cv4-btn danger off" id="btn-coll" style="flex:1;font-size:10.5px;padding:9px 2px">💥 Kollision (manuell)</button>
-     <button class="cv4-btn off" id="btn-autocoll" style="flex:1.2;background:rgba(248,81,73,.08);border-color:rgba(248,81,73,.4);color:#f85149;font-size:10.5px;padding:9px 2px">▶️ Auto-Datennahme</button>
+     <button class="cv4-btn danger off" id="btn-coll" style="flex:1;font-size:10.5px;padding:9px 2px">Kollision (manuell)</button>
+     <button class="cv4-btn off" id="btn-autocoll" style="flex:1.2;background:rgba(248,81,73,.08);border-color:rgba(248,81,73,.4);color:#f85149;font-size:10.5px;padding:9px 2px">Auto-Datennahme</button>
     </div>
    </div>
   </div>
 
   <!-- INFO PANEL — erscheint im freien Raum der rechten Spalte unter Schritt 2 -->
   <div id="info-panel" class="cv4-info-panel">
-   <button class="cv4-info-close" id="info-close">✕</button>
+   <button class="cv4-info-close" id="info-close">×</button>
    <div id="info-hdr"></div>
    <div class="cv4-info-body">
     <div class="cv4-info-title" id="info-title"></div>
@@ -253,7 +244,7 @@
 
 <div class="cv4-bottom">
  <div>
-  <div class="cv4-ptitle">📸 EVENT-DISPLAY — EINE KOLLISION <span class="cv4-pi-btn" data-pi="evRead" style="float:right">ⓘ Bild lesen</span><span class="cv4-pi-btn cv4-tour-btn" id="btn-ev-tour" style="float:right;margin-right:7px">▶ Signaturen-Tour</span></div>
+  <div class="cv4-ptitle">EVENT-DISPLAY — EINE KOLLISION <span class="cv4-pi-btn" data-pi="evRead" style="float:right">Bild lesen</span><span class="cv4-pi-btn cv4-tour-btn" id="btn-ev-tour" style="float:right;margin-right:7px">Signaturen-Tour</span></div>
   <div class="cv4-param-info" id="pi-evRead"></div>
   <div class="cv4-dtabs">
    <div class="cv4-dtab act" id="dt-atlas">ATLAS</div>
@@ -265,7 +256,7 @@
   <div class="cv4-sp-foot"><div id="ev-caption"></div></div>
  </div>
  <div>
-  <div class="cv4-ptitle">📊 MASSENSPEKTRUM — TEILCHEN WIEGEN <span class="cv4-pi-btn" data-pi="spRead" style="float:right">ⓘ Diagramm lesen</span></div>
+  <div class="cv4-ptitle">MASSENSPEKTRUM — TEILCHEN WIEGEN <span class="cv4-pi-btn" data-pi="spRead" style="float:right">Diagramm lesen</span></div>
   <div class="cv4-param-info" id="pi-spRead"></div>
   <div class="cv4-sp-head">
    <div class="cv4-sp-title" id="sp-title">—</div>

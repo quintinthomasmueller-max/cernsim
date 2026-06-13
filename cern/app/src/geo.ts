@@ -12,11 +12,12 @@
 // ═══════════════════════════════════════════════════════════════════════════
 import { App, SVG_NS } from './core.js';
 import { GEO } from './geo.gen.js';
+import { SAT, SAT_FCC, SAT_INJ, SAT_FCC_VIEW, SAT_INJ_VIEW, SAT_ATTRIB } from './sat.gen.js';
 
 const E = App.els;
 const DET_COL = { ATLAS: '#58a6ff', CMS: '#17becf', ALICE: '#e377c2', LHCB: '#ff7f0e' };
 
-function mk(tag, attrs) {
+function mk(tag, attrs?) {
   const el = document.createElementNS(SVG_NS, tag);
   for (const k in attrs) el.setAttribute(k, attrs[k]);
   el.classList.add('geo-element');
@@ -33,9 +34,52 @@ function drawGeo() {
   if (!g || !GEO) return;
   while (g.firstChild) g.removeChild(g.firstChild);   // idempotent
 
-  // Lac Léman (Wasserfläche)
+  // Satellitenfotos (Sentinel-2 cloudless, EOX) — drei Kacheln für die drei Zoom-
+  // Stufen, je pixelgenau auf das SVG-Fenster ausgerichtet (geo_build.py#svg_window_to_bbox_3857).
+  // Alle bei niedriger Opazität hinter der Vektorebene → geografischer Kontext ohne
+  // die Schema-Farben zu überdecken. Wrapper-<g> mit der Sichtbarkeits-Klasse, innen
+  // <image opacity="0.22"> → CSS-Überblendung (0↔1) × 0.22 = korrekte Opazität.
+
+  // FCC-Kachel (geo-fcc → versteckt; bei fcc-on sichtbar)
+  if (SAT_FCC && SAT_FCC_VIEW) {
+    const wrap = document.createElementNS(SVG_NS, 'g');
+    wrap.setAttribute('class', 'geo-element geo-fcc');
+    const v = SAT_FCC_VIEW;
+    const img = document.createElementNS(SVG_NS, 'image');
+    img.setAttribute('x', String(v.x)); img.setAttribute('y', String(v.y));
+    img.setAttribute('width', String(v.w)); img.setAttribute('height', String(v.h));
+    img.setAttribute('opacity', '0.22'); img.setAttribute('preserveAspectRatio', 'none');
+    img.setAttribute('href', SAT_FCC);
+    wrap.appendChild(img); g.appendChild(wrap);
+  }
+
+  // Injektor-Kachel (geo-inj-detail → versteckt; bei inj-zoom sichtbar)
+  if (SAT_INJ && SAT_INJ_VIEW) {
+    const wrap = document.createElementNS(SVG_NS, 'g');
+    wrap.setAttribute('class', 'geo-element geo-inj-detail');
+    const v = SAT_INJ_VIEW;
+    const img = document.createElementNS(SVG_NS, 'image');
+    img.setAttribute('x', String(v.x)); img.setAttribute('y', String(v.y));
+    img.setAttribute('width', String(v.w)); img.setAttribute('height', String(v.h));
+    img.setAttribute('opacity', '0.22'); img.setAttribute('preserveAspectRatio', 'none');
+    img.setAttribute('href', SAT_INJ);
+    wrap.appendChild(img); g.appendChild(wrap);
+  }
+
+  // Normal-Kachel (0,0–700,480; geo-far → beim Injektor-Zoom ausgeblendet)
+  if (SAT) {
+    const img = mk('image', { x: 0, y: 0, width: 700, height: 480,
+      opacity: 0.22, preserveAspectRatio: 'none' });
+    img.setAttribute('href', SAT);
+    img.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', SAT);
+    img.classList.add('geo-far');
+    g.appendChild(img);
+  }
+
+  // Lac Léman (Wasserfläche): EIN geschlossenes Polygon (geo_build.py#lake_path
+  // verkettet die Außenkontur + clippt am Frame) → Fill deckt die ganze Seefläche.
   GEO.lake.forEach(d => g.appendChild(path(d, {
-    fill: 'rgba(88,166,255,0.10)', stroke: 'rgba(88,166,255,0.32)', 'stroke-width': 1 })));
+    fill: 'rgba(88,166,255,0.13)', stroke: 'rgba(88,166,255,0.40)', 'stroke-width': 1 })));
   // CH/FR-Staatsgrenze
   GEO.border.forEach(d => g.appendChild(path(d, {
     stroke: 'rgba(255,255,255,0.26)', 'stroke-width': 1.1, 'stroke-dasharray': '6,5' })));
@@ -95,7 +139,7 @@ function drawGeo() {
   g.appendChild(label(112, 252, 'FRANKREICH (FR)', { fill: 'rgba(255,255,255,0.3)', 'font-size': '8.5px', 'font-family': 'monospace', 'text-anchor': 'middle' }));
   g.appendChild(label(610, 150, 'SCHWEIZ (CH)', { fill: 'rgba(255,255,255,0.3)', 'font-size': '8.5px', 'font-family': 'monospace', 'text-anchor': 'middle' }));
   g.appendChild(label(64, 38, 'JURA (FR)', { fill: 'rgba(255,255,255,0.24)', 'font-size': '7px', 'font-family': 'monospace' }));
-  g.appendChild(label(6, 474, '© OpenStreetMap-Mitwirkende (ODbL) · Web-Mercator', {
+  g.appendChild(label(6, 474, '© OpenStreetMap (ODbL)' + (SAT ? ' · ' + SAT_ATTRIB : '') + ' · Web-Mercator', {
     fill: 'rgba(255,255,255,0.3)', 'font-size': '6px', 'font-family': 'monospace' }));
 
   drawInjector(g);
@@ -125,11 +169,11 @@ function drawFCC(g) {
     { fill: FC + '0.7)', 'font-size': fs(11), 'font-family': 'monospace', 'text-anchor': 'middle' }));
   g.appendChild(fcc);
 
-  // Versteckter Auslöser: dezenter ✦ im See (FCC verläuft real unter dem Léman).
+  // Versteckter Auslöser: dezenter Punkt im See (FCC verläuft real unter dem Léman).
   if (GEO.lakeLabel) {
-    const t = mk('text', { x: GEO.lakeLabel.x + 26, y: GEO.lakeLabel.y + 20, 'font-size': '11px',
-      'font-family': 'monospace', fill: FC + '0.45)', 'text-anchor': 'middle' });
-    t.textContent = '✦'; t.classList.add('fcc-trigger');
+    const t = mk('circle', { cx: GEO.lakeLabel.x + 26, cy: GEO.lakeLabel.y + 16, r: 3.4,
+      fill: FC + '0.45)' });
+    t.classList.add('fcc-trigger');
     const tip = document.createElementNS(SVG_NS, 'title'); tip.textContent = '?'; t.appendChild(tip);
     t.addEventListener('click', () => { if (App.revealFCC) App.revealFCC(); });
     g.appendChild(t);
@@ -141,7 +185,7 @@ function drawFCC(g) {
 // Gebäude, way 80305783). LEIR + LINAC 3 sind NICHT in OSM → hier schematisch an
 // geographisch-richtiger relativer Position zu PS angedeutet. Im Vollbild nur ein
 // dezenter Hinweis-Ring; die Detail-Beschriftung (.geo-inj-detail) erscheint beim
-// Zoom (#svg.inj-zoom, gesetzt vom „🔬 Injektor-Komplex"-Button). App.geoInjectorView
+// Zoom (#svg.inj-zoom, gesetzt vom „Injektor-Komplex"-Button). App.geoInjectorView
 // liefert das Zoom-Zielfenster (Cluster + SPS), damit der Button geo-genau hinzoomt.
 function ptsOf(paths) {
   const o = []; (paths || []).forEach(d => d.slice(2).split(' L ').forEach(s => { const v = s.split(','); o.push([+v[0], +v[1]]); })); return o;
@@ -225,7 +269,7 @@ function drawInjector(g) {
   //   Protonen:  LINAC4 → PSB → PS → (SPS)     Ionen:  LINAC3 → LEIR → PS
   const FS = (13 * view.w / 700).toFixed(2) + 'px';
   const det = mk('g'); det.setAttribute('class', 'geo-element geo-inj-detail');
-  const beam = (d, c, dash) => det.appendChild(mk('path', Object.assign(
+  const beam = (d, c, dash?) => det.appendChild(mk('path', Object.assign(
     { d, fill: 'none', stroke: c, 'stroke-width': 1.1 }, dash ? { 'stroke-dasharray': dash } : {})));
 
   // Ionen-Kette (LINAC3/LEIR schematisch = gestrichelt): LINAC3 → LEIR → PS

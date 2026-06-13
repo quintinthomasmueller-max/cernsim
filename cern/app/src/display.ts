@@ -9,7 +9,7 @@ import { App } from './core.js';
 
 const s = App.state, E = App.els;
 
-const DETKONFIG = {
+const DETKONFIG: Record<string, DetConfig> = {
  // bend = visuelle Krümmungsstärke (skaliert mit B-Feld: CMS 3.8T > ATLAS 2T > ALICE 0.5T)
  // realRmu = echter Außenradius (m) der Myonlage → Maßstab (Mensch/Meterleiste)
  ATLAS: { typ:'barrel', farbe:'#58a6ff', rolle:'Allzweck-Detektor · 2 T Solenoid + Toroid-Myonsystem', bend:0.80,
@@ -73,7 +73,7 @@ function evProvenance(){
  if(s.selDet==='LHCB')        return "Vertex & Spuren: illustrativ · B-Masse: SIMULATION";
  return "Signal- & Untergrund-μμ: ECHTE CMS-Kinematik" + (ion ? " · Multipl. didakt. reduziert" : "");
 }
-function rKind(D,kind,last){ let r=null; (D.lagen||[]).forEach(l=>{ if(l.kind===kind && (last||r===null)) r=l.r; }); return r; }
+function rKind(D,kind,last?){ let r=null; (D.lagen||[]).forEach(l=>{ if(l.kind===kind && (last||r===null)) r=l.r; }); return r; }
 function radii(D,sc){ const trk=(rKind(D,'track',true)||30), em=(rKind(D,'em')||trk+10),
   had=(rKind(D,'had')||em+10), mu=(rKind(D,'muon')||had+20);
   return {Rtrk:trk*sc, Rem:em*sc, Rhad:had*sc, Rmu:mu*sc}; }
@@ -193,7 +193,7 @@ function kindForKey(key){
 
 // hl = optionale Liste hervorzuhebender Schicht-Arten (Signaturen-Tour oder
 // Einzelschicht-Klick). Ohne hl: s.activeLayerKey bestimmt die Hervorhebung.
-function drawBg(hl){
+function drawBg(hl?){
  const ctxEv=E.ctxEv, evW=s.evW, evH=s.evH;
  const {D,cx,cy,Rmax,sc,lblX}=detGeo();
  ctxEv.clearRect(0,0,evW,evH); ctxEv.textAlign='left';
@@ -328,7 +328,7 @@ function evTourDraw(){
  }
  const cap=document.getElementById('ev-caption');
  if(cap) cap.innerHTML='<b style="color:'+st.col+'">Schritt '+s.tourStep+'/'+TOUR.length+' · '+st.name+':</b> '+st.text;
- if(E.btnEvTour) E.btnEvTour.textContent = s.tourStep<TOUR.length ? ('Weiter ▸ '+s.tourStep+'/'+TOUR.length) : '✓ Tour beenden';
+ if(E.btnEvTour) E.btnEvTour.textContent = s.tourStep<TOUR.length ? ('Weiter '+s.tourStep+'/'+TOUR.length) : 'Tour beenden';
 }
 function evTourAdvance(){
  const next=(s.tourStep||0)+1;
@@ -337,7 +337,7 @@ function evTourAdvance(){
 }
 function evTourEnd(){
  s.tourStep=0;
- if(E.btnEvTour) E.btnEvTour.textContent='▶ Signaturen-Tour';
+ if(E.btnEvTour) E.btnEvTour.textContent='Signaturen-Tour';
  s.lastEvent ? drawCollisionEvent(s.lastEvent) : drawBg();
 }
 
@@ -391,7 +391,7 @@ function drawCollisionEvent(ev){
   ctxEv.fillText(lbl, 8, evH-21);
  }
  if(s.goldenEvent){ ctxEv.fillStyle="#f1e05a"; ctxEv.font="8px sans-serif"; ctxEv.textAlign='right';
-  ctxEv.fillText("★ GOLDEN", evW-6, 11); ctxEv.textAlign='left'; }
+  ctxEv.fillText("GOLDEN", evW-6, 11); ctxEv.textAlign='left'; }
 }
 
 function setActiveLayer(key){

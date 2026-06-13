@@ -47,8 +47,8 @@ const INFO_DB = {
   title: 'Proton Synchrotron',
   sub: 'Synchrotron · ältester noch aktiver CERN-Ring',
   color: '#2ea44f',
-  img: 'Aerial view of PS at CERN in 1965.jpg',
-  cred: 'CERN · CC BY 4.0',
+  img: 'https://cds.cern.ch/images/CERN-PHOTO-201405-164-2/file?size=large',
+  cred: 'CERN (home.cern) · CERN-PHOTO-201405-164-2',
   stats: [['Umfang','628 m'],['Geschwindigkeit','95 → 99,94 % c'],['In Betrieb seit','1959']],
   text: 'Das Arbeitspferd des CERN, seit 1959 ununterbrochen in Betrieb. Das PS beschleunigt die Protonen auf 26 GeV — die Geschwindigkeit steigt dabei nur noch von 95 % auf 99,94 % c, die Energie aber um mehr als das Zehnfache. Hier bekommt der Strahl auch seine spätere Struktur: Das PS formt aus wenigen Paketen einen „Batch" von 72 Bunches im Abstand von je 25 ns. Diese Bunches sind die eigentlichen Geschosse, die später im LHC zur Kollision gebracht werden.'
  },
@@ -56,8 +56,8 @@ const INFO_DB = {
   title: 'Super Proton Synchrotron',
   sub: 'Synchrotron · letzter Vorbeschleuniger',
   color: '#ff7f0e',
-  img: 'SPS 2015.JPG',
-  cred: 'Nazgul02 · CC BY-SA 4.0',
+  img: 'Beamfeedingams.JPG',
+  cred: 'Gillis · CC BY 3.0',
   stats: [['Umfang','6,9 km'],['Geschwindigkeit','99,94 → 99,9998 % c'],['In Betrieb seit','1976']],
   text: 'Die letzte Stufe vor dem LHC. Das SPS bringt die Protonen auf 450 GeV — die Geschwindigkeit kriecht dabei nur von 99,94 % auf 99,9998 % c, doch die Energie verzwanzigfacht sich. Von hier werden die fertigen Bunch-Züge über die Tunnel TI 2 und TI 8 in beide Richtungen in den LHC eingeschossen. Berühmt wurde das SPS 1983 mit der Entdeckung der W- und Z-Bosonen (Nobelpreis 1984).'
  },
@@ -68,7 +68,7 @@ const INFO_DB = {
   img: 'LHC dipole magnets.jpg',
   cred: 'alpinethread · CC BY-SA 2.0',
   stats: [['Umfang','26,7 km'],['Geschwindigkeit','99,9998 → 99,999999 % c'],['Temperatur','1,9 K']],
-  text: 'Der Ring, in dem alles zusammenläuft: 27 km Umfang, 100 m unter der Erde. Bei 6,8 TeV sind die Protonen nur noch 3 m/s langsamer als das Licht. 1 232 supraleitende Dipolmagnete (8,3 Tesla, mit 1,9 K kälter als der Weltraum) zwingen die zwei Strahlen auf ihre Kreisbahn. An vier Punkten kreuzen sich die Strahlen und kollidieren mit einer Schwerpunktsenergie von √s = 13,6 TeV — mehr als je zuvor an einem Beschleuniger. 2012 führte das zur Entdeckung des Higgs-Bosons.'
+  text: 'Der Ring, in dem alles zusammenläuft: 27 km Umfang, 100 m unter der Erde. Bei 6,8 TeV sind die Protonen nur noch 3 m/s langsamer als das Licht. 1 232 supraleitende Dipolmagnete (8,3 Tesla, mit 1,9 K kälter als der Weltraum) zwingen die zwei Strahlen auf ihre Kreisbahn — 11 245 Umläufe pro Sekunde (die Animation zeigt das symbolisch verlangsamt). An vier Punkten kreuzen sich die Strahlen und kollidieren mit einer Schwerpunktsenergie von √s = 13,6 TeV — mehr als je zuvor an einem Beschleuniger. 2012 führte das zur Entdeckung des Higgs-Bosons.'
  },
  ATLAS: {
   title: 'ATLAS Detektor',
@@ -205,8 +205,8 @@ const PARAM_INFO = {
  energy: 'Jeder der beiden Strahlen trägt bis zu 6,8 TeV. Weil sie frontal aufeinanderprallen, addieren sich die Energien zur Schwerpunktsenergie √s = 13,6 TeV. Mehr Energie bedeutet: Es können schwerere Teilchen entstehen (E = mc²). Die Grenze setzen die supraleitenden Dipolmagnete — bei maximal 8,3 Tesla lässt sich der Strahl gerade noch auf der Kreisbahn halten. Vom SPS kommt der Strahl immer mit 0,45 TeV an (Injektionsenergie) und wird dann hochgefahren.',
  intensity: 'Ein Bunch (Teilchenpaket) enthält rund 10¹¹ Protonen. Im Vollbetrieb kreisen bis zu 2 808 solcher Bunches pro Strahl, im Abstand von je 25 ns (7,5 m). Je dichter die Pakete, desto mehr Kollisionen — die Kollisionsrate (Luminosität) wächst sogar quadratisch mit der Intensität (L ∝ N²). Treibt man es zu weit, stören sich die Teilchen über ihre eigene Ladung gegenseitig und der Strahl wird instabil.',
  beta: 'β* (sprich „Beta-Stern") beschreibt, wie stark der Strahl am Kollisionspunkt gebündelt wird — angegeben in Metern: je kleiner β*, desto dünner der Strahl und desto mehr Kollisionen. Bei β* = 0,30 m ist der Strahl am Kollisionspunkt nur noch ~13 µm dick, rund fünfmal dünner als ein menschliches Haar. Erzeugt wird diese enge Bündelung von supraleitenden Quadrupol-Magneten rund 30 m vor jedem Detektor.',
- rampspeed: 'dB/dt ist das Tempo, mit dem das Magnetfeld beim Hochfahren ansteigt. Zu schnell ist gefährlich: In den Magneten entstehen Wirbelströme, die die Bahn stören. Real lässt sich der LHC dafür rund 22 Minuten Zeit (etwa 0,008 T/s). ⚠ Oberhalb von 0,10 T/s steigt hier das Risiko eines Quenchs — eines plötzlichen Zusammenbruchs der Supraleitung. Ein echter Quench legt den Betrieb für Stunden lahm.',
- ramp: 'Beim Hochfahren („Ramping") steigt der Strom in den Dipolmagneten von 760 A (bei 0,45 TeV) auf etwa 11 100 A (bei 6,8 TeV). Die 1 232 supraleitenden Magnete müssen dabei durchgehend auf 1,9 K gekühlt bleiben. Gleichzeitig drehen die Hochfrequenz-Resonatoren (400 MHz) ihre Spannung hoch, um die Bunches zusammenzuhalten. Steigt das Feld zu schnell, droht ein Quench — und der Strahl ist verloren.',
+ rampspeed: 'dB/dt ist das Tempo, mit dem das Magnetfeld beim Hochfahren ansteigt. Zu schnell ist gefährlich: In den Magneten entstehen Wirbelströme, die die Bahn stören. Real lässt sich der LHC dafür rund 22 Minuten Zeit (etwa 0,008 T/s). Achtung: oberhalb von 0,10 T/s steigt hier das Risiko eines Quenchs — eines plötzlichen Zusammenbruchs der Supraleitung. Ein echter Quench legt den Betrieb für Stunden lahm.',
+ ramp: 'Beim Hochfahren („Ramping") steigt der Strom in den Dipolmagneten von 760 A (bei 0,45 TeV) auf etwa 11 100 A (bei 6,8 TeV). Die 1 232 supraleitenden Magnete müssen dabei durchgehend auf 1,9 K gekühlt bleiben. Gleichzeitig drehen die Hochfrequenz-Resonatoren (400 MHz) ihre Spannung hoch, um die Bunches zusammenzuhalten. Steigt das Feld zu schnell, droht ein Quench — und der Strahl ist verloren. Die Simulation rechnet ehrlich: Dauer = Feldhub ΔB ÷ Ramp-Rate (im gewählten Zeitmaßstab) — wer nur auf 1 TeV fährt, ist entsprechend früher oben.',
  squeeze: 'Nach dem Hochfahren werden die Strahlen an den Kollisionspunkten enggebündelt („Squeeze"): Quadrupol-Magnete rund 30 m vor jedem Detektor drücken β* von etwa 11 m auf den Zielwert herunter. Bei β* = 0,30 m schrumpft der Strahldurchmesser dabei von ~80 µm auf ~13 µm. Das muss langsam geschehen — geht es zu schnell, läuft der Strahl aus der stabilen Bahn und ist verloren.',
  prePp: 'Der Standard-Lauf des LHC, rund 90 % der Betriebszeit: Protonen gegen Protonen bei voller Energie (Run 3: 6,8 TeV pro Strahl, √s = 13,6 TeV). Auf demselben Strahl arbeiten in Wirklichkeit ALLE Experimente gleichzeitig: ATLAS und CMS suchen das Higgs-Boson (2012 entdeckt, Nobelpreis 2013) im „Goldkanal" H→ZZ*→4ℓ und vermessen das Z⁰ zur Eichung; LHCb untersucht parallel die CP-Verletzung an B-Mesonen (warum es mehr Materie als Antimaterie gibt). Higgs und CP-Verletzung brauchen also keine andere Maschinen-Einstellung — wechsle einfach den Detektor-Tab. — Datenbasis im Widget: echte CMS-Open-Data — die Dimuon-Massen (μ⁺μ⁻) und die 278 publizierten 4-Lepton-Higgs-Kandidaten von 2011/2012; darin sieht man den Z→4ℓ-Peak (91 GeV) UND den Higgs-Bump (125 GeV). Resonanzmassen hängen nicht von der Strahlenergie ab; die Produktionsraten sind modelliert und mit der Energie skaliert.',
  preQgp: 'Der Schwerionen-Lauf, etwa ein Monat pro Jahr: Statt Protonen kollidieren ganze Blei-Kerne bei 2,68 TeV/Nukleon (√s_NN = 5,36 TeV). In der Mini-Explosion entsteht für rund 10⁻²³ s das Quark-Gluon-Plasma — ein Urzustand der Materie bei über 10¹² °C, in dem Quarks und Gluonen frei sind, wie wenige Millionstel-Sekunden nach dem Urknall. ALICE löst die tausenden Teilchen auf und misst, wie das Plasma gebundene Quark-Paare (J/ψ, Υ) wieder „aufschmilzt"; CMS nutzt die Reihenfolge dieses Schmelzens (Υ(3S) vor Υ(2S) vor Υ(1S)) als Thermometer; ATLAS und CMS messen das Z⁰ als Vergleichsmaßstab, da es vom Plasma unberührt bleibt. — Datenbasis: Die Teilchenmassen sind echte CMS-Daten; die Plasma-Unterdrückung ist ein deklariertes Modell (es liegt kein echtes Pb-Pb-Open-Data vor). Die Spurzahl im Display ist didaktisch reduziert (real mehrere Tausend Spuren).',
@@ -214,7 +214,7 @@ const PARAM_INFO = {
 
  // ── Laien-Einstieg (Elternabend) ────────────────────────────────────────────
  introCern: 'Das CERN bei Genf betreibt den größten Teilchenbeschleuniger der Welt, den LHC: einen 27 km langen Ringtunnel, 100 m unter der Erde. Darin werden zwei Strahlen aus winzigen Teilchen (meist Protonen) fast auf Lichtgeschwindigkeit gebracht und an vier Punkten frontal zur Kollision geführt. Aus der Energie der Kollision entstehen für Sekundenbruchteile neue Teilchen (E = mc²), die große Detektoren (ATLAS, CMS, ALICE, LHCb) vermessen. So wurde 2012 das Higgs-Boson entdeckt. Bevor ein Strahl seine volle Energie hat, durchläuft er eine ganze Kette von Vorbeschleunigern (LINAC → PSB/LEIR → PS → SPS → LHC) — genau diese Kette siehst du oben im Plan.',
- introUse: 'So bedienst du die Schaltzentrale: (1) Strahl wählen — Protonen oder Blei-Ionen. (2) Ein Experiment-Preset laden ODER von Hand vorgehen: Füllprotokoll → Energie-Ramping → Beam Squeeze. (3) „Auto-Datennahme" sammelt Kollisionen. Unten siehst du links eine einzelne Kollision (Event-Display) und rechts, wie sich daraus nach und nach das Massenspektrum aufbaut — erreicht ein Detektor 5 σ, gilt das Teilchen als entdeckt. Tipp: Ein Klick auf jeden Ring oder Detektor öffnet ein Info-Fenster mit Foto und echten Kennzahlen.',
+ introUse: 'So bedienst du die Schaltzentrale:\n\n(1) Preset wählen — drei echte LHC-Betriebsmodi: Protonen-Physik (Run 3, 13,6 TeV), Schwerionen (Pb-Pb, 5,36 TeV/Nukleon) oder Pilot-Strahl (Inbetriebnahme, 0,45 TeV). Alternativ Schieberegler manuell einstellen.\n\n(2) Füllprotokoll starten — die Vorbeschleuniger füllen den LHC Zug für Zug: Das PS formt die 72er-Bunch-Struktur, das SPS bündelt bis 4 Batches zu einem Zug. Der Tempo-Knopf unten links schaltet zwischen ZWEI ehrlichen Uhren um: Füllen und Hochfahren laufen mit 1 s ≈ 15 s real (Zeitraffer: 40 s), die Datennahme mit 1 s ≈ 15 min (Zeitraffer: 33 min) — ein echter Physik-Fill dauert ~15 Stunden. Nicht maßstäblich sind nur die Flugzeiten der Pakete zwischen den Ringen und der LHC-Umlauf (real 11 245 Umläufe pro Sekunde).\n\n(3) Energie-Ramping — nur bei Protonen-Physik und Schwerionen: Magnete und Hochfrequenz werden langsam hochgefahren. Beim Pilot-Strahl entfällt dieser Schritt (0,45 TeV ist bereits die Betriebsenergie). Achtung: zu hohe Ramp-Rate riskiert einen Quench!\n\n(4) Beam Squeeze — Quadrupol-Magnete bündeln die Strahlen an den Kollisionspunkten.\n\n(5) Auto-Datennahme — sammelt Kollisionen und füllt das Spektrum. Ein Klick auf einen Detektor-Tab wechselt die Ansicht.\n\nUnten: links siehst du eine einzelne Kollision im Event-Display (Klick auf eine Schicht öffnet Infos), rechts das Massenspektrum aller Kandidaten — ab 5 σ gilt ein Teilchen als entdeckt. Ein Klick auf jeden Beschleuniger oder Detektor im Schema öffnet ein Info-Fenster mit Foto und echten Kennzahlen.',
  evRead: 'Der Detektor ist eine ZWIEBEL aus Materialschichten — die farbigen Ringe sind ihr Querschnitt. Jede Linie ist die Spur EINES Teilchens, das aus einer einzigen Kollision im Zentrum nach außen fliegt, und jede Teilchenart bleibt in „ihrer" Schicht stecken: grün = Myon (durchquert alle Schichten), blau = Elektron (stoppt im EM-Kalorimeter), gelb = Photon (EM-Kalorimeter, aber OHNE Spur), orange = Hadron-Schauer (Hadron-Kalorimeter), grau gestrichelt = fehlende Energie (ein Neutrino ist unsichtbar entkommen). Die Krümmung der Spur kommt vom Magnetfeld – je gerader, desto höher der Impuls. Aus diesem Muster rekonstruiert man, welches Teilchen zerfallen ist. (Spuren & Untergrund: echte CMS-Open-Data.) Tipp: Klicke im Bild auf eine Schicht für Foto & Erklärung — oder starte die ▶ Signaturen-Tour.',
  spRead: 'Hier „wiegen" wir Teilchen: Aus den Spuren jeder Kollision berechnen wir die invariante Masse des zerfallenen Teilchens und tragen sie ins Histogramm ein (x-Achse = Masse in GeV, y-Achse = Häufigkeit). Ein echtes Teilchen (z. B. das Z⁰ bei 91 GeV) erscheint als scharfer „Berg" über dem glatten Untergrund. Die Signifikanz (in σ) misst, wie sicher der Berg echt und kein Zufall ist – ab 5 σ spricht man von einer Entdeckung (so wurde 2012 das Higgs gefunden). Je mehr Kollisionen, desto deutlicher der Berg: die Signifikanz wächst mit der Wurzel der Datenmenge (∝ √N).'
 };
@@ -234,12 +234,14 @@ const PARAM_INFO_FIG = {
 // Quellen-Credit und Offline-Fallback (falls kein Internet, Gradient-Box).
 function buildPhotoHdr(d){
  if(!d.img) return d.hdr || '';
- const src = 'https://commons.wikimedia.org/wiki/Special:FilePath/' + encodeURIComponent(d.img) + '?width=640';
+ // Voll-URL (z. B. CERN-Foto-Archiv) direkt nutzen; sonst Wikimedia-Commons-Dateiname.
+ const src = /^https?:\/\//.test(d.img) ? d.img
+   : 'https://commons.wikimedia.org/wiki/Special:FilePath/' + encodeURIComponent(d.img) + '?width=640';
  const fb = "this.style.display='none';this.parentNode.classList.add('cv4-hdr-noimg')";
  return `<div class="cv4-hdr-photo" style="--accent:${d.color}">`
   + `<img src="${src}" alt="${d.title}" loading="lazy" referrerpolicy="no-referrer" onerror="${fb}">`
   + `<div class="cv4-hdr-shade"></div>`
-  + `<div class="cv4-hdr-cred">📷 ${d.cred}</div>`
+  + `<div class="cv4-hdr-cred">Foto: ${d.cred}</div>`
   + `<div class="cv4-hdr-fbtxt">${d.title}</div>`
   + `</div>`;
 }

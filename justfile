@@ -20,10 +20,6 @@ jupyter:
 lab:
     jupyter lab
 
-# Generiert das CERN-Stellwerk-Notebook von Grund auf neu (Legacy-Generator)
-generate:
-    python3 cern/scripts/create_notebook.py
-
 # Startet den interaktiven Streamlit-Simulator für die Familienstiftung
 streamlit:
     streamlit run stiftung/stiftung_simulator.py

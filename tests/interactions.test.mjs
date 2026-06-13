@@ -1,13 +1,8 @@
 // Phase-3-Interaktionen (jsdom, esbuild-Bundle): deckt Buttons, Detektor-Tabs,
-// SVG-Hits (Info-Panel + Detektorwahl), Param-Info-Akkordeon und Slider ab —
-// genau die Verdrahtung, die in Jupyter still scheitern kann.
+// SVG-Hits (Info-Panel + Detektorwahl), Param-Info-Akkordeon und Preset-Anzeigen
+// ab — genau die Verdrahtung, die in Jupyter still scheitern kann.
 import { describe, it, expect, beforeEach } from 'vitest';
 import { bootApp, $ } from './helpers/boot-app.mjs';
-
-function fireInput(el, value) {
-  el.value = String(value);
-  el.dispatchEvent(new window.Event('input', { bubbles: true }));
-}
 
 // SVG-Elemente haben in jsdom kein .click() → Event dispatchen.
 function clickEl(el) {
@@ -64,23 +59,26 @@ describe('Interaktionen (esbuild-Bundle, jsdom)', () => {
 
   it('Tempo-Toggle wechselt die Beschriftung', () => {
     const b = $('btn-speed-toggle');
-    expect(b.textContent).toMatch(/Zeitraffer/);
-    b.click();
     expect(b.textContent).toMatch(/Didaktisch/);
     b.click();
     expect(b.textContent).toMatch(/Zeitraffer/);
+    b.click();
+    expect(b.textContent).toMatch(/Didaktisch/);
   });
 
-  it('Energie-Slider aktualisiert das Label (Einheit modusabhängig)', () => {
-    fireInput($('sli-energy'), 3.5);
-    expect($('lbl-energy').textContent).toMatch(/3[.,]50?\s*TeV/);   // "3.50 TeV" (Protonen)
+  it('Strahl-Parameter sind Preset-Anzeigen (keine Slider mehr)', () => {
+    // Die früheren <input type=range> sind entfernt; nur noch Anzeige-Spans.
+    expect($('sli-energy')).toBeNull();
+    expect($('sli-rampspeed')).toBeNull();
+    expect($('sli-beta')).toBeNull();
+    expect($('sli-intensity')).toBeNull();
   });
 
-  it('Ramp-Speed-Slider warnt ab Quench-Risiko (> 0.10 T/s)', () => {
-    fireInput($('sli-rampspeed'), 0.14);
-    expect($('lbl-rampspeed').textContent).toMatch(/Risiko/i);
-    fireInput($('sli-rampspeed'), 0.05);
-    expect($('lbl-rampspeed').textContent).toMatch(/sicher/i);
+  it('Preset setzt die Parameter-Anzeigen (β* live unsqueezed, Ramp-Rate)', () => {
+    $('btn-pre-pp').click();
+    expect($('lbl-energy').textContent).toMatch(/6[.,]8/);
+    expect($('lbl-beta').textContent).toMatch(/1[.,]50?\s*m/);      // β* live: 1,50 m vor dem Squeeze
+    expect($('lbl-rampspeed').textContent).toMatch(/0[.,]05\s*T\/s/);
   });
 
   it('Pilot-Preset: 0.45 TeV + keine Signifikanz (Inbetriebnahme)', () => {

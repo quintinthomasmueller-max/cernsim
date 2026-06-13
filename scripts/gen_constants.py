@@ -1,19 +1,19 @@
 #!/usr/bin/env python3
 """
-gen_constants.py — hält die Resonanztabelle in cern/app/data.js synchron zur
+gen_constants.py — hält die Resonanztabelle in cern/app/src/data.gen.js synchron zur
 Single Source of Truth cern/data/physics.json.
 
 Hintergrund: Die PDG-Resonanzen (Masse, Breite, Farbe) existierten doppelt —
 in Python (cern_utils.RESONANZEN) und im JS-Widget (CERN_REAL.reso). Diese
 Doppelpflege ist driftanfällig. physics.json ist jetzt die einzige Quelle:
   * Python liest sie via cern_utils._load_resonanzen()
-  * data.js.reso wird hier aus ihr GENERIERT (Widget-Untermenge).
+  * data.gen.js.reso wird hier aus ihr GENERIERT (Widget-Untermenge).
 
 Befehle:
   python3 scripts/gen_constants.py verify   # Default: prüft Sync, Exit 2 bei Drift
-  python3 scripts/gen_constants.py write     # patcht data.js.reso aus physics.json
+  python3 scripts/gen_constants.py write     # patcht data.gen.js.reso aus physics.json
 
-Nur der "reso"-Block in data.js wird angefasst (die echten CMS-Datenarrays
+Nur der "reso"-Block in data.gen.js wird angefasst (die echten CMS-Datenarrays
 bleiben unberührt). Bei korrektem Sync ist die Ersetzung byte-identisch.
 """
 import json
@@ -23,7 +23,7 @@ import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PHYSICS = os.path.join(ROOT, "cern", "data", "physics.json")
-DATA_JS = os.path.join(ROOT, "cern", "app", "data.js")
+DATA_JS = os.path.join(ROOT, "cern", "app", "src", "data.gen.js")
 
 # Matcht genau das reso-Objekt: "reso":{ ... } (keine verschachtelten Klammern darin).
 _RESO_RE = re.compile(r'"reso":\{[^}]*\}')
@@ -47,21 +47,21 @@ def widget_reso() -> dict:
 
 
 def reso_fragment() -> str:
-    """Erzeugt den exakten JS-Textbaustein '"reso":{...}' (kompakt, wie in data.js)."""
+    """Erzeugt den exakten JS-Textbaustein '"reso":{...}' (kompakt, wie in data.gen.js)."""
     return '"reso":' + json.dumps(widget_reso(), separators=(",", ":"), ensure_ascii=False)
 
 
 def _split() -> tuple:
-    """Liest data.js und gibt (quelltext, treffer, neues_fragment) zurück."""
+    """Liest data.gen.js und gibt (quelltext, treffer, neues_fragment) zurück."""
     src = open(DATA_JS, encoding="utf-8").read()
     treffer = _RESO_RE.search(src)
     if not treffer:
-        raise RuntimeError('"reso"-Block in cern/app/data.js nicht gefunden')
+        raise RuntimeError('"reso"-Block in cern/app/src/data.gen.js nicht gefunden')
     return src, treffer, reso_fragment()
 
 
 def write() -> bool:
-    """Patcht data.js.reso aus physics.json. Gibt True zurück, wenn geändert."""
+    """Patcht data.gen.js.reso aus physics.json. Gibt True zurück, wenn geändert."""
     src, treffer, neu = _split()
     if treffer.group(0) == neu:
         return False
@@ -80,17 +80,17 @@ def main() -> int:
 
     if cmd == "verify":
         if aktuell == neu:
-            print("✓ data.js.reso ist synchron zu physics.json")
+            print("✓ data.gen.js.reso ist synchron zu physics.json")
             return 0
-        print("✗ DRIFT: data.js.reso weicht von physics.json ab.", file=sys.stderr)
-        print(f"  data.js:     {aktuell}", file=sys.stderr)
+        print("✗ DRIFT: data.gen.js.reso weicht von physics.json ab.", file=sys.stderr)
+        print(f"  data.gen.js:     {aktuell}", file=sys.stderr)
         print(f"  physics.json:{neu}", file=sys.stderr)
         print("  Beheben mit: python3 scripts/gen_constants.py write", file=sys.stderr)
         return 2
 
     if cmd == "write":
-        print("✓ data.js.reso aus physics.json neu geschrieben" if write()
-              else "✓ data.js.reso bereits synchron — keine Änderung")
+        print("✓ data.gen.js.reso aus physics.json neu geschrieben" if write()
+              else "✓ data.gen.js.reso bereits synchron — keine Änderung")
         return 0
 
     print(f"Unbekannter Befehl: {cmd!r} (verify|write)", file=sys.stderr)

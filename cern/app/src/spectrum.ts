@@ -47,7 +47,9 @@ const U3   = { key: "Ups3S", m: 10.36, hw: 0.26, sg: 0.15, thr: 0.6,  amp: 0.09,
 // Higgs-thr: Raten-Schwelle, historisch geeicht — die Entdeckung 2012 lief bei
 // 4 TeV/Strahl (√s = 8 TeV); ab ~3,5 TeV/Strahl ist der Kanal messbar, volle Rate Run 3.
 const HIG  = { key: "H",     m: 125.0, hw: 5.0,  sg: 2.8,  thr: 3.5,  amp: 0.62, label: "H(125)" };
-const Z4L  = { key: "Z4l",   m: 91.19, hw: 4.0,  sg: 2.6,  thr: 0.9,  amp: 0.85, label: "Z→4ℓ" };  // echter Z-Peak im 4ℓ-Datensatz
+// Z4l-hw = 6 (wie Z⁰): die echten Z→4ℓ-Flanken reichen bis ±6 GeV — ein engeres
+// Fenster ließe Peak-Flanken als „Kontinuum" durchs Energie-Gating rutschen.
+const Z4L  = { key: "Z4l",   m: 91.19, hw: 6.0,  sg: 2.6,  thr: 0.9,  amp: 0.85, label: "Z→4ℓ" };  // echter Z-Peak im 4ℓ-Datensatz
 const B0   = { key: "B0",    m: 5.279, hw: 0.18, sg: 0.07, thr: 0.45, amp: 0.75, label: "B⁰" };
 const sup = (r, raa) => ({ ...r, raa });   // R_AA<1 = QGP-Unterdrückung (deklariertes Modell)
 
@@ -67,7 +69,7 @@ const DETSPEC = {
     sub: "EW-Eichkanal · Z⁰-Resonanz bei 91 GeV",
     prov: "Massen: echte CMS-Open-Data (μ⁺μ⁻) · Spuren & Pile-up: illustrativ",
     real: "Real ~30 Z⁰→μμ pro s bei L=2·10³⁴ — Präzisions-Eichkanal",
-    discoMsg: "🌟 5σ: Z⁰-Resonanz präzise vermessen!"
+    discoMsg: "5σ: Z⁰-Resonanz präzise vermessen!"
    },
    PbPb: {
     channel: "2mu", pool: () => R.pp, range: [50, 150], bins: 60,
@@ -76,7 +78,7 @@ const DETSPEC = {
     sub: "Z⁰ ist elektroschwach → koppelt NICHT ans QGP, bleibt unverändert",
     prov: "Massen: echte CMS-p-p-Z⁰ (in Pb-Pb identisch, EW) · Spuren: illustrativ",
     real: "Z⁰ als QGP-blinde Standardkerze — eicht den Pb-Pb-Lauf",
-    discoMsg: "🌟 5σ: Z⁰-Standardkerze in Pb-Pb vermessen!"
+    discoMsg: "5σ: Z⁰-Standardkerze in Pb-Pb vermessen!"
    }
   }
  },
@@ -90,7 +92,7 @@ const DETSPEC = {
     sub: "Z→4ℓ-Peak (91) + Higgs-Bump (125) auf ZZ*-Untergrund · Higgs-Rate steigt steil mit der Energie",
     prov: "4ℓ-Massen & -Kinematik: ECHTE CMS-Open-Data (Record 5200, 278 Kandidaten 2011/2012)",
     real: "Real nur ~1 H→4ℓ pro Tag — die 278 echten Kandidaten zeigen Z→4ℓ UND den Higgs-Bump",
-    discoMsg: "🌟 5σ: Higgs-Boson entdeckt!"
+    discoMsg: "5σ: Higgs-Boson entdeckt!"
    },
    PbPb: {
     channel: "2mu", pool: () => R.ion, range: [7, 12], bins: 50,
@@ -99,7 +101,7 @@ const DETSPEC = {
     sub: "Bottomonium-Thermometer: Υ(3S)>Υ(2S)>Υ(1S) zunehmend geschmolzen",
     prov: "Υ-Massen: echte CMS-p-p · Pb-Pb-Unterdrückung modelliert (R_AA)",
     real: "Sequentielle Υ-Unterdrückung misst die QGP-Temperatur (reales CMS-Resultat)",
-    discoMsg: "🌟 5σ: sequentielle Υ-Unterdrückung (QGP) nachgewiesen!", supp: true
+    discoMsg: "5σ: sequentielle Υ-Unterdrückung (QGP) nachgewiesen!", supp: true
    }
   }
  },
@@ -113,7 +115,7 @@ const DETSPEC = {
     sub: "Vakuum-Referenz: unverdrängte Quarkonia — KEINE Entdeckung (QGP nur in Pb-Pb)",
     prov: "Massen: echte CMS-Open-Data (μ⁺μ⁻) · Spuren & Multiplizität: illustrativ",
     real: "Unverdrängte Quarkonia — die p-p-Baseline, gegen die Pb-Pb verglichen wird",
-    discoMsg: "🌟 5σ: Quarkonia-Referenzspektrum (Vakuum) etabliert!"
+    discoMsg: "5σ: Quarkonia-Referenzspektrum (Vakuum) etabliert!"
    },
    PbPb: {
     channel: "2mu", pool: () => R.ion, range: [1, 12], bins: 55,
@@ -123,7 +125,7 @@ const DETSPEC = {
     sub: "R_AA < 1 vs. p-p-Referenz · Schmelzen gebundener Zustände im Quark-Gluon-Plasma",
     prov: "Massen: echte CMS-p-p-Quarkonia · QGP-Unterdrückung modelliert (R_AA)",
     real: "J/ψ & Υ im QGP unterdrückt (R_AA<1) — vs. der unverdrängten p-p-Referenz",
-    discoMsg: "🌟 5σ: Quarkonia-Unterdrückung (QGP) nachgewiesen!", supp: true
+    discoMsg: "5σ: Quarkonia-Unterdrückung (QGP) nachgewiesen!", supp: true
    }
   }
  },
@@ -137,7 +139,7 @@ const DETSPEC = {
     sub: "Materie-Antimaterie-Asymmetrie im B-Mesonen-Zerfall",
     prov: "B-Masse: kalibrierte SIMULATION (kein B im Dimuon-Set) · Vertex: illustrativ",
     real: "B⁰→h⁺h⁻ — CP-Asymmetrie baut sich über viele Fills auf",
-    discoMsg: "🌟 5σ: CP-Verletzung etabliert!"
+    discoMsg: "5σ: CP-Verletzung etabliert!"
    },
    PbPb: {
     channel: "B", pool: () => lhcbPool(), range: [4.6, 6.0], bins: 50,
@@ -154,7 +156,9 @@ const DETSPEC = {
 
 const DETS = ["ATLAS", "CMS", "ALICE", "LHCB"];
 const curBeam = () => s.isIon ? "PbPb" : "pp";
-function profile(det, beam) { const d = DETSPEC[det] || DETSPEC.ATLAS; return { col: d.col, fc: d.fc, ...d.beams[beam || curBeam()] }; }
+// _raw = das Beam-Objekt selbst (Cache-Anker für die Kurven-Kalibrierung, da der
+// Spread bei jedem Aufruf ein neues Objekt erzeugt).
+function profile(det, beam?) { const d = DETSPEC[det] || DETSPEC.ATLAS; const b = d.beams[beam || curBeam()]; return { col: d.col, fc: d.fc, ...b, _raw: b }; }
 function spec() { return profile(s.selDet, curBeam()); }
 // Im aktuellen Strahl datennehmende Detektoren — REAL nehmen alle Experimente
 // denselben Fill GLEICHZEITIG auf (alle 4 in beiden Strahlen aktiv; LHCb im Pb-Pb
@@ -171,7 +175,89 @@ function energyVis(thr) { const span = 0.15 * thr + 0.30; return Math.max(0, Mat
 function prodVis(r) { return energyVis(r.thr); }
 function drawVis(r) { return prodVis(r) * (r.raa != null ? r.raa : 1); }
 function classifyReson(sp, m) { for (const r of sp.reson) { if (Math.abs(m - r.m) <= r.hw) return r; } return null; }
-function fitVal(sp, v) { let y = sp.bg(v); for (const r of sp.reson) y += drawVis(r) * r.amp * G(v, r.m, r.sg); return y; }
+
+// ── Daten-kalibrierte Modell-Kurve ──────────────────────────────────────────
+// Die gezeichnete Kurve wird EINMAL pro Profil aus dem ECHTEN Pool geschätzt:
+// Untergrund = Kern-Dichteschätzer (KDE) der Nicht-Resonanz-Events, Peaks =
+// Pool-Anteil × normierter Gauß mit empirischer Breite. Vorher kamen bg-Formel
+// und amp-Werte von Hand und lagen bis zu 46σ neben den echten Daten (fehlende
+// ZZ-Schulter bei ~190 GeV im 4ℓ-Satz, J/ψ-/B⁰-Peaks ~2× zu flach). drawVis
+// (Energie-Schwelle × R_AA) skaliert die Peaks weiterhin physikalisch; die
+// bg()/amp-Felder in DETSPEC bleiben nur als Fallback für leere Pools.
+const SQRT2PI = 2.5066282746310002;
+function calib(sp) {
+ const key = sp._raw || sp;
+ if (key._cal !== undefined) return key._cal;
+ const pool = sp.pool(), [mn, mx] = sp.range;
+ const inR = pool.filter(m => m >= mn && m < mx);
+ const cont = inR.filter(m => !classifyReson(sp, m));
+ let cal = null;
+ // robuster Streuungs-Schätzer: min(Standardabweichung, IQR/1.349) — ein scharfer
+ // Peak über flachem Untergrund bläht die std auf, der IQR bleibt beim Peak.
+ const spread = arr => {
+  const n = arr.length, mu = arr.reduce((a, b) => a + b, 0) / n;
+  const sd = Math.sqrt(arr.reduce((a, b) => a + (b - mu) ** 2, 0) / n);
+  const sorted = [...arr].sort((a, b) => a - b);
+  const iqr = sorted[Math.floor(n * 0.75)] - sorted[Math.floor(n * 0.25)];
+  return Math.min(sd || 1e-9, iqr / 1.349 || sd || 1e-9);
+ };
+ if (inR.length >= 30 && cont.length >= 10) {
+  const n = cont.length;
+  const sd = spread(cont) || (mx - mn) / 6;
+  // schärfere Bandbreite als Silverman (0.55×): bildet FSR-Schultern/Knicke ab,
+  // ohne bei den Pool-Größen (140–1600 Events) zackig zu werden.
+  const h = Math.max((mx - mn) / 70, 0.55 * sd * Math.pow(n, -0.2));
+  // Rand-Korrektur: Kontinuum-Events KNAPP AUSSERHALB des Sichtfensters schmieren
+  // hinein — ohne sie fiele die KDE an den Rändern künstlich ab.
+  const contX = pool.filter(m => m >= mn - 3 * h && m < mx + 3 * h && !classifyReson(sp, m));
+  const NS = 96, grid = new Float64Array(NS);
+  for (let i = 0; i < NS; i++) {
+   const v = mn + (i + 0.5) / NS * (mx - mn);
+   let y = 0; for (const m of contX) y += G(v, m, h);
+   grid[i] = y / (n * h * SQRT2PI);
+  }
+  const kde = v => {
+   const x = (v - mn) / (mx - mn) * NS - 0.5;
+   const i = Math.max(0, Math.min(NS - 1, Math.floor(x)));
+   const j = Math.min(NS - 1, i + 1), f = Math.min(1, Math.max(0, x - i));
+   return grid[i] * (1 - f) + grid[j] * f;
+  };
+  // Peak-Breite = empirische Streuung ⊕ Bin-Auflösung (quadratisch): ein Peak,
+  // der schmaler als ein Histogramm-Bin ist (J/ψ: ~40 MeV vs. 200-MeV-Bins),
+  // würde sonst als überhöhte Nadel ÜBER den gebinnten Balken gezeichnet.
+  const binw = (mx - mn) / (sp.bins || 60);
+  const res = sp.reson.map(r => {
+   const ev = inR.filter(m => Math.abs(m - r.m) <= r.hw);
+   let sg = r.sg;
+   if (ev.length >= 8) sg = Math.max(0.25 * r.sg, Math.hypot(spread(ev), binw / 2.355));
+   return { r, P: ev.length / inR.length, sg };
+  });
+  cal = { kde, Pc: cont.length / inR.length, res };
+ }
+ key._cal = cal;   // auch null cachen (→ Fallback-Formeln)
+ return cal;
+}
+// w(e) = Gewicht einer Resonanz in der Kurve (drawVis bzw. Nullhypothese-Variante)
+function curveVal(sp, v, w) {
+ const cal = calib(sp);
+ if (cal) {
+  let y = cal.Pc * cal.kde(v);
+  for (const e of cal.res) y += w(e.r) * e.P * G(v, e.r.m, e.sg) / (e.sg * SQRT2PI);
+  return y;
+ }
+ let y = sp.bg(v);
+ for (const r of sp.reson) y += w(r) * r.amp * G(v, r.m, r.sg);
+ return y;
+}
+function fitVal(sp, v) { return curveVal(sp, v, drawVis); }
+// Nullhypothese fürs Overlay — der historische Beweis-Mechanismus: Daten gegen
+// die Erwartung OHNE den gesuchten Effekt. QGP-Profile → „ohne QGP" (R_AA = 1,
+// volle Peaks); sonst → „ohne <primäre Resonanz>" (ihr Beitrag = 0).
+function nullVal(sp, v) {
+ const prim = primaryReson(sp);
+ const w = sp.supp ? (r => prodVis(r)) : (r => r.key === prim.key ? 0 : drawVis(r));
+ return curveVal(sp, v, w);
+}
 function resoName(key) {
  return { Jpsi: "J/psi", psi2S: "psi(2S)", Ups: "Upsilon(1S)", Ups2S: "Upsilon(2S)", Ups3S: "Upsilon(3S)", Z0: "Z0", Z4l: "Z(4l)", B0: "B0" }[key] || key;
 }
@@ -239,42 +325,53 @@ function pickTopo(name) {
 }
 
 // Zieht eine Masse aus dem ECHTEN Pool, gewichtet mit Strahl/Energie/R_AA:
-//  • Nicht-Resonanz (Kontinuum) → immer das echte Event.
-//  • Resonanz-Event → überlebt mit Wahrscheinlichkeit drawVis (Energie × R_AA).
-//    Wird es unterdrückt/nicht erzeugt, zerfällt es in KOMBINATORIK-UNTERGRUND
-//    (Kontinuum) statt erneut als Peak — so senkt R_AA<1 die Peak-Höhe korrekt
-//    (didaktisches QGP-/Schwellen-Modell auf echten p-p-Daten).
+//  • Nicht-Resonanz (Kontinuum) → immer akzeptiert (echtes Event).
+//  • Resonanz-Event → überlebt mit Wahrscheinlichkeit drawVis (Energie × R_AA);
+//    sonst wird VERWORFEN und neu gezogen (Rejection-Sampling). Physik: Die
+//    Unterdrückung senkt die PEAK-Ausbeute, das echte Kontinuum bleibt — genau
+//    die R_AA-Messung. (Früher wurden unterdrückte Events uniform über den Range
+//    verschmiert → unphysikalisches Plateau im Pilot-/Pb-Pb-Spektrum.)
 function sampleMass(sp) {
  const pool = sp.pool();
- let m = pool[(Math.random() * pool.length) | 0];
- let r = classifyReson(sp, m);
- if (!r) return m;                            // echtes Kontinuum/Untergrund-Event
- if (Math.random() < drawVis(r)) return m;    // Signal überlebt (erzeugt/unverdrängt)
- return sp.range[0] + Math.random() * (sp.range[1] - sp.range[0]);  // unterdrückt → Kontinuum
+ for (let t = 0; t < 80; t++) {
+  const m = pool[(Math.random() * pool.length) | 0];
+  const r = classifyReson(sp, m);
+  if (!r || Math.random() < drawVis(r)) return m;
+ }
+ for (let t = 0; t < 200; t++) {   // Extremfall: Pool fast nur (unterdrückte) Resonanz
+  const m = pool[(Math.random() * pool.length) | 0];
+  if (!classifyReson(sp, m)) return m;
+ }
+ return sp.range[0] + Math.random() * (sp.range[1] - sp.range[0]);   // letzter Fallback
 }
 
 function sampleEvent() {
  const sp = spec();
  if (sp.channel === "4l") {
   // Higgs-Goldkanal: ECHTES 4-Lepton-Ereignis (Masse + 4 reale Lepton-Spuren).
-  const H = primaryReson(sp), ev = sampleH4l();
-  if (ev) {
-   let m = ev.M, suppressed = false;
-   // Energie-Gating: ein Higgs-Fenster-Event gilt nur als Higgs, wenn erzeugbar;
-   // sonst (Energie < Schwelle) zerfällt es in ZZ*-Kontinuum. Landet der Re-Smear
-   // zufällig WIEDER im Fenster, bleibt es trotzdem Untergrund (kein Pilot-Higgs).
-   if (Math.abs(m - H.m) < H.hw && Math.random() >= drawVis(H)) {
-    m = sp.range[0] + Math.random() * (sp.range[1] - sp.range[0]); suppressed = true;
+  // Energie-Gating als Rejection über GANZE Events: JEDE Resonanz im Profil
+  // (H UND Z→4ℓ) überlebt mit p = drawVis, sonst wird ein neues Event gezogen —
+  // Masse und Spur-Topologie bleiben zusammen. (Früher: nur das H-Fenster wurde
+  // gegatet, Z→4ℓ lief z. B. im Pilot-Modus ungegatet durch; und das re-gesmearte
+  // Event behielt die Leptonen des verworfenen Higgs-Kandidaten.)
+  const H = primaryReson(sp);
+  if (h4lEvents().length) {
+   let ev = sampleH4l(), r = classifyReson(sp, ev.M);
+   for (let t = 0; r && Math.random() >= drawVis(r) && t < 80; t++) {
+    ev = sampleH4l(); r = classifyReson(sp, ev.M);
    }
-   let isSig = !suppressed && Math.abs(m - H.m) < H.hw; if (isSig) s.higgsCands++;
-   return { M: m, name: isSig ? "Higgs" : null, channel: "4l", leptons: ev.leptons, signal: isSig };
+   if (r && drawVis(r) <= 0) {   // Sicherung: nie eine nicht-erzeugbare Resonanz zeigen
+    const cont = h4lEvents().filter(e => !classifyReson(sp, e.M));
+    if (cont.length) { ev = cont[(Math.random() * cont.length) | 0]; r = null; }
+   }
+   const isSig = !!r && r.key === H.key;
+   return { M: ev.M, name: isSig ? "Higgs" : null, channel: "4l", leptons: ev.leptons, signal: isSig };
   }
-  // Fallback (keine 4ℓ-Daten geladen): illustrative Topologie. Higgs-Label nur,
-  // wenn der Kanal bei dieser Energie überhaupt produziert (sampleMass smeart
-  // unterdrückte Events ins Kontinuum — Fenster-Treffer darunter sind Zufall).
+  // Fallback (keine 4ℓ-Daten geladen): illustrative Topologie; sampleMass gated
+  // bereits alle Resonanzen — Fenster-Treffer unterhalb der Schwelle gibt es nicht.
   let m = sampleMass(sp), leptons = [];
   for (let i = 0; i < 4; i++) leptons.push({ pt: 8 + Math.random() * 40, eta: (Math.random() - .5) * 4, phi: Math.random() * 6.283, q: i % 2 ? 1 : -1, lep: Math.random() < .5 ? "e" : "μ" });
-  let isSig = drawVis(H) > 0 && Math.abs(m - H.m) < H.hw; if (isSig) s.higgsCands++;
+  let isSig = drawVis(H) > 0 && Math.abs(m - H.m) < H.hw;
   return { M: m, name: isSig ? "Higgs" : null, channel: "4l", leptons: leptons, signal: isSig };
  }
  let m = sampleMass(sp);
@@ -298,6 +395,9 @@ function resetSpectrumData() {
 // (wichtig für Mehr-Fill-Läufe, in denen die Signifikanz weiterwächst).
 const HIST_CAP = 6000;
 function pushMass(det, m) {
+ // Higgs-Fenster-Zähler (120–130 GeV): zählt ALLE akkumulierten 4ℓ-Kandidaten —
+ // konsistent zum Histogramm/collStore, nicht nur zufällig angezeigte Display-Events.
+ if (det === "CMS" && !s.isIon && Math.abs(m - HIG.m) < HIG.hw) s.higgsCands++;
  const store = s.massStore[det];
  if (!s.histSeen) s.histSeen = { ATLAS: 0, CMS: 0, ALICE: 0, LHCB: 0 };
  const seen = ++s.histSeen[det];
@@ -382,7 +482,7 @@ function drawHist() {
   sigStatus.innerText = "Rauschen (keine Signifikanz)";
   sigStatus.style.color = "#a3b4c6"; sigBar.style.background = "#58a6ff";
  } else if (sig < 5.0) {
-  sigStatus.innerText = "⚠️ Signal-Hinweis (Evidenz!)";
+  sigStatus.innerText = "Signal-Hinweis (Evidenz!)";
   sigStatus.style.color = "#ff7f0e"; sigBar.style.background = "#ff7f0e";
  } else {
   sigStatus.innerText = sp.discoMsg;
@@ -391,17 +491,17 @@ function drawHist() {
 
  // Detail-Status + „was man real misst" + Datenherkunft → HTML-Fuß (war im Canvas).
  let statusTxt;
- if (specialized)        statusTxt = "ℹ️ " + sp.note;
- else if (notProd)       statusTxt = "⚠️ " + prim.label + "-Produktionsrate bei " + App.de(s.paramEnergy,2) + " TeV pro Strahl zu gering für eine Messung — wird ab ~" + App.de(prim.thr,1) + " TeV pro Strahl sichtbar (Raten-Modell).";
+ if (specialized)        statusTxt = sp.note;
+ else if (notProd)       statusTxt = prim.label + "-Produktionsrate bei " + App.de(s.paramEnergy,2) + " TeV pro Strahl zu gering für eine Messung — wird ab ~" + App.de(prim.thr,1) + " TeV pro Strahl sichtbar (Raten-Modell).";
  else if (sp.supp)       statusTxt = "QGP-Unterdrückung (Modell): R_AA Υ(1S) ≈ 0,45, sequenziell · Signifikanz " + App.de(sig,1) + " σ / 5 σ.";
  else if (sp.reference)  statusTxt = "p-p-Referenz: unverdrängte Quarkonia (Vakuum). Die QGP-Unterdrückung (R_AA < 1) erscheint erst im Pb-Pb-Lauf.";
  else                    statusTxt = "Sammle Statistik (Signifikanz " + App.de(sig,1) + " σ von 5,0 σ).";
  const elStat = $("sp-status"); if (elStat) elStat.textContent = statusTxt;
- let realTxt = "➜ " + sp.real;
+ let realTxt = "→ " + sp.real;
  if (sp.channel === "4l") realTxt += " · Higgs-Fenster (120–130 GeV): " + s.higgsCands + " 4ℓ-Kandidaten";
  const elR = $("sp-real"); if (elR) elR.textContent = realTxt;
- const elP = $("sp-prov"); if (elP) elP.textContent = "📊 " + sp.prov
-  + " · Maßstab: Massen aus CMS-Open-Data (√s = 7 TeV, energieunabhängig), Raten modelliert, Kandidaten statt Roh-Kollisionen.";
+ const elP = $("sp-prov"); if (elP) elP.textContent = sp.prov
+  + " · Maßstab: Massen aus CMS-Open-Data (√s = 7 TeV, energieunabhängig), Raten modelliert, Kandidaten statt Roh-Kollisionen · Modellkurve aus den Daten kalibriert.";
 
  const activeData = s.massStore[s.selDet];
  if (!activeData.length) {
@@ -444,16 +544,38 @@ function drawHist() {
    ctxHist.fillText(r.label + (suppd ? " ↓" : ""), xm + 2, 16); });
   ctxHist.restore(); }
 
- // Fit-Kurve aus DEMSELBEN Modell (bg + Σ drawVis·amp·Gauss)
+ // Fit-Kurve (datenkalibriert, s. calib) + NULLHYPOTHESE als gestrichelte
+ // Vergleichskurve — der historische Beweis-Mechanismus: erst der Überschuss der
+ // Daten über die „ohne Higgs"-Erwartung (bzw. das Defizit unter der „ohne QGP"-
+ // Erwartung) macht aus Statistik eine Entdeckung.
  if (sig > 0.5) {
   let alpha = Math.min(1.0, Math.max(0, (sig - 0.5) / 3.5));
+  const showNull = sp.disco && !sp.reference;   // nur wo eine Entdeckung erzählt wird
   ctxHist.save(); ctxHist.globalAlpha = alpha;
-  let ys = [], ymax = 1e-9;
+  let ys = [], ys0 = [], ymax = 1e-9;
   // x-Skala identisch zu Bins/Markern: 30 … 30+(w-40) (sonst ~2 px Versatz rechts)
-  for (let xp = 30; xp <= w - 10; xp++) { let v = mn + (xp - 30) / (w - 40) * (mx - mn), yv = fitVal(sp, v); ys.push(yv); if (yv > ymax) ymax = yv; }
+  for (let xp = 30; xp <= w - 10; xp++) {
+   let v = mn + (xp - 30) / (w - 40) * (mx - mn), yv = fitVal(sp, v);
+   ys.push(yv); if (yv > ymax) ymax = yv;
+   if (showNull) { const y0 = nullVal(sp, v); ys0.push(y0); if (y0 > ymax) ymax = y0; }
+  }
+  const toY = yv => Math.max(8, Math.min(h - 16, h - 16 - (yv / ymax) * (h - 30)));
+  if (showNull) {   // Nullhypothese zuerst (liegt hinter der Modell-Kurve)
+   ctxHist.strokeStyle = "rgba(255,255,255,0.60)"; ctxHist.lineWidth = 1.2; ctxHist.setLineDash([5, 4]);
+   ctxHist.beginPath();
+   ys0.forEach((yv, k) => { const yp = toY(yv); k === 0 ? ctxHist.moveTo(30 + k, yp) : ctxHist.lineTo(30 + k, yp); });
+   ctxHist.stroke(); ctxHist.setLineDash([]);
+  }
   ctxHist.strokeStyle = sp.col; ctxHist.lineWidth = 1.7; ctxHist.beginPath();
-  ys.forEach((yv, k) => { let yp = h - 16 - (yv / ymax) * (h - 30); yp = Math.max(8, Math.min(h - 16, yp)); k === 0 ? ctxHist.moveTo(30 + k, yp) : ctxHist.lineTo(30 + k, yp); });
-  ctxHist.stroke(); ctxHist.restore();
+  ys.forEach((yv, k) => { const yp = toY(yv); k === 0 ? ctxHist.moveTo(30 + k, yp) : ctxHist.lineTo(30 + k, yp); });
+  ctxHist.stroke();
+  if (showNull) {   // Mini-Legende (oben links, kompakt)
+   const lbl0 = sp.supp ? "╌ ohne QGP (R_AA = 1)" : "╌ ohne " + prim.label + " (Nullhypothese)";
+   ctxHist.font = "6.5px sans-serif";
+   ctxHist.fillStyle = sp.col;                       ctxHist.fillText("— Modell (mit Signal)", 34, 13);
+   ctxHist.fillStyle = "rgba(255,255,255,0.75)";     ctxHist.fillText(lbl0, 34, 22);
+  }
+  ctxHist.restore();
  }
 
 }
@@ -461,6 +583,9 @@ function drawHist() {
 // Relative Kandidaten-Akkumulationsrate je Detektor im aktuellen Strahl (Higgs
 // selten → kleine Rate; Z⁰/Quarkonia häufig). Speist die gleichzeitige Datennahme.
 App.detRate = det => (profile(det).rate || 1);
+// Kurven-Auswertung für Tests/Audit (χ²-Formvergleich Daten ↔ gezeichnete Kurve).
+App.fitValFor = (det, v) => fitVal(profile(det), v);
+App.nullValFor = (det, v) => nullVal(profile(det), v);
 App.profileMeta = () => META;
 App.classify = classify;
 App.sampleEvent = sampleEvent;

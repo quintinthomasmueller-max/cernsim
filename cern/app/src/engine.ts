@@ -61,9 +61,8 @@ function setMode(ion){
  E.b1bar.className="cv4-fill-bar-inner "+(ion?"b1i":"b1");
  E.b2bar.className="cv4-fill-bar-inner "+(ion?"b2i":"b2");
  // Pb-Ionen: max. Steifigkeit der Dipole entspricht 2,76 TeV/u (= 6,8 TeV·Z/A bei
- // gleicher Magnetfeldstärke) — Slider-Bereich und Wert physikalisch klemmen.
- E.sliEnergy.max = ion ? 2.8 : 7.0;
- if(ion && s.paramEnergy > 2.76){ s.paramEnergy = 2.76; E.sliEnergy.value = 2.76; }
+ // gleicher Magnetfeldstärke) — Ziel-Energie physikalisch klemmen.
+ if(ion && s.paramEnergy > 2.76){ s.paramEnergy = 2.76; }
  E.lblEnergy.innerText = fmtEnergy(s.paramEnergy);
  if(ion){
   document.querySelectorAll(".cv4-dtab").forEach(t=>t.classList.remove("act"));
@@ -99,11 +98,10 @@ function resetLHC(keepData=false){
  E.rbar.style.width="0%";
  E.btnRamp.classList.add("off"); E.btnSqueeze.classList.add("off"); E.btnColl.classList.add("off");
  E.btnAutoColl.classList.add("off");
- E.sliEnergy.disabled = false; E.sliIntensity.disabled = false; E.sliBeta.value = 1.5; E.sliBeta.disabled = true; E.sliRampSpeed.disabled = false;
- E.lblBeta.innerText = de(1.5,2) + " m";
+ E.lblBeta.innerText = de(1.5,2) + " m";   // β*-Anzeige zurück auf unsqueezed (live)
  updateReadouts();
- Object.values(g.paths).forEach(p=>{p.classList.remove("lit","lit-i","lit-b2")});
- Object.values(g.nodes).forEach(n=>{n.classList.remove("glow","glow-i","flash")});
+ Object.values(g.paths).forEach((p:any)=>{p.classList.remove("lit","lit-i","lit-b2")});
+ Object.values(g.nodes).forEach((n:any)=>{n.classList.remove("glow","glow-i","flash")});
  g.paths.lhc.classList.remove("lit","lit-i");
  setStatus("BEREIT","on");
 }
@@ -111,7 +109,7 @@ function resetLHC(keepData=false){
 // abort(): bricht die Animation SOFORT ab (statt das Segment auf einem bereits
 // aus dem DOM entfernten Punkt zu Ende zu rechnen — verschenkte rAF-Frames).
 async function moveAlongPath(dot, pathEl, vpx, abort){
- return new Promise(res=>{
+ return new Promise<void>(res=>{
   // Pfadlängen sind statisch → einmal messen und am Element cachen
   const len = pathEl.__len || (pathEl.__len = pathEl.getTotalLength());
   const dur=Math.max(1, len/vpx);   // Dauer = ECHTE Pfadlänge / Geschwindigkeit (kohärentes Tempo)
@@ -132,7 +130,7 @@ async function orbitRing(dot, ring, entryA, exitA, orbits, vpx, abort){
   let partial=((exitA-entryA)%(2*Math.PI)+2*Math.PI)%(2*Math.PI);
   let totalA=orbits*2*Math.PI+partial;
   const dur=Math.max(1, (ring.r*totalA)/vpx);   // Dauer = Bogenlänge / Geschwindigkeit (gleiche Leiter wie Transfers)
-  return new Promise(res=>{
+  return new Promise<void>(res=>{
    let t0=null;
    function step(ts){
     if(abort && abort()){ res(); return; }
@@ -147,8 +145,10 @@ async function orbitRing(dot, ring, entryA, exitA, orbits, vpx, abort){
   });
 }
 
-// ── Einheitlicher Zeit-Faktor: skaliert ALLE Abläufe (Injektion, LHC-Rotation, Ramp) kohärent ──
-function timeScale(){ return s.isFastMode ? 1.0 : 2.6; }
+// ── Einheitlicher Zeit-Faktor: an SIM_SCALE gekoppelt (Zeitraffer = Basis 1,0) ──
+// Bahntempo, Ramp und Squeeze skalieren beim Moduswechsel im SELBEN Verhältnis
+// (40/15) wie die Füll-Kadenz — vorher zwei leicht abweichende Faktoren (2,6 vs. 2,67).
+function timeScale(){ return SIM_SCALE.fast / simScale(); }
 
 // ── Referenz-gezählte Beleuchtung: Pfad/Knoten leuchtet, solange ≥1 Bunch darauf ist (Pipeline-fähig) ──
 const _pathRC = new Map(), _nodeRC = new Map(), _stageRC = [0,0,0,0];
@@ -169,8 +169,8 @@ function stageEnter(i){ _stageRC[i]++; renderTracker(); }
 function stageLeave(i){ _stageRC[i]=Math.max(0,_stageRC[i]-1); renderTracker(); }
 function clearIllum(){
  _pathRC.clear(); _nodeRC.clear(); for(let i=0;i<4;i++) _stageRC[i]=0;
- Object.values(g.paths).forEach(p=>{ if(p) p.classList.remove("lit","lit-i","lit-b2"); });
- Object.values(g.nodes).forEach(n=>{ if(n) n.classList.remove("glow","glow-i"); });
+ Object.values(g.paths).forEach((p:any)=>{ if(p) p.classList.remove("lit","lit-i","lit-b2"); });
+ Object.values(g.nodes).forEach((n:any)=>{ if(n) n.classList.remove("glow","glow-i"); });
  g.trSteps.forEach(st=>st.classList.remove("cur","cur-i","done"));
 }
 
@@ -196,8 +196,10 @@ async function flowStep(dot, pathEl, nodeEl, stageIdx, velKey, ringArgs, gen){
 // ── Füllen mit Batch-Fan-in (real) ──────────────────────────────────────────
 // 1 wandernder Punkt = 1 PS-Batch (psBatch Bunches). Mehrere Batches laufen
 // einzeln durch den gemeinsamen Injektorkomplex (LINAC→PSB/LEIR→PS) zum SPS,
-// PARKEN dort (Akkumulation) und VERSCHMELZEN zu EINEM Zug, der über TI 2 (B1) /
-// TI 8 (B2) in den LHC läuft. So wird die echte Hierarchie & Fusion sichtbar.
+// AKKUMULIEREN dort und werden zu EINEM Zug ZUSAMMENGEFÜHRT, der über TI 2 (B1) /
+// TI 8 (B2) in den LHC läuft. So wird die echte Hierarchie sichtbar. Didaktische
+// Abstraktion: real bleiben die 4 Batches im Zug getrennte 72-Bunch-Gruppen (mit
+// Lücken) und werden gemeinsam extrahiert — wir zeigen sie als EINEN Zug-Punkt.
 function beamColor(beam){ const ion=s.isIon; return beam===1 ? (ion?"#e377c2":"#58a6ff") : (ion?"#c77dff":"#ff7f0e"); }
 function newDot(beam, r){
  const dot=document.createElementNS(SVG_NS,"circle");
@@ -206,16 +208,22 @@ function newDot(beam, r){
  (E.schematic||E.svg).appendChild(dot); return dot;
 }
 function pulseNode(n){ if(!n) return; n.classList.add("flash"); setTimeout(()=>n.classList.remove("flash"),200); }
-function countBatch(beam){
+// Füllstands-Balken = was im LHC ANGEKOMMEN ist (Aufruf erst bei Zug-Ankunft in
+// fuseTrain, n = Batches des Zugs). Vorher zählte jeder Batch schon bei SPS-Ankunft
+// — der „LHC-Füllstand" stieg, während die Bunches noch im SPS kreisten.
+function countBatch(beam, n){
  const tot=totalBatches();
- if(beam===1){ s.b1Batches++; E.b1c.innerText=fillLabel(s.b1Batches); E.b1bar.style.width=(Math.min(1,s.b1Batches/tot)*100)+"%"; }
- else        { s.b2Batches++; E.b2c.innerText=fillLabel(s.b2Batches); E.b2bar.style.width=(Math.min(1,s.b2Batches/tot)*100)+"%"; }
+ if(beam===1){ s.b1Batches+=n; E.b1c.innerText=fillLabel(s.b1Batches); E.b1bar.style.width=(Math.min(1,s.b1Batches/tot)*100)+"%"; }
+ else        { s.b2Batches+=n; E.b2c.innerText=fillLabel(s.b2Batches); E.b2bar.style.width=(Math.min(1,s.b2Batches/tot)*100)+"%"; }
 }
 
 // Ein PS-Batch läuft bis zum SPS und PARKT dort (Cluster am Injektionspunkt).
 async function injectBatch(beam, parked, gen){
  const ion=s.isIon, R=g.R, J=g.J, paths=g.paths, nodes=g.nodes;
- const dot=newDot(beam, "3.2");
+ // Startet KLEIN: vor dem PS gibt es die 72er-Bunch-Struktur noch nicht
+ // (LINAC-Puls bzw. wenige PSB/LEIR-Pakete) — sie entsteht erst durch das
+ // Bunch-Splitting im PS, dort „wächst" der Punkt (s. u.).
+ const dot=newDot(beam, "2.4");
  const fin=()=>{ dot.remove(); };
  const lp=ion?paths.linac3:paths.linac4, ln=ion?nodes.linac3:nodes.linac4;
  if(!await flowStep(dot, lp, ln, 0, 'linac', null, gen)) return fin();
@@ -225,6 +233,8 @@ async function injectBatch(beam, parked, gen){
  if(!await flowStep(dot, ion?paths.leirPs:paths.psbPs, null, null, 'trToPs', null, gen)) return fin();
  const psE=ion?J.PS_FROM_LEIR:J.PS_FROM_PSB;
  if(!await flowStep(dot, paths.ps, nodes.ps, 2, 'ps', [R.PS, psE, J.PS_EXIT, 3], gen)) return fin();
+ // Bunch-Splitting: erst HIER wird das Paket zum 72-Bunch-Batch (25-ns-Struktur).
+ pulseNode(nodes.ps); dot.setAttribute("r","3.2");
  if(!await flowStep(dot, paths.psSps, null, null, 'trToSps', null, gen)) return fin();
  if(runAborted(gen)) return fin();
  // Am SPS angekommen → tritt in den SPS-Umlauf ein (akkumuliert kreisend, NICHT
@@ -234,30 +244,61 @@ async function injectBatch(beam, parked, gen){
  s.spsDots[key].push(rec); parked.push(rec);
  stageEnter(3); enterNode(nodes.sps); pulseNode(nodes.sps);   // SPS leuchtet, solange Batches umlaufen
  startSpsLoop();
- countBatch(beam);
 }
 
-// Die akkumulierten Batches verschmelzen zu EINEM Zug → orbitet SPS → TI → LHC.
+// Zusammenführungs-Animation: die akkumulierten Batches rücken — WÄHREND sie
+// weiter im SPS umlaufen — winkelmäßig auf ihren gemeinsamen Schwerpunkt zusammen
+// (off → Mittelwert). Liefert diesen Schwerpunkt-Offset zurück, sodass der Zug
+// danach NAHTLOS an genau dieser Stelle übernimmt (kein Verschwinden/Teleport).
+function mergeBatches(parked, gen){
+ return new Promise<number>(res=>{
+  if(parked.length<=1){ res(parked.length?parked[0].off:0); return; }
+  const dur = 0.7 * (trainCadenceMs()/fc().batchesPerTrain);   // < Batch-Abstand → kein Überlapp mit dem nächsten Zug
+  const starts = parked.map(r=>r.off);
+  const target = starts.reduce((a,b)=>a+b,0)/starts.length;     // Schwerpunkt
+  let t0=null;
+  function step(ts){
+   if(runAborted(gen)){ res(target); return; }
+   if(!t0) t0=ts;
+   const p=Math.min((ts-t0)/dur,1);
+   const e=1-Math.pow(1-p,3);                                   // easeOut: schnell zusammen, sanft schließen
+   parked.forEach((r,i)=>{ r.off = starts[i] + (target-starts[i])*e; });
+   p<1 ? requestAnimationFrame(step) : res(target);
+  }
+  requestAnimationFrame(step);
+ });
+}
+
+// Die akkumulierten Batches werden zu EINEM Zug zusammengeführt → orbitet SPS → TI → LHC.
 async function fuseTrain(beam, parked, gen){
  const R=g.R, J=g.J, paths=g.paths, nodes=g.nodes, key=beam===1?"b1":"b2";
+ const nB=parked.length;   // Batches dieses Zugs — gezählt wird erst bei LHC-Ankunft
+ const phase = beam===1 ? 0 : Math.PI;
  pulseNode(nodes.sps);
+ // 1) Sichtbares Zusammenrücken der Batches (statt abruptem Verschwinden).
+ const target = await mergeBatches(parked, gen);
+ // 2) Übergabe AM ORT des nun gestapelten Clusters (s.spsAngle + Phase + Schwerpunkt)
+ //    → der Zug entsteht genau dort, wo die Batches stehen (nahtlos, kein Teleport).
+ const startA = s.spsAngle + phase + target;
  parked.forEach(rec=>{ rec.el.remove(); stageLeave(3); leaveNode(nodes.sps); const i=s.spsDots[key].indexOf(rec); if(i>=0) s.spsDots[key].splice(i,1); });
  parked.length=0;
  if(runAborted(gen)) return;
  const train=newDot(beam, "4.2");
- train.setAttribute("cx", R.SPS.cx + R.SPS.r*Math.cos(J.SPS_ENTRY));
- train.setAttribute("cy", R.SPS.cy + R.SPS.r*Math.sin(J.SPS_ENTRY));
+ train.setAttribute("cx", R.SPS.cx + R.SPS.r*Math.cos(startA));
+ train.setAttribute("cy", R.SPS.cy + R.SPS.r*Math.sin(startA));
  const spsExit=beam===1?J.SPS_TI2:J.SPS_TI8;
- if(!await flowStep(train, paths.sps, nodes.sps, 3, 'sps', [R.SPS, J.SPS_ENTRY, spsExit, 1], gen)){ train.remove(); return; }
+ // Orbit vom aktuellen Cluster-Winkel aus (1 voller Umlauf = SPS-Beschleunigung) bis zum TI-Ausgang.
+ if(!await flowStep(train, paths.sps, nodes.sps, 3, 'sps', [R.SPS, startA, spsExit, 1], gen)){ train.remove(); return; }
  if(!await flowStep(train, beam===1?paths.ti2:paths.ti8, null, null, 'ti', null, gen)){ train.remove(); return; }
  train.remove();
  addPermanentDot(beam);
  if(beam===1) s.b1Count++; else s.b2Count++;
+ countBatch(beam, nB);
  paths.lhc.classList.add(s.isIon?"lit-i":"lit");
  renderTracker();
 }
 
-// Ein kompletter SPS-Zug = nBatches einzelne PS-Batches → Fusion → LHC.
+// Ein kompletter SPS-Zug = nBatches einzelne PS-Batches → Zusammenführung → LHC.
 // gen = Füll-Generation des aufrufenden Laufs (handlers#fuellProtokoll).
 async function injectTrain(beam, nBatches, gen){
  if(gen == null) gen = s.fillGen;
@@ -274,10 +315,9 @@ async function injectTrain(beam, nBatches, gen){
 }
 
 async function doRamp(){
- if(s.ramped||s.filling||s.cryoRecovery) return;
+ if(s.ramped||s.filling||s.cryoRecovery||s.isPilot) return;
  E.btnRamp.classList.add("off"); E.btnAuto.classList.add("off");
- E.sliEnergy.disabled = true; E.sliIntensity.disabled = true; E.sliRampSpeed.disabled = true;
- setStatus("HOCHFAHREN — Magnetfeld & Energie steigen …","on");
+ setStatus(`HOCHFAHREN (1 s ≈ ${simScale()} s real) — Magnetfeld & Energie steigen …`,"on");
  const startE=s.isIon?177:450;
  const maxE=s.isIon?2760:7000;   // Ionen: 7 TeV·(82/208) ≈ 2,76 TeV/u (gleiche Dipol-Steifigkeit)
  const targetE=Math.max(s.paramEnergy*1000, startE);   // nie unter Injektionsenergie -> Ramping BESCHLEUNIGT immer
@@ -285,7 +325,12 @@ async function doRamp(){
  const fullSpeed =s.isIon?0.0095:0.0150;                // Geschwindigkeit bei Maximalenergie
  const eFrac=Math.max(0, Math.min(1,(targetE-startE)/(maxE-startE)));
  const targetSpeed=startSpeed+eFrac*(fullSpeed-startSpeed);  // monoton: targetSpeed >= startSpeed
- const dur = (200 / s.paramRampSpeed) * timeScale();
+ // EHRLICHE Ramp-Dauer: Feldhub ΔB ÷ Ramp-Rate, dargestellt im Füll-Zeitmaßstab
+ // (1 s ≈ simScale() s real). B ∝ E wie in updateReadouts (Pb: Faktor A/Z).
+ // Vorher Konstante 200 → die Dauer war energieUNabhängig (Rampe auf 1 TeV dauerte
+ // so lange wie auf 6,8 TeV); volle pp-Rampe blieb fast gleich (~10 s im Didaktik-Modus).
+ const dB=(s.isIon?208/82:1)*(targetE-startE)/(0.299792458*2803.95);   // Tesla
+ const dur=Math.max(800, (dB/s.paramRampSpeed)*1000/simScale());
  // PROBABILISTISCHES Quench-Risiko (statt deterministisch bei 40 %): oberhalb
  // 0,10 T/s steigt die Wahrscheinlichkeit steil (~30 % bei 0,11 → ~95 % bei
  // 0,15 T/s); der Zeitpunkt liegt zufällig in der Rampe — wie ein echtes Risiko.
@@ -293,7 +338,7 @@ async function doRamp(){
  const quenchAt = (risk > 0 && Math.random() < risk) ? (0.25 + Math.random() * 0.65) : Infinity;
  let t0=null;
  let quenched = false;
- await new Promise(res=>{
+ await new Promise<void>(res=>{
   function step(ts){
    if(!t0) t0=ts;
    let p=Math.min((ts-t0)/dur,1);
@@ -305,19 +350,19 @@ async function doRamp(){
   requestAnimationFrame(step);
  });
  if(quenched) { triggerQuench(); return; }
- s.ramped=true; E.btnSqueeze.classList.remove("off"); E.sliBeta.disabled = false;
+ s.ramped=true; E.btnSqueeze.classList.remove("off");
  setStatus("HOCHFAHREN ABGESCHLOSSEN — jetzt Beam Squeeze starten!","on");
 }
 
 function triggerQuench(){
  s.cryoRecovery = true; stopAutoCollide();
- setStatus("💥 QUENCH! Ein Magnet hat seine Supraleitung verloren — Strahl notabgeworfen!", "danger");
+ setStatus("QUENCH! Ein Magnet hat seine Supraleitung verloren — Strahl notabgeworfen!", "danger");
  E.sdot.className = "cv4-dot flash";
  E.svg.style.transition = "filter 0.5s";
  E.svg.style.filter = "sepia(1) saturate(3) hue-rotate(320deg)";
  let secLeft = 5;
  function cryoTick(){
-  if(secLeft > 0){ setStatus(`💥 QUENCH — Helium-Kühlung fährt die Magnete wieder herunter … (${secLeft} s)`, "danger"); secLeft--; setTimeout(cryoTick, 1000); }
+  if(secLeft > 0){ setStatus(`QUENCH — Helium-Kühlung fährt die Magnete wieder herunter … (${secLeft} s)`, "danger"); secLeft--; setTimeout(cryoTick, 1000); }
   else { E.svg.style.filter = "none"; s.cryoRecovery = false; resetLHC(); setStatus("KÜHLUNG ABGESCHLOSSEN — LHC wieder bereit", "on"); }
  }
  cryoTick();
@@ -325,10 +370,13 @@ function triggerQuench(){
 
 async function doSqueeze(){
  if(!s.ramped||s.squeezed||s.squeezing||s.cryoRecovery) return;
- s.squeezing = true; E.btnSqueeze.classList.add("off"); E.sliBeta.disabled = true;
- setStatus("🗜️ BEAM SQUEEZE — bündele die Strahlen an den Kollisionspunkten …","on");
- let t0 = null; const dur = 2000; const targetBeta = parseFloat(E.sliBeta.value);
- await new Promise(res=>{
+ s.squeezing = true; E.btnSqueeze.classList.add("off");
+ setStatus("BEAM SQUEEZE — bündele die Strahlen an den Kollisionspunkten … (stark gerafft; real dauert das einige Minuten)","on");
+ // Bewusste Raffung über den Füll-Maßstab hinaus (real ~10–15 min wären 40–60 s
+ // Darstellung — didaktisch tot). Skaliert aber mit dem Tempo-Modus mit.
+ // Ziel-β* kommt jetzt aus dem Preset (s.targetBetaStar), nicht mehr aus einem Slider.
+ let t0 = null; const dur = 2000 * timeScale(); const targetBeta = s.targetBetaStar;
+ await new Promise<void>(res=>{
   function step(ts){
    if(!t0) t0=ts;
    let p=Math.min((ts-t0)/dur,1);
@@ -358,9 +406,10 @@ function addPermanentDot(beam){
  if(!s.lhcRunning) startLHCLoop();
 }
 
-// SPS-Akkumulations-Umlauf: ankommende Batches KREISEN im SPS (verteilt, co-
-// rotierend) statt statisch am Eingang zu stauen → sieht aus wie ein sich
-// füllender Strahl. Wird bei Fusion (fuseTrain) wieder geleert.
+// SPS-Akkumulations-Umlauf: ankommende Batches KREISEN im SPS (verteilt, beide
+// Strahlen gleichläufig — ein Synchrotron hat EINE Umlaufrichtung) statt statisch
+// am Eingang zu stauen → sieht aus wie ein sich füllender Strahl. Wird bei der
+// Zusammenführung (fuseTrain) wieder geleert.
 function startSpsLoop(){
  if(s.spsRunning) return;
  s.spsRunning=true; s.spsLastT=null;
@@ -371,8 +420,11 @@ function startSpsLoop(){
   // Winkelgeschwindigkeit aus DERSELBEN Geschwindigkeits-Leiter: ω = v_tangential / r
   // → ankommende Batches kreisen mit SPS-Bahntempo (kein Tempo-Sprung beim Eintritt).
   s.spsAngle += (App.getStageVel('sps')/R.SPS.r)*dt;
-  const place=(arr,dir)=>arr.forEach(d=>{ const a=dir*s.spsAngle+d.off; d.el.setAttribute("cx",R.SPS.cx+R.SPS.r*Math.cos(a)); d.el.setAttribute("cy",R.SPS.cy+R.SPS.r*Math.sin(a)); });
-  place(s.spsDots.b1, 1); place(s.spsDots.b2, -1);
+  // Beide Strahlen GLEICHLÄUFIG (ein Synchrotron = eine Umlaufrichtung). Die
+  // Gegenläufigkeit beginnt erst im LHC (TI 2 vs. TI 8). B2 nur um π phasen-
+  // versetzt, damit die Punkte sichtbar getrennt sind — NICHT gegenläufig.
+  const place=(arr,phase)=>arr.forEach(d=>{ const a=s.spsAngle+phase+d.off; d.el.setAttribute("cx",R.SPS.cx+R.SPS.r*Math.cos(a)); d.el.setAttribute("cy",R.SPS.cy+R.SPS.r*Math.sin(a)); });
+  place(s.spsDots.b1, 0); place(s.spsDots.b2, Math.PI);
   if(s.spsRunning && (s.spsDots.b1.length || s.spsDots.b2.length)) requestAnimationFrame(frame);
   else s.spsRunning=false;
  }
@@ -403,10 +455,13 @@ function startLHCLoop(){
 
 function doCollide(){
  if(!s.ramped||!s.squeezed||s.cryoRecovery||s.dumping) return;
- s.collisions+=1; E.spInfo.innerText=`Kandidaten (${s.selDet}): ${Math.round(s.collisions).toLocaleString("de-DE")}`;
  let detNode=g.nodes[s.selDet.toLowerCase()];
  if(detNode){detNode.classList.add("flash");setTimeout(()=>detNode.classList.remove("flash"),350);}
  App.drawCollisionEvent(App.generateMassData()); App.drawHist();
+ // Anzeige aus collStore (generateMassData zählt dort) — vorher zeigte s.collisions
+ // nach einem Detektor-Wechsel den Stand des VORHERIGEN Detektors + 1.
+ s.collisions = s.collStore[s.selDet];
+ E.spInfo.innerText=`Kandidaten (${s.selDet}): ${Math.round(s.collisions).toLocaleString("de-DE")}`;
 }
 
 function toggleAutoCollide(){
@@ -419,7 +474,7 @@ const dtLabel = () => s.isFastMode ? "33 min" : "15 min";
 
 function startAutoCollide(){
  if(!s.ramped || !s.squeezed || s.cryoRecovery || s.dumping) return;
- E.btnAutoColl.innerText = "⏸️ Datennahme stoppen"; E.btnAutoColl.classList.add("act");
+ E.btnAutoColl.innerText = "Datennahme stoppen"; E.btnAutoColl.classList.add("act");
  E.btnColl.classList.add("off");
  // Burn-off-Uhr läuft PRO FILL: nur beim ersten Start nach dem Füllen auf null
  // (Pause/Weiter verjüngt den Strahl NICHT — sonst „Unendlich-Fill"-Exploit).
@@ -457,23 +512,28 @@ function startAutoCollide(){
   // Z⁰/Quarkonia häufig) → collStore KONTINUIERLICH (float) je Detektor, Signifikanz
   // 5·√(collStore/target) wächst GLATT der √-Kurve entlang (steil→flach), vom Burn-off
   // gedämpft. Tab-Wechsel zeigt den parallel gewachsenen Stand jedes Detektors.
+  let dCandSel = 0;
   App.liveDetectors().forEach(d=>{
    const dCand = STAT_RATE * L * lumiF * dReal * App.detRate(d);
+   if(d === s.selDet) dCandSel = dCand;
    s.collStore[d] += dCand;
    s.histAcc[d]   += dCand;
    const whole = Math.floor(s.histAcc[d]);
    if(whole > 0){ s.histAcc[d] -= whole; App.accumulateStatsFor(d, whole); }
   });
   s.collisions = s.collStore[s.selDet];   // Anzeige folgt dem gewählten Detektor
-  // Sichtbares Einzel-Event des GEWÄHLTEN Detektors in watchbarer Rate (∝ L).
-  if(Math.random() < L){
+  // Sichtbares Einzel-Event des GEWÄHLTEN Detektors in watchbarer Rate ∝ seiner
+  // ECHTEN Kandidaten-Rate (L × Lumi-Faktor × Kanal-Rate), gedeckelt auf ~7 Hz.
+  // Vorher nur ∝ L (Burn-off): der Pilot-Strahl (lumiF ≈ 0,001) blinkte so oft
+  // wie der Vollbetrieb. Jetzt: Vollbetrieb ~jeden Tick, Pilot ~alle 3–4 s.
+  if(Math.random() < Math.min(0.85, 8 * dCandSel)){
    let detNode=g.nodes[s.selDet.toLowerCase()];
    if(detNode){ detNode.classList.add("flash"); setTimeout(()=>detNode.classList.remove("flash"), 75); }
    s.lastEvent = App.sampleEvent(); App.drawCollisionEvent(s.lastEvent);   // s.lastEvent → Golden-Event-Freeze
   }
   App.drawHist();
   E.spInfo.innerText = `Kandidaten (${s.selDet}): ${Math.round(s.collStore[s.selDet]).toLocaleString("de-DE")} · L ${Math.round(L*100)} %`;
-  setStatus(`📉 DATENNAHME (1 s ≈ ${dtLabel()} real) — N ${fmtIntensity(s.intensityNow)} (${Math.round(frac*100)} %) · L ${Math.round(L*100)} %`, "on");
+  setStatus(`DATENNAHME (1 s ≈ ${dtLabel()} real) — N ${fmtIntensity(s.intensityNow)} (${Math.round(frac*100)} %) · L ${Math.round(L*100)} %`, "on");
   if(frac <= DUMP_FRAC) beamDump();
  }, 125);
 }
@@ -482,7 +542,7 @@ function startAutoCollide(){
 function beamDump(){
  s.dumping = true;   // Gate: bis zum Reset KEINE manuellen Kollisionen / kein Neustart
  stopAutoCollide();  // (der Strahl ist weg — ramped/squeezed sind nur noch Restzustand)
- setStatus(`💥 STRAHL-DUMP — N < ${Math.round(DUMP_FRAC*100)} % (L < ${Math.round(DUMP_FRAC*DUMP_FRAC*100)} %): Strahl verbraucht, neue Füllung nötig.`, "danger");
+ setStatus(`STRAHL-DUMP — N < ${Math.round(DUMP_FRAC*100)} % (L < ${Math.round(DUMP_FRAC*DUMP_FRAC*100)} %): Strahl verbraucht, neue Füllung nötig.`, "danger");
  // keepData=true: Spektrum/Signifikanz BLEIBEN (mehrere Füllungen summieren sich zur Entdeckung).
  setTimeout(()=>{ if(!s.cryoRecovery){ resetLHC(true); setStatus("STRAHL ABGEWORFEN — Daten bleiben erhalten. Füllprotokoll für die nächste Füllung starten.", "on"); } }, 1600);
 }
@@ -490,7 +550,7 @@ function beamDump(){
 function stopAutoCollide(){
  const had = !!s.autoCollInterval;
  if(had) { clearInterval(s.autoCollInterval); s.autoCollInterval = null; }
- E.btnAutoColl.innerText = "▶️ Auto-Datennahme"; E.btnAutoColl.classList.remove("act");
+ E.btnAutoColl.innerText = "Auto-Datennahme"; E.btnAutoColl.classList.remove("act");
  if(had && !s.dumping) setStatus("DATENNAHME PAUSIERT — die Verbrauchs-Uhr läuft beim Fortsetzen weiter", "on");
  // Manuelle Kollisionen nur freigeben, wenn der Strahl noch existiert (kein Dump).
  if(s.ramped && s.squeezed && !s.cryoRecovery && !s.dumping) E.btnColl.classList.remove("off");

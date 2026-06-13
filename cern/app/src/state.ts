@@ -4,6 +4,8 @@
 // ═══════════════════════════════════════════════════════════════════════════
 import { App } from './core.js';
 
+// `satisfies AppState`: prüft das Init-Objekt an der Quelle gegen den Vertrag —
+// fehlende/vertippte/überzählige State-Felder fallen hier beim tsc-Gate auf.
 Object.assign(App.state, {
   isIon: false, ramped: false, filling: false,
   b1Count: 0, b2Count: 0,         // umlaufende Züge je Strahl
@@ -25,19 +27,21 @@ Object.assign(App.state, {
   lastEvent: null, goldenEvent: null, higgsCands: 0,
   selDet: 'ATLAS',
   tourStep: 0,               // Signaturen-Tour im Event-Display (0 = aus, 1..6 = Schritt)
-  isFastMode: true,
+  isFastMode: false,
   // CCC-Operator-Parameter
   paramEnergy: 6.8,          // Ziel-Energie (TeV)
   paramIntensity: 1.15,      // Bunch-Intensität (10^11 Protonen)
-  paramBetaStar: 1.5,        // Strahlgröße am IP (m)
+  paramBetaStar: 1.5,        // AKTUELLES β* am IP (m): 1,5 unsqueezed → Ziel nach Squeeze
+  targetBetaStar: 0.3,       // β*-Ziel des Presets (Squeeze fährt paramBetaStar darauf herunter)
   paramRampSpeed: 0.05,      // Magnetfeld-Ramp-Rate (T/s)
+  isPilot: false,
   squeezing: false, squeezed: false, cryoRecovery: false,
   autoCollInterval: null,
   // Ablaufsteuerung (vormals implizite Globals im IIFE-Closure)
   resetFlag: false,
   // Canvas-Maße / High-DPI (dpr bei Boot aus window.devicePixelRatio gesetzt)
   dpr: 1, evW: 340, evH: 180, histW: 340, histH: 130,
-});
+} satisfies AppState);
 
 // ── Kohärentes Tempo-Modell: EINE Geschwindigkeits-Leiter (Bildschirm-px je ms) ──
 // Die visuelle Bahngeschwindigkeit steigt MONOTON durch die Kette
@@ -49,10 +53,10 @@ Object.assign(App.state, {
 // dur = Pfadlänge / Geschwindigkeit (engine.js#moveAlongPath/orbitRing); die
 // Geschwindigkeit steigt monoton → kein Tempo-Sprung/Stau an Übergängen. Dieselbe
 // Leiter speist auch den SPS-Akkumulations-Umlauf (engine.js#startSpsLoop).
-const STAGE_VPX = { linac: 0.30, ring1: 0.34, trToPs: 0.40, ps: 0.46, trToSps: 0.54, sps: 0.66, ti: 0.82 };
-export function getStageVel(key) {
+const STAGE_VPX: Record<string, number> = { linac: 0.30, ring1: 0.34, trToPs: 0.40, ps: 0.46, trToSps: 0.54, sps: 0.66, ti: 0.82 };
+export function getStageVel(key: string): number {
   const s = App.state;
   const ion = s.isIon ? 0.72 : 1.0;                          // Ionen schwerer → etwas langsamer
-  return (STAGE_VPX[key] || 0.5) * ion / App.timeScale();    // slow-Modus (ts=2.6) → langsamer
+  return (STAGE_VPX[key] || 0.5) * ion / App.timeScale!();   // slow-Modus (ts=40/15≈2,67) → langsamer
 }
 App.getStageVel = getStageVel;

@@ -3,7 +3,7 @@
 // Manuelles Einzel-Füllen entfernt – Füllen ausschließlich über das Füllprotokoll.
 // wireHandlers() wird von main.js NACH initDom() aufgerufen.
 // ═══════════════════════════════════════════════════════════════════════════
-import { App, FILL, SIM_SCALE, sleep, $ } from './core.js';
+import { App, FILL, SIM_SCALE, DT_SCALE, sleep, $ } from './core.js';
 
 // Aktuelle Füll-Konfig (Protonen vs. Pb-Ionen) + abgeleitete Zahlen.
 const fc = () => App.state.isIon ? FILL.ion : FILL.proton;
@@ -86,7 +86,7 @@ function revealFCC(){
  E.svg.classList.add("fcc-on");                 // blendet den FCC-Ring ein (CSS)
  E.btnZoomMeyrin.style.display = "none";
  E.btnZoomOut.classList.remove("off");
- App.setStatus("🔭 FCC — Future Circular Collider: der geplante 91-km-Ring (×3,4 LHC), maßstäblich. „Ansicht zurücksetzen\" kehrt zurück.","on");
+ App.setStatus("FCC — Future Circular Collider: der geplante 91-km-Ring (×3,4 LHC), maßstäblich. „Ansicht zurücksetzen\" kehrt zurück.","on");
  animateViewBox(v.x, v.y, v.w, v.h, 1700);      // langsam = dramatisch
 }
 App.revealFCC = revealFCC;
@@ -107,8 +107,7 @@ async function fuellProtokoll(){
  s.filling = true; s.resetFlag = false;
  const gen = s.fillGen;   // Füll-Generation DIESES Laufs (ältere In-Flight-Batches zählen nicht mehr)
  E.btnAuto.classList.add("off");
- E.sliEnergy.disabled = true; E.sliIntensity.disabled = true; E.sliRampSpeed.disabled = true;
- App.setStatus("FÜLLPROTOKOLL: PS-Batches laufen einzeln zum SPS und verschmelzen dort zu Zügen …","on");
+ App.setStatus(`FÜLLPROTOKOLL (1 s ≈ ${s.isFastMode?SIM_SCALE.fast:SIM_SCALE.slow} s real): Pakete durchlaufen die Vorbeschleuniger — das PS formt die 72er-Bunch-Struktur, das SPS bündelt sie zu Zügen …`,"on");
 
  // 1 Punkt = 1 PS-Batch. Pro SPS-Zug fusionieren batchesPerTrain Batches; der letzte
  // Zug ist ggf. kürzer. Abwechselnd B1 (TI 2) / B2 (TI 8), je Zug ein realer SPS-Zyklus.
@@ -129,8 +128,15 @@ async function fuellProtokoll(){
  if(s.resetFlag) return;
  E.btnAuto.classList.remove("off");
  if(s.b1Batches>=totB && s.b2Batches>=totB){
-  E.btnRamp.classList.remove("off");
-  App.setStatus(`LHC GEFÜLLT — ${totalStr()} Bunches/Strahl (${sizes.length} Züge), beide Strahlen stabil. Energie-Ramping möglich!`,"on");
+  if(s.isPilot){
+   // Pilot-Strahl: Injektionsenergie 0,45 TeV ist bereits die Endenergie — kein Ramping.
+   s.ramped = true;
+   E.btnSqueeze.classList.remove("off");
+   App.setStatus(`LHC GEFÜLLT — ${totalStr()} Bunches/Strahl. Pilot-Strahl bleibt auf 0,45 TeV (Injektionsenergie = Betriebsenergie, kein Ramping). Beam Squeeze möglich!`,"on");
+  } else {
+   E.btnRamp.classList.remove("off");
+   App.setStatus(`LHC GEFÜLLT — ${totalStr()} Bunches/Strahl (${sizes.length} Züge), beide Strahlen stabil. Energie-Ramping möglich!`,"on");
+  }
  } else {
   App.setStatus(`Füllung beendet: B1 ${fmtBunch(1)}/${totalStr()}, B2 ${fmtBunch(2)}/${totalStr()} Bunches.`,"on");
  }
@@ -146,13 +152,15 @@ App.fuellProtokoll = fuellProtokoll;
 export function wireHandlers(){
  E.btnSpeedToggle.addEventListener("click",()=>{
    s.isFastMode = !s.isFastMode;
+   // ZWEI Uhren ehrlich ausweisen: Füllen/Ramp laufen auf SIM_SCALE, die
+   // Datennahme auf DT_SCALE (ein Physik-Fill dauert real ~15 h — andere Raffung).
    if(s.isFastMode) {
-     E.btnSpeedToggle.innerText = `⏱️ Tempo: Zeitraffer · 1 s ≈ ${SIM_SCALE.fast} s real`;
+     E.btnSpeedToggle.innerText = `Tempo: Zeitraffer · Füllen 1 s ≈ ${SIM_SCALE.fast} s · Datennahme 1 s ≈ ${Math.round(DT_SCALE.fast/60)} min`;
      E.btnSpeedToggle.style.background = "rgba(88,166,255,.08)";
      E.btnSpeedToggle.style.borderColor = "rgba(88,166,255,.3)";
      E.btnSpeedToggle.style.color = "#58a6ff";
    } else {
-     E.btnSpeedToggle.innerText = `⏱️ Tempo: Didaktisch · 1 s ≈ ${SIM_SCALE.slow} s real`;
+     E.btnSpeedToggle.innerText = `Tempo: Didaktisch · Füllen 1 s ≈ ${SIM_SCALE.slow} s · Datennahme 1 s ≈ ${Math.round(DT_SCALE.slow/60)} min`;
      E.btnSpeedToggle.style.background = "rgba(227,119,194,.08)";
      E.btnSpeedToggle.style.borderColor = "rgba(227,119,194,.3)";
      E.btnSpeedToggle.style.color = "#e377c2";
@@ -164,10 +172,10 @@ export function wireHandlers(){
   realMode = !realMode;
   App.setViewMode(realMode);
   E.btnToggleGeo.classList.toggle("act", realMode);
-  E.btnToggleGeo.innerText = realMode ? "🎬 Didaktik-Modus" : "🌍 Reale Ansicht";
+  E.btnToggleGeo.innerText = realMode ? "Didaktik-Modus" : "Reale Ansicht";
   resetView();   // Moduswechsel → Vollbild + Meyrin-Button passend ein/aus
   App.setStatus(realMode
-    ? "REALE ANSICHT — echte OSM-Geometrie. Tipp: 🔬 Injektor-Komplex zoomt auf Meyrin."
+    ? "REALE ANSICHT — echte OSM-Geometrie. Tipp: Injektor-Komplex zoomt auf Meyrin."
     : "DIDAKTIK-MODUS — schematische, animierte Beschleuniger-Kette", "on");
  });
 
@@ -197,7 +205,7 @@ export function wireHandlers(){
  if(E.btnDiagramFull){
   const root = E.root || document.getElementById("cern-v4");
   const setFull = (on)=>{ root.classList.toggle("diagram-full", on);
-    E.btnDiagramFull.innerHTML = on ? "✕ Schließen" : "⛶ Großansicht"; };
+    E.btnDiagramFull.innerHTML = on ? "Schließen" : "Großansicht"; };
   E.btnDiagramFull.addEventListener("click", ()=> setFull(!root.classList.contains("diagram-full")));
   document.addEventListener("keydown", e=>{ if(e.key==="Escape" && root.classList.contains("diagram-full")) setFull(false); });
  }
@@ -217,11 +225,11 @@ export function wireHandlers(){
  $("hit-lhc").addEventListener("click",    () => App.showInfo("LHC"));
  $("info-close").addEventListener("click", App.hideInfo);
 
- // PARAM INFO ACCORDION — ⓘ-Buttons füllen und toggeln Textboxen
+ // PARAM INFO ACCORDION — Info-Buttons füllen und toggeln Textboxen
  document.querySelectorAll('.cv4-pi-btn').forEach(btn => {
   btn.addEventListener('click', e => {
    e.stopPropagation();
-   const key = btn.dataset.pi;
+   const key = (btn as HTMLElement).dataset.pi;
    const box = $('pi-' + key);
    if(!box) return;
    if(!box.dataset.filled){
@@ -232,7 +240,7 @@ export function wireHandlers(){
      const src = 'https://commons.wikimedia.org/wiki/Special:FilePath/' + encodeURIComponent(fig.img) + '?width=640';
      box.insertAdjacentHTML('beforeend',
       `<img class="cv4-pi-img" src="${src}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.display='none'">`
-      + `<div class="cv4-pi-cap">${fig.cap}<br>📷 ${fig.cred}</div>`);
+      + `<div class="cv4-pi-cap">${fig.cap}<br>Foto: ${fig.cred}</div>`);
     }
     box.dataset.filled = '1';
    }
@@ -248,62 +256,38 @@ export function wireHandlers(){
  // (LHCb). Default-Tab CMS; per Detektor-Tab sind die anderen Entdeckungen direkt da.
  E.btnPrePp.addEventListener("click",()=>{
   App.setMode(false); // Protonen
-  App.resetLHC();
-  E.sliEnergy.value = 6.8; s.paramEnergy = 6.8; E.lblEnergy.innerText = App.fmtEnergy(6.8);
-  E.sliIntensity.value = 1.40; s.paramIntensity = 1.40; E.lblIntensity.innerText = App.fmtIntensity(1.40);
-  E.sliBeta.value = 0.3; s.paramBetaStar = 0.3; E.lblBeta.innerText = App.de(0.3,2) + " m";
-  E.sliRampSpeed.value = 0.05; s.paramRampSpeed = 0.05; E.lblRampSpeed.innerText = App.de(0.05,2) + " T/s (sicher)"; E.lblRampSpeed.style.color = "#58a6ff";
+  s.isPilot = false; App.resetLHC();
+  s.paramEnergy = 6.8; E.lblEnergy.innerText = App.fmtEnergy(6.8);
+  s.paramIntensity = 1.40; E.lblIntensity.innerText = App.fmtIntensity(1.40);
+  s.targetBetaStar = 0.3; E.lblBeta.innerText = App.de(1.5,2) + " m";   // β* live: 1,50 m unsqueezed → 0,30 m nach Squeeze
+  s.paramRampSpeed = 0.05; E.lblRampSpeed.innerText = App.de(0.05,2) + " T/s"; E.lblRampSpeed.style.color = "#58a6ff";
   App.updateReadouts(); selectDetector("CMS");   // CMS = Higgs-Goldkanal H→ZZ*→4ℓ
   App.setStatus("Preset Protonen-Physik (Run 3 · √s = 13,6 TeV) — Higgs (CMS), Z⁰ (ATLAS) & CP-Verletzung (LHCb) laufen gleichzeitig auf demselben Strahl. Tab wechseln zeigt jeden Stand. (Spektren: echte CMS-Open-Data.)", "on");
  });
 
  E.btnPreQgp.addEventListener("click",()=>{
   App.setMode(true); // Blei-Ionen
-  App.resetLHC();
-  E.sliEnergy.value = 2.7; s.paramEnergy = 2.7; E.lblEnergy.innerText = App.fmtEnergy(2.7);
-  E.sliIntensity.value = 0.90; s.paramIntensity = 0.90; E.lblIntensity.innerText = App.fmtIntensity(0.90);
-  E.sliBeta.value = 0.5; s.paramBetaStar = 0.5; E.lblBeta.innerText = App.de(0.5,2) + " m";
-  E.sliRampSpeed.value = 0.05; s.paramRampSpeed = 0.05; E.lblRampSpeed.innerText = App.de(0.05,2) + " T/s (sicher)"; E.lblRampSpeed.style.color = "#58a6ff";
+  s.isPilot = false; App.resetLHC();
+  s.paramEnergy = 2.7; E.lblEnergy.innerText = App.fmtEnergy(2.7);
+  s.paramIntensity = 0.90; E.lblIntensity.innerText = App.fmtIntensity(0.90);
+  s.targetBetaStar = 0.5; E.lblBeta.innerText = App.de(1.5,2) + " m";   // β* live: 1,50 m → 0,50 m nach Squeeze
+  s.paramRampSpeed = 0.05; E.lblRampSpeed.innerText = App.de(0.05,2) + " T/s"; E.lblRampSpeed.style.color = "#58a6ff";
   App.updateReadouts(); selectDetector("ALICE");
   App.setStatus("Preset Schwerionen (Pb-Pb · √s_NN = 5,36 TeV) — ALICE & CMS messen das Aufschmelzen gebundener Quark-Paare im Quark-Gluon-Plasma, ATLAS das Z⁰ als Vergleichsmaßstab. Massen echt (CMS), Plasma-Unterdrückung modelliert.", "on");
  });
 
  E.btnPrePilot.addEventListener("click",()=>{
   App.setMode(false); // Protonen
-  App.resetLHC();
-  E.sliEnergy.value = 0.45; s.paramEnergy = 0.45; E.lblEnergy.innerText = App.fmtEnergy(0.45);
-  E.sliIntensity.value = 0.10; s.paramIntensity = 0.10; E.lblIntensity.innerText = App.fmtIntensity(0.10);
-  E.sliBeta.value = 1.5; s.paramBetaStar = 1.5; E.lblBeta.innerText = App.de(1.5,2) + " m";
-  E.sliRampSpeed.value = 0.02; s.paramRampSpeed = 0.02; E.lblRampSpeed.innerText = App.de(0.02,2) + " T/s (sicher)"; E.lblRampSpeed.style.color = "#58a6ff";
+  s.isPilot = true; App.resetLHC();
+  s.paramEnergy = 0.45; E.lblEnergy.innerText = App.fmtEnergy(0.45);
+  s.paramIntensity = 0.10; E.lblIntensity.innerText = App.fmtIntensity(0.10);
+  s.targetBetaStar = 1.5; E.lblBeta.innerText = App.de(1.5,2) + " m";   // Pilot: kein Squeeze (β* bleibt 1,50 m)
+  s.paramRampSpeed = 0.02; E.lblRampSpeed.innerText = App.de(0.02,2) + " T/s"; E.lblRampSpeed.style.color = "#58a6ff";
   App.updateReadouts(); selectDetector("ATLAS");
   App.setStatus("Preset Pilot-Strahl (Inbetriebnahme · 0,45 TeV) — zu wenig Energie für Entdeckungen; im Spektrum erscheint nur Untergrund.", "on");
  });
 
  E.btnAutoColl.addEventListener("click", App.toggleAutoCollide);
  E.btnAuto.addEventListener("click", fuellProtokoll);
-
- // SLIDERS
- E.sliEnergy.addEventListener("input",()=>{
-  s.paramEnergy = parseFloat(E.sliEnergy.value);
-  E.lblEnergy.innerText = App.fmtEnergy(s.paramEnergy);   // Einheit modusabhängig (Ionen: TeV/Nukleon)
-  App.updateReadouts();
-  App.drawHist();   // Energie formt das Spektrum (Erzeugbarkeit/Signifikanz) → sofortiges Feedback
- });
- E.sliIntensity.addEventListener("input",()=>{
-  s.paramIntensity = parseFloat(E.sliIntensity.value);
-  E.lblIntensity.innerText = App.fmtIntensity(s.paramIntensity);   // Einheit modusabhängig (Ionen: ·10⁸ Ionen)
- });
- E.sliBeta.addEventListener("input",()=>{
-  E.lblBeta.innerText = App.de(parseFloat(E.sliBeta.value),2) + " m";
- });
- E.sliRampSpeed.addEventListener("input",()=>{
-  s.paramRampSpeed = parseFloat(E.sliRampSpeed.value);
-  if(s.paramRampSpeed > 0.10) {
-   E.lblRampSpeed.innerText = App.de(s.paramRampSpeed,2) + " T/s (⚠️ Risiko)";
-   E.lblRampSpeed.style.color = "#f85149";
-  } else {
-   E.lblRampSpeed.innerText = App.de(s.paramRampSpeed,2) + " T/s (sicher)";
-   E.lblRampSpeed.style.color = "#58a6ff";
-  }
- });
+ // Keine Slider mehr: die Strahl-Parameter sind Preset-Anzeigen (s. Preset-Handler oben).
 }

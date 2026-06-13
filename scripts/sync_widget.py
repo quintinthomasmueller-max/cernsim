@@ -104,23 +104,23 @@ def build_iframe_cell(inner):
     return iframe + listener
 
 def main():
-    # Echtdaten-Blob cern/app/data.js aus der echten CMS-CSV regenerieren (maximal
-    # viel echte Massen/Kinematik; reso aus physics.json). Single Source bleibt gewahrt.
+    # Echtdaten-Blob cern/app/src/data.gen.js aus der echten CMS-CSV regenerieren
+    # (maximal viel echte Massen/Kinematik; reso aus physics.json).
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     try:
         import build_data
         build_data.build()
     except Exception as e:
-        print(f"⚠ build_data übersprungen ({e}) – cern/app/data.js evtl. veraltet")
-    # Resonanztabelle aus physics.json in data.js.reso spiegeln (Single Source of Truth),
-    # damit das gebündelte Widget garantiert dieselben Werte wie Python nutzt (no-op nach build_data).
+        print(f"⚠ build_data übersprungen ({e}) – src/data.gen.js evtl. veraltet")
+    # Resonanztabelle aus physics.json in data.gen.js.reso spiegeln (Single Source of
+    # Truth), damit das Widget garantiert dieselben Werte wie Python nutzt (no-op nach build_data).
     try:
         import gen_constants
         gen_constants.write()
     except Exception as e:
-        print(f"⚠ gen_constants übersprungen ({e}) – data.js.reso evtl. nicht synchron")
+        print(f"⚠ gen_constants übersprungen ({e}) – data.gen.js.reso evtl. nicht synchron")
 
-    # Bundle frisch bauen (liest cern/app/src/* + spiegelt data.js → src/data.gen.js).
+    # Bundle frisch bauen (liest cern/app/src/* inkl. data.gen.js direkt).
     esbuild()
 
     inner = build_inner()
@@ -137,11 +137,12 @@ def main():
     nb['cells'][wi]['execution_count'] = None
     json.dump(nb, open(NB, 'w'), ensure_ascii=False, indent=1)
 
-    # 2) build/widget_bundle.html + build/widget.js (für node --check)
+    # 2) build/widget_bundle.html (App-Dokument für die jsdom-Boot-Tests).
+    #    build/widget.js (Byte-Kopie von app.bundle.js, nur für node --check) entfiel —
+    #    check.sh prüft app.bundle.js direkt.
     os.makedirs(BUILD, exist_ok=True)
     open(os.path.join(BUILD, 'widget_bundle.html'), 'w').write(
         '<!doctype html><html><head><meta charset="utf-8"></head><body>' + inner + '</body></html>')
-    open(os.path.join(BUILD, 'widget.js'), 'w').write(build_js())
 
     # 3) cern/app/index.html
     open(os.path.join(APP, 'index.html'), 'w').write(build_standalone())
