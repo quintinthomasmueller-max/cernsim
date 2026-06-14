@@ -23,6 +23,9 @@ build/
 cern/app/index.html
 cern/CERN-Stellwerk.html
 
+# GitHub-Pages-Ausgabe (Quelle: cern/app/* via scripts/build_pages.mjs)
+_site/
+
 # Große Rohdaten (nur Subset wird versioniert)
 cern/data/cms_dimuon_full.csv
 
