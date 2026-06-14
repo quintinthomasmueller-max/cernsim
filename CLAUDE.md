@@ -4,6 +4,13 @@ Didaktisches Jupyter-Notebook (Begabtenkurs Teilchenphysik): 7-teiliges Curricul
 CMS-Open-Data + eingebettetem interaktivem „Stellwerk"-Widget (HTML/JS-Canvas).
 Hauptdatei: `cern/notebooks/CERN_Beschleuniger_Schaltzentrale.ipynb`.
 
+> 🧭 **Architektur steht (App-First) — wir sind in der Feinschliff-Endphase.** Für den
+> Ist-Zustand pro Bereich (was zu welchem Grad umgesetzt ist) + offene Punkte: zuerst
+> `docs/MIGRATION.md` (Abschnitt STATUS / RESUME HERE) lesen. App-First = Web-App als primäres
+> Artefakt, esbuild+Vitest headless-Tests, Notebook bettet per `<iframe srcdoc>` ein. Der Chat
+> kann gecleart werden, ohne dass der Zustand verloren geht. Die untenstehende „Karte"/„Widget
+> editieren" ist die schnelle Orientierung.
+
 ## ⚡ Verifikations-Politik (WICHTIG — spart Quota)
 - **Standard = headless.** Pro Änderung nur:
   1. `node --check` auf das extrahierte/gebündelte JS,
@@ -16,35 +23,69 @@ Hauptdatei: `cern/notebooks/CERN_Beschleuniger_Schaltzentrale.ipynb`.
 - Kein `nbconvert --execute` für reine Widget-Änderungen (Python-Zellen sind unberührt).
 
 ## Karte (wo liegt was)
-- **Notebook-Zellen 0–15**: Curriculum (Markdown + Python). **Zelle 4 = Widget**.
-- **Widget** (`display(HTML(r'''…'''))` in Zelle 4, ~108 KB HTML+CSS+JS+Datenblob):
+- **Notebook-Zellen 0–15**: Curriculum (Markdown + Python). **Zelle 4 = Widget-Loader**
+  (`display(HTML(r'''<iframe srcdoc=…>'''))`, Phase 2 — bettet das esbuild-Bundle isoliert ein).
+- **Widget** (esbuild-Bundle aus `cern/app/src/`, im iframe):
   - Physik-Engine: `timeScale`, `getDurations`, `injectBunch`, `flowStep`, `fuellProtokoll`, `startLHCLoop`, Ramp.
   - Event-Display: `DETKONFIG`, `drawDetBg`, `drawParticleBarrel/Forward`, `drawCollisionEvent`, `drawLegend`.
   - Spektrum/Signifikanz: `sampleEvent`, `generateMassData`, `classify`, `getSignificance`, `drawHist`.
-  - Daten: `CERN_REAL` (echte CMS-Massen/Topologien, ~37 KB) — eingebettet.
+  - Zwei Modi (Phase 4): `#svg` hat `<g id="schematic">` (Didaktik, animiert) + `<g id="geo-layer">`
+    (Reale Ansicht). `geo.js#setViewMode(real)` schaltet per `display` hart um (kein Overlap; Default
+    Didaktik). Real = komplett OSM-Geodaten in echter Größe (`geo.js#drawGeo` aus `geo.gen.js`,
+    generiert von `scripts/geo_build.py`, Web-Mercator/uniform, ODbL; TI 2/8 approx., da nicht in OSM).
+  - Daten: `CERN_REAL` (echte CMS-Massen/Topologien + 4ℓ-Kandidaten, ~100 KB) — eingebettet.
 - **Python-Datenschicht**: `cern/scripts/cern_utils.py` (`RESONANZEN`, `HISTORIE`, `lade_cms_dimuon`,
   `lade_dimuon_4vektoren`, `dimuon_invariante_masse`, `lade_higgs_4l`).
 - **Echte Daten**: `cern/data/cms_dimuon_subset.csv` (12 000 Events — **nie ganz lesen**).
 
-## Widget editieren (NEU — modular)
-Quelle der Wahrheit: `cern/app/`. **Niemals** Zelle 4 von Hand editieren.
-- Relevante Datei direkt mit dem **Edit-Tool** bearbeiten:
-  - `engine.js` — timeScale, getDurations, injectBunch, flowStep, fuellProtokoll, Ramp, LHC-Loop
-  - `display.js` — DETKONFIG, drawDetBg, drawParticle*, drawCollisionEvent, Legende
-  - `spectrum.js` — sampleEvent, generateMassData, classify, getSignificance, drawHist
-  - `geometry.js` (SVG/Ringe), `state.js`, `handlers.js` (Listener/Init), `styles.css`, `shell.html`
-  - `data.js` = CERN_REAL-Blob (~37 KB) — **nicht lesen/editieren**, außer Daten ändern sich.
-- Danach **immer**: `bash scripts/check.sh` (führt sync aus + node --check + nbformat/ast).
-- `scripts/sync_widget.py` bündelt `cern/app/*` → Notebook-Zelle 4 (self-contained) +
-  `build/widget_bundle.html` + `cern/app/index.html` (Standalone-App).
-- Hinweis: Module sind geordnete Slices EINER IIFE (gemeinsame Closure). Einzeln nicht
-  node-prüfbar — `node --check` läuft auf dem gebündelten `build/widget.js` (via check.sh).
+## Widget editieren (ES-Module — Phase 1 abgeschlossen)
+Quelle der Wahrheit: `cern/app/src/` (echte ES-Module, einzeln node-prüfbar). **Niemals**
+Zelle 4 oder `cern/app/index.html` von Hand editieren (beide generiert).
+- Geteilter Namespace `App` (`src/core.js`): `App.state` (Querschnittsvariablen), `App.els`
+  (DOM-Refs, bei Boot via `main.js#initDom` befüllt), `App.g` (SVG-Geometrie R/J/paths/nodes),
+  registrierte Funktionen `App.drawHist` usw. Module mutieren `App.*`-Properties (kein Reassign).
+- Relevante Datei in `src/` direkt mit dem **Edit-Tool** bearbeiten (Index → meist 0–1 Lesevorgänge).
+  Logik-Module sind **`.ts`** (esbuild/vitest lösen `'./x.js'`-Importe auf `x.ts` auf — Importe nicht ändern):
+  - `engine.ts` — `timeScale`, `injectBunch`, `flowStep`, Ramp/Squeeze, `doCollide`, `startAutoCollide`,
+    `startLHCLoop`, Readouts (+ `wireEngine`)
+  - `display.ts` — `DETKONFIG`, `drawDetBg`, `drawParticleBarrel/Forward`, `drawCollisionEvent`, `drawLegend`
+  - `spectrum.ts` — `sampleEvent`/`sampleMass`, `generateMassData`, `pushMass`, `classify`,
+    `getSignificance`, `drawHist`; Kurven-API `App.fitValFor`/`App.nullValFor` (Signal vs. Nullhypothese)
+  - `geo.ts` — `drawGeo` (reale OSM-Ansicht aus `geo.gen.js`+`sat.gen.js`), `drawFCC`/`drawInjector`,
+    `setViewMode(real)`/`isRealMode` (schaltet `#schematic` ↔ `#geo-layer` per `display`)
+  - `geometry.ts` (R/J → `App.g`), `state.ts` (`App.state` + `getDurations`/`getStageVel`)
+  - `info.ts` — `showInfo`/`hideInfo`/`toggleParamInfo` + `INFO_DB`/`PARAM_INFO`
+  - `handlers.ts` — `wireHandlers` (Listener), `selectDetector`/`zoomToDetector`/`resetView`,
+    `revealFCC`, `fuellProtokoll` (Presets + Füllprotokoll)
+  - `main.ts` — `boot`/`ready`/`start`/`initDom` (idempotenter DOM-Ready-Boot, löst Jupyter-Race)
+  - `../styles.css`, `../shell.html` (CSS/Markup), `src/data.gen.js` = CERN_REAL-Blob (~100 KB,
+    generiert von `scripts/build_data.py` aus `cern/data/*.csv`, reso via `gen_constants.py`) —
+    **nicht lesen/von Hand editieren** (das frühere Zwischen-File `cern/app/data.js` ist entfallen).
+- **Physikkonstanten** (Resonanzmassen/-breiten) NUR in `cern/data/physics.json` ändern, dann `check.sh` —
+  die Kette `physics.json → gen_constants.py → data.gen.js.reso` spiegelt sie ins Widget (Single
+  Source of Truth, Python ⇄ JS identisch). Niemals `.reso` von Hand editieren.
+- Danach **immer**: `bash scripts/check.sh` (esbuild-Build + sync + node --check + nbformat/ast + vitest).
+- Build/Sync: `npm run build` → `build/app.bundle.js` (esbuild, IIFE). `scripts/sync_widget.py`
+  baut das Bundle und injiziert es in Notebook-Zelle 4 (self-contained) + `build/widget_bundle.html`
+  + `cern/app/index.html` (Standalone). `main.js` bootet idempotent bei DOM-Ready (löst die Jupyter-Race).
+- Headless-Tests (88, alle grün): `tests/physics.test.mjs` (importiert `src/`-Module direkt:
+  Signifikanz ∝ √N, Rate ∝ I²/β*, PDG-Klassifikation), `tests/interactions.test.mjs`
+  (Tabs/SVG-Hits/Info-Panel/Slider/Presets im esbuild-Bundle) + Boot-Sonden
+  `app-boot.test.mjs`/`widget-boot.test.mjs`.
 
 ## Standard-Befehle
 ```
-bash scripts/check.sh          # sync + node --check + jupytext --sync + nbformat.validate + ast.parse (headless)
-python3 scripts/sync_widget.py # nur neu bündeln (Zelle 4 + build/ + index.html)
+bash scripts/check.sh          # esbuild + sync + node --check + jupytext --sync + nbformat/ast + tsc + vitest (headless)
+npm run build                  # nur esbuild: cern/app/src/* → build/app.bundle.js
+npm run typecheck              # tsc --noEmit (checkJs-Pilot: AppState/SpectrumProfile/DetConfig, src/types.d.ts)
+python3 scripts/sync_widget.py # baut Bundle + injiziert (Zelle 4 + build/ + index.html)
+npx vitest run                 # nur Headless-Tests (jsdom)
 ```
+TypeScript (Schritte 1–3 erledigt): alle Logik-Module sind `.ts`; ambiente Shapes in
+`cern/app/src/types.d.ts` typen `App.state`/Profile/DETKONFIG (lenient: `strict:false`). Generierte
+Blobs (`*.gen.js`) bleiben `.js`. Bei Edits an `state.ts`/`spectrum.ts`/`display.ts`-Shapes die
+`types.d.ts` mitziehen, sonst meldet `npm run typecheck`. JSDoc-Typen gelten NUR in `.js` — in `.ts`
+native Syntax nutzen (`x as T`, `const o: T = …`). Vorgehen/Lehren für ein neues Tool: `docs/PLAYBOOK.md`.
 Standalone-App im Browser (nur bei Layout/Render-Fragen): `cern/app/index.html` öffnen.
 
 ## Notebook-Workflow (jupytext + nbstripout)
@@ -62,5 +103,11 @@ Standalone-App im Browser (nur bei Layout/Render-Fragen): `cern/app/index.html` 
 
 ## Konventionen
 - Sprache: Deutsch. Physik ehrlich (Messung vs. „kalibrierte Simulation" kennzeichnen).
+- **KEINE Emojis im Frontend-Text für den Nutzer.** Das Programm verwendet bei der
+  Text-Generierung im Frontend (Widget-UI: `shell.html`-Labels/Buttons, `info.js`-Texte,
+  Canvas-/HTML-Captions in `display.js`/`spectrum.js`, Status-/Preset-Meldungen) grundsätzlich
+  keine Emojis — und bestehende sind beim Bearbeiten **immer zu entfernen** (durch klare
+  Wort-Labels/Symbole ersetzen, z. B. „Reale Ansicht" statt „🌍 Reale Ansicht"). Gilt nur für
+  vom Nutzer sichtbaren Frontend-Text, nicht für Quelltext-Kommentare/Doku.
 - Plan-Modus nur für große/mehrdeutige Aufgaben; kleine Fixes direkt + headless-Check.
 - Antworten knapp halten; keine großen Code-Blöcke/Tabellen echoen.

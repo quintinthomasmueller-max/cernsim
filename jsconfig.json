@@ -1,0 +1,18 @@
+{
+  "_kommentar": "TypeScript-Pilot (Schritt 1): Typprüfung der JS-Quellen OHNE Umbenennung. checkJs nutzt die ambienten Shapes aus cern/app/src/types.d.ts. Gate: 'node_modules/.bin/tsc --noEmit -p jsconfig.json' (läuft in scripts/check.sh). Bewusst lenient (strict:false, noImplicitAny:false) — fängt Tippfehler/fehlende Felder bei s.*/sp.*/D.*, ohne volle Annotation zu verlangen.",
+  "compilerOptions": {
+    "checkJs": true,
+    "allowJs": true,
+    "noEmit": true,
+    "strict": false,
+    "noImplicitAny": false,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "skipLibCheck": true,
+    "types": []
+  },
+  "include": ["cern/app/src/**/*.js", "cern/app/src/**/*.ts"],
+  "exclude": ["node_modules", "build"]
+}

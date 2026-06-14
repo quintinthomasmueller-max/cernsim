@@ -3,11 +3,11 @@
 set -e
 cd "$(dirname "$0")/.."
 
-# Single Source of Truth: physics.json -> data.js.reso (vor dem Bündeln synchronisieren)
-python3 scripts/gen_constants.py write >/dev/null && echo "✓ data.js.reso aus physics.json synchron"
+# Single Source of Truth: physics.json -> src/data.gen.js.reso (vor dem Bündeln synchronisieren)
+python3 scripts/gen_constants.py write >/dev/null && echo "✓ data.gen.js.reso aus physics.json synchron"
 
 python3 scripts/sync_widget.py >/dev/null
-node --check build/widget.js && echo "✓ JS-Syntax (build/widget.js)"
+node --check build/app.bundle.js && echo "✓ JS-Syntax (build/app.bundle.js)"
 
 # jupytext: .py-Spiegel mit dem (gerade gebündelten) .ipynb synchron halten
 if python3 -c "import jupytext" 2>/dev/null; then
@@ -26,4 +26,22 @@ for c in nb['cells']:
         ast.parse(''.join(c['source']))
 print("✓ nbformat valid + alle Code-Zellen geparst")
 PY
+
+# TypeScript-Typprüfung (checkJs-Pilot, headless): prüft cern/app/src gegen die Shapes
+# in src/types.d.ts (AppState/SpectrumProfile/DetConfig). Build/Runtime unberührt.
+if [ -x node_modules/.bin/tsc ]; then
+  node_modules/.bin/tsc --noEmit -p jsconfig.json >/dev/null 2>&1 && echo "✓ tsc --noEmit (Typprüfung, checkJs)" \
+    || { echo "✗ Typprüfung FEHLGESCHLAGEN — Details: npm run typecheck"; exit 1; }
+else
+  echo "⚠ tsc übersprungen (npm install ausführen, um die Typprüfung zu aktivieren)"
+fi
+
+# Headless-Interaktions-/Logik-Tests (Vitest + jsdom). Bundle ist oben bereits gesynct.
+if [ -d node_modules ] && command -v npx >/dev/null 2>&1; then
+  npx vitest run >/dev/null 2>&1 && echo "✓ vitest headless tests (jsdom)" \
+    || { echo "✗ vitest headless tests FEHLGESCHLAGEN — Details: npx vitest run"; exit 1; }
+else
+  echo "⚠ vitest übersprungen (npm install ausführen, um Headless-Tests zu aktivieren)"
+fi
+
 echo "✓ check.sh OK"

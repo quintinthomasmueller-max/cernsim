@@ -1,0 +1,22 @@
+{
+  "name": "cernsim-app",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "CERN-Stellwerk Web-App — Build (esbuild) & Headless-Tests (Vitest/jsdom). Siehe docs/MIGRATION.md.",
+  "scripts": {
+    "build": "node cern/app/esbuild.mjs",
+    "typecheck": "tsc --noEmit -p jsconfig.json",
+    "pretest": "python3 scripts/sync_widget.py",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "qr": "node scripts/make_qr.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "^0.24.0",
+    "jsdom": "^25.0.1",
+    "qrcode": "^1.5.4",
+    "typescript": "^6.0.3",
+    "vitest": "^2.1.8"
+  }
+}

@@ -1,88 +1,200 @@
 
-#cern-v4{background:#0d1117;color:#c9d1d9;font-family:-apple-system,'Segoe UI',Roboto,sans-serif;border-radius:16px;padding:20px;border:1px solid #30363d;max-width:1100px;margin:0 auto;user-select:none}
-.cv4-hdr{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #21262d;padding-bottom:10px;margin-bottom:14px}
-.cv4-logo{font-size:20px;font-weight:800;color:#58a6ff;letter-spacing:1px}
-.cv4-badge{background:rgba(88,166,255,.12);color:#58a6ff;font-size:10px;padding:3px 7px;border-radius:10px;border:1px solid rgba(88,166,255,.25);margin-left:8px}
-.cv4-status{font-size:11px;color:#8b949e;display:flex;align-items:center;gap:6px}
-.cv4-dot{width:8px;height:8px;border-radius:50%;background:#8b949e;display:inline-block}
-.cv4-dot.on{background:#2ea44f;box-shadow:0 0 8px #2ea44f;animation:cv4p 1.5s infinite}
+/* ═══════════════════════════════════════════════════════════════════════════
+   THEME — „aufgehelltes" Dark-Theme: vom Pechschwarz abgehoben, höherer Kontrast,
+   rundere/cleanere Karten. Eine zentrale Palette (CSS-Variablen) statt verstreuter
+   Farb-Literale. Die Physik-Visualisierungen (SVG-Ring, Canvas) bleiben auf einem
+   dunklen „Monitor"-Grund — Spuren/Glow lesen sich dort am besten.
+   ─────────────────────────────────────────────────────────────────────────── */
+#cern-v4{
+  --bg:#131a24;          /* Wurzel-/Seitengrund (aus dem Schwarz gehoben)      */
+  --panel:#1c2531;       /* Bedien-Panels                                       */
+  --card:#27323f;        /* eingebettete Karten/Buttons                         */
+  --screen:#0e141d;      /* Anzeigeflächen (SVG-Karte + Canvas) = „Monitor"     */
+  --bd:#3c4a5c;          /* sichtbarere Rahmen                                  */
+  --bd-soft:#2d3845;     /* dezente Trennlinien                                 */
+  --tx:#e6edf5;          /* Primärtext (heller)                                 */
+  --tx-dim:#a3b4c6;      /* Sekundärtext — deutlich kontrastreicher als zuvor    */
+  --tx-bright:#f4f8fd;   /* Werte/Headlines                                     */
+  --blue:#58a6ff; --green:#2ea44f; --pink:#e377c2; --orange:#ff7f0e;
+  --red:#f85149; --cyan:#17becf;
+  background:var(--bg);color:var(--tx);
+  font-family:-apple-system,'Segoe UI',Roboto,sans-serif;
+  border-radius:18px;padding:22px;border:1px solid var(--bd);
+  max-width:1100px;margin:0 auto;user-select:none;
+}
+.cv4-hdr{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--bd-soft);padding-bottom:12px;margin-bottom:14px;gap:10px;flex-wrap:wrap}
+.cv4-logo{font-size:20px;font-weight:800;color:var(--blue);letter-spacing:.5px}
+.cv4-badge{background:rgba(88,166,255,.12);color:var(--blue);font-size:10px;padding:3px 8px;border-radius:10px;border:1px solid rgba(88,166,255,.25);margin-left:8px}
+/* Kurz-Untertitel direkt unter dem Logo (didaktischer Einstieg) */
+.cv4-tagline{font-size:11.5px;color:var(--tx-dim);margin:4px 0 14px;line-height:1.45;max-width:760px}
+.cv4-tagline b{color:var(--tx)}
+.cv4-status{font-size:11px;color:var(--tx-dim);display:flex;align-items:center;gap:6px}
+.cv4-dot{width:8px;height:8px;border-radius:50%;background:var(--tx-dim);display:inline-block}
+.cv4-dot.on{background:var(--green);box-shadow:0 0 8px var(--green);animation:cv4p 1.5s infinite}
+.cv4-dot.danger{background:var(--red);box-shadow:0 0 8px var(--red)}
 @keyframes cv4p{0%,100%{opacity:.6;transform:scale(.9)}50%{opacity:1;transform:scale(1.2)}}
-.cv4-sel{display:flex;gap:6px;margin-bottom:14px}
-.cv4-sel-tab{flex:1;padding:8px;font-size:13px;font-weight:700;text-align:center;border-radius:6px;cursor:pointer;border:1px solid #30363d;background:#161b22;transition:all .2s}
-.cv4-sel-tab.act-p{background:rgba(88,166,255,.12);border-color:#58a6ff;color:#58a6ff}
-.cv4-sel-tab.act-i{background:rgba(227,119,194,.12);border-color:#e377c2;color:#e377c2}
-.cv4-grid{display:grid;grid-template-columns:1fr 310px;gap:20px}
-@media(max-width:860px){.cv4-grid{grid-template-columns:1fr}}
-.cv4-svg-wrap{background:#090d13;border-radius:12px;border:1px solid #21262d;height:500px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
-.cv4-panel{background:#161b22;border-radius:12px;border:1px solid #30363d;padding:14px;display:flex;flex-direction:column;gap:14px}
-.cv4-ptitle{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#8b949e;border-bottom:1px solid #30363d;padding-bottom:6px;margin-bottom:6px;font-weight:700}
-.cv4-btn{background:#21262d;color:#c9d1d9;border:1px solid #30363d;padding:9px 14px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;transition:all .2s;text-align:center}
-.cv4-btn:hover{background:#30363d;border-color:#8b949e}
-.cv4-btn.act{background:rgba(88,166,255,.15);border-color:#58a6ff;color:#58a6ff}
-.cv4-btn.act-i{background:rgba(227,119,194,.15);border-color:#e377c2;color:#e377c2}
-.cv4-btn.danger{background:rgba(248,81,73,.08);border-color:rgba(248,81,73,.4);color:#f85149}
-.cv4-btn.danger:hover{background:rgba(248,81,73,.18);box-shadow:0 0 10px rgba(248,81,73,.25)}
-.cv4-btn.off{opacity:.3;pointer-events:none}
-.cv4-fill-row{display:flex;align-items:center;gap:8px;font-size:11px}
-.cv4-fill-bar{flex:1;background:#21262d;border-radius:3px;height:8px;overflow:hidden}
-.cv4-fill-bar-inner{height:100%;transition:width .3s;border-radius:3px}
-.cv4-fill-bar-inner.b1{background:#58a6ff}
-.cv4-fill-bar-inner.b2{background:#ff7f0e}
-.cv4-fill-bar-inner.b1i{background:#e377c2}
+/* Linke Spalte (.cv4-colL) = Beschleuniger-Ansicht + direkt darunter die Live-
+   MESSWERTE; rechts das Bedien-Panel. align-items:start = jede Spalte behält ihre
+   Inhaltshöhe. Vorher klaffte unter dem Diagramm eine große Lücke neben dem hohen
+   Panel — die Messwerte füllen sie jetzt. */
+/* Kein align-items:start mehr → die kürzere Spalte streckt sich auf die Höhe der
+   längeren (das Panel füllt den Rest mit seinem Hintergrund, statt ein Loch zu lassen). */
+.cv4-grid{display:grid;grid-template-columns:1fr 320px;gap:18px}
+.cv4-colL{display:flex;flex-direction:column;gap:14px;min-width:0}
+.cv4-svg-wrap{background:var(--screen);border-radius:14px;border:1px solid var(--bd-soft);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+/* Karten der linken Spalte (Experiment-Wahl + Messwerte + Strahl-Einstellungen): Panel-Look. */
+.cv4-readouts,.cv4-params,.cv4-card{background:var(--panel);border:1px solid var(--bd);border-radius:16px;padding:12px 16px}
+.cv4-rg{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+/* „Teilchen"-Messwert = versteckter Toggle (Protonen ⟷ Blei-Ionen). */
+.cv4-ro-toggle{cursor:pointer;transition:border-color .15s,background .15s}
+.cv4-ro-toggle:hover{border-color:var(--blue);background:rgba(88,166,255,.06)}
+/* SVG fluid: skaliert über die viewBox (Ring am Handy voll sichtbar). Auf dem
+   Desktop füllt es die linke Spalte → größeres Diagramm, weniger Leerraum. */
+#svg{width:100%;height:auto;display:block;margin:0 auto}
+.cv4-panel{background:var(--panel);border-radius:16px;border:1px solid var(--bd);padding:16px;display:flex;flex-direction:column;gap:16px}
+/* flow-root: schließt die float:right-Info-Buttons ein — sonst quetschen über-
+   laufende Floats das darunterliegende offene Akkordeon (BFC) auf Minimalbreite */
+.cv4-ptitle{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--tx-dim);border-bottom:1px solid var(--bd-soft);padding-bottom:6px;margin-bottom:8px;font-weight:700;display:flow-root}
+.cv4-btn{background:var(--card);color:var(--tx);border:1px solid var(--bd);padding:9px 14px;border-radius:9px;cursor:pointer;font-size:12px;font-weight:600;transition:all .2s;text-align:center}
+.cv4-btn:hover{background:#33404f;border-color:var(--tx-dim)}
+.cv4-btn.act{background:rgba(88,166,255,.18);border-color:var(--blue);color:var(--blue)}
+.cv4-btn.act-i{background:rgba(227,119,194,.18);border-color:var(--pink);color:var(--pink)}
+.cv4-btn.danger{background:rgba(248,81,73,.10);border-color:rgba(248,81,73,.45);color:var(--red)}
+.cv4-btn.danger:hover{background:rgba(248,81,73,.2);box-shadow:0 0 10px rgba(248,81,73,.25)}
+.cv4-btn.off{opacity:.32;pointer-events:none}
+.cv4-fill-row{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--tx-dim)}
+.cv4-fill-bar{flex:1;background:var(--card);border-radius:4px;height:8px;overflow:hidden}
+.cv4-fill-bar-inner{height:100%;transition:width .3s;border-radius:4px}
+.cv4-fill-bar-inner.b1{background:var(--blue)}
+.cv4-fill-bar-inner.b2{background:var(--orange)}
+.cv4-fill-bar-inner.b1i{background:var(--pink)}
 .cv4-fill-bar-inner.b2i{background:#c77dff}
-.cv4-grid{display:grid;grid-template-columns:1fr 310px;gap:20px}
-.cv4-ro{background:#0d1117;border-radius:5px;border:1px solid #21262d;padding:7px 10px}
-.cv4-ro-l{font-size:9px;color:#8b949e;text-transform:uppercase}
-.cv4-ro-v{font-size:14px;font-weight:700;color:#f0f6fc;font-family:'Courier New',monospace}
-.cv4-tracker{display:flex;align-items:center;gap:4px;font-size:10px;color:#8b949e;margin-top:4px}
-.cv4-tracker .step{padding:2px 6px;border-radius:3px;border:1px solid #21262d;background:#0d1117}
-.cv4-tracker .step.cur{border-color:#58a6ff;color:#58a6ff;background:rgba(88,166,255,.1)}
-.cv4-tracker .step.cur-i{border-color:#e377c2;color:#e377c2;background:rgba(227,119,194,.1)}
-.cv4-tracker .step.done{border-color:#2ea44f;color:#2ea44f}
-.cv4-tracker .arr{color:#30363d}
-.svg-path{stroke:#1a1f27;stroke-width:2.5;fill:none}
-.svg-path.lit{stroke:#58a6ff;filter:drop-shadow(0 0 5px rgba(88,166,255,.6))}
-.svg-path.lit-i{stroke:#e377c2;filter:drop-shadow(0 0 5px rgba(227,119,194,.6))}
-.svg-path.lit-b2{stroke:#ff7f0e;filter:drop-shadow(0 0 5px rgba(255,127,14,.6))}
-.svg-lhc{stroke:rgba(88,166,255,.08);stroke-width:4;fill:none}
-.svg-lhc.lit{stroke:rgba(88,166,255,.3)}
-.svg-lhc.lit-i{stroke:rgba(227,119,194,.3)}
-.svg-node{fill:#0d1117;stroke:#21262d;stroke-width:2}
-.svg-node.glow{stroke:#58a6ff;fill:rgba(88,166,255,.12);filter:drop-shadow(0 0 6px rgba(88,166,255,.4))}
-.svg-node.glow-i{stroke:#e377c2;fill:rgba(227,119,194,.12);filter:drop-shadow(0 0 6px rgba(227,119,194,.4))}
-.svg-node.flash{stroke:#f85149;fill:rgba(248,81,73,.2);filter:drop-shadow(0 0 8px rgba(248,81,73,.6))}
-.svg-lbl{font-size:9px;fill:#8b949e;font-family:monospace;text-anchor:middle}
-.cv4-bottom{margin-top:20px;display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.cv4-evcanvas{background:#090d13;border:1px solid #21262d;border-radius:8px;width:100%;height:180px}
-.cv4-histwrap{background:#090d13;border:1px solid #21262d;border-radius:8px;height:130px;padding:6px}
-.cv4-dtabs{display:flex;gap:3px;margin-bottom:6px}
-.cv4-dtab{flex:1;background:#21262d;border:1px solid #30363d;padding:5px;font-size:10px;color:#8b949e;border-radius:4px;cursor:pointer;text-align:center;font-weight:700}
-.cv4-dtab.act{background:rgba(88,166,255,.12);border-color:#58a6ff;color:#58a6ff}
-.cv4-sli-lbl{display:flex;justify-content:space-between;font-size:10px;color:#8b949e;margin-top:4px}
-.cv4-sli{width:100%;background:#21262d;border-radius:3px;height:4px;outline:none;-webkit-appearance:none;margin-top:2px}
-.cv4-sli::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:12px;height:12px;border-radius:50%;background:#58a6ff;cursor:pointer;border:1px solid #30363d}
-.cv4-sli::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#58a6ff;cursor:pointer;border:1px solid #30363d}
-.cv4-quench{background:rgba(248,81,73,.15);border:1px solid #f85149;color:#f85149;padding:10px;border-radius:6px;font-size:12px;font-weight:bold;text-align:center;animation:cv4blink 1s infinite}
+.cv4-ro{background:var(--bg);border-radius:8px;border:1px solid var(--bd-soft);padding:8px 10px}
+.cv4-ro-l{font-size:9px;color:var(--tx-dim);text-transform:uppercase;letter-spacing:.3px}
+.cv4-ro-v{font-size:14px;font-weight:700;color:var(--tx-bright);font-family:'Courier New',monospace}
+.cv4-tracker{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--tx-dim);margin-top:6px;flex-wrap:wrap}
+.cv4-tracker .step{padding:2px 7px;border-radius:5px;border:1px solid var(--bd-soft);background:var(--bg)}
+.cv4-tracker .step.cur{border-color:var(--blue);color:var(--blue);background:rgba(88,166,255,.1)}
+.cv4-tracker .step.cur-i{border-color:var(--pink);color:var(--pink);background:rgba(227,119,194,.1)}
+.cv4-tracker .step.done{border-color:var(--green);color:var(--green)}
+.cv4-tracker .arr{color:var(--bd)}
+/* Beschleuniger-Schema: un-beleuchtete Bahn etwas sichtbarer (Laien sollen die
+   Struktur schon vor der Animation erkennen); aktiv = heller Glow. */
+.svg-path{stroke:#33404f;stroke-width:2.5;fill:none}
+.svg-path.lit{stroke:var(--blue);filter:drop-shadow(0 0 5px rgba(88,166,255,.6))}
+.svg-path.lit-i{stroke:var(--pink);filter:drop-shadow(0 0 5px rgba(227,119,194,.6))}
+.svg-path.lit-b2{stroke:var(--orange);filter:drop-shadow(0 0 5px rgba(255,127,14,.6))}
+.svg-lhc{stroke:rgba(120,160,210,.20);stroke-width:4;fill:none}
+/* Der LHC-Ring ist riesig (Ø ~360px). Im Betrieb laufen 12 Bunches darüber →
+   ein drop-shadow-Filter auf dem Ring würde jeden Frame komplett neu gerastert
+   (Haupt-Ursache des Ruckelns). Daher KEIN Filter, Glow nur über die Strichfarbe. */
+.svg-lhc.lit{stroke:rgba(88,166,255,.5);filter:none}
+.svg-lhc.lit-i{stroke:rgba(227,119,194,.5);filter:none}
+/* Bewegte Bunches: billiger Glow per Stroke statt drop-shadow-Filter */
+.traveling-dot,.lhc-bunch{stroke-width:2;stroke-opacity:.45;paint-order:stroke}
+.svg-node{fill:var(--card);stroke:var(--bd);stroke-width:2}
+.svg-node.glow{stroke:var(--blue);fill:rgba(88,166,255,.14);filter:drop-shadow(0 0 6px rgba(88,166,255,.45))}
+.svg-node.glow-i{stroke:var(--pink);fill:rgba(227,119,194,.14);filter:drop-shadow(0 0 6px rgba(227,119,194,.45))}
+.svg-node.flash{stroke:var(--red);fill:rgba(248,81,73,.2);filter:drop-shadow(0 0 8px rgba(248,81,73,.6))}
+.svg-lbl{font-size:9px;fill:#b0bdcc;font-family:monospace;text-anchor:middle}
+.cv4-bottom{margin-top:20px;display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.cv4-evcanvas{background:var(--screen);border:1px solid var(--bd-soft);border-radius:10px;width:100%;height:215px;cursor:pointer}
+.cv4-tour-btn{color:var(--green,#3fb950);border-color:rgba(46,164,79,.45)}
+.cv4-tour-btn:hover{background:rgba(46,164,79,.12);border-color:#3fb950}
+.cv4-pi-img{display:block;width:100%;max-width:360px;border-radius:8px;margin:7px 0 3px}
+.cv4-pi-cap{font-size:9px;color:var(--tx-dim);line-height:1.5;margin-bottom:4px}
+.cv4-histwrap{background:var(--screen);border:1px solid var(--bd-soft);border-radius:10px;height:150px;padding:6px}
+.cv4-dtabs{display:flex;gap:4px;margin-bottom:8px}
+.cv4-dtab{flex:1;background:var(--card);border:1px solid var(--bd);padding:6px;font-size:10px;color:var(--tx-dim);border-radius:8px;cursor:pointer;text-align:center;font-weight:700;transition:all .15s}
+.cv4-dtab:hover{border-color:var(--tx-dim)}
+.cv4-dtab.act{background:rgba(88,166,255,.16);border-color:var(--blue);color:var(--blue)}
+.cv4-sli-lbl{display:flex;justify-content:space-between;font-size:10.5px;color:var(--tx-dim);margin-top:4px}
+.cv4-sli{width:100%;background:var(--card);border-radius:3px;height:5px;outline:none;-webkit-appearance:none;margin-top:3px}
+.cv4-sli::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:14px;height:14px;border-radius:50%;background:var(--blue);cursor:pointer;border:1px solid var(--bd)}
+.cv4-sli::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:var(--blue);cursor:pointer;border:1px solid var(--bd)}
+.cv4-sli:disabled{opacity:.5}
+.cv4-quench{background:rgba(248,81,73,.15);border:1px solid var(--red);color:var(--red);padding:10px;border-radius:8px;font-size:12px;font-weight:bold;text-align:center;animation:cv4blink 1s infinite}
 @keyframes cv4blink{0%,100%{opacity:.5}50%{opacity:1}}
-.geo-element{transition:opacity 0.3s ease, fill-opacity 0.3s ease;}
+
+/* ═══ MASSENSPEKTRUM-Panel: Texte als HTML UM den Graphen (nicht mehr im Canvas) ═══
+   Früher malte drawHist Titel/Herkunft/Status DIREKT über die Balken → unleserlich,
+   dunkel. Jetzt: klare HTML-Zeilen ober-/unterhalb, der Canvas zeigt nur das Histogramm. */
+.cv4-sp-head{margin-bottom:6px}
+.cv4-sp-title{font-size:12px;font-weight:700;line-height:1.3}
+.cv4-sp-sub{font-size:10px;color:var(--tx-dim);line-height:1.4;margin-top:2px}
+.cv4-sig-row{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:4px;font-size:11px;flex-wrap:wrap}
+.cv4-sig-row .lbl-sig{font-family:'Courier New',monospace;color:var(--tx-bright);font-weight:700}
+.cv4-sig-status{font-weight:700;font-size:10px}
+.cv4-sigbar{height:5px;margin-bottom:8px;background:var(--card);border-radius:3px;overflow:hidden}
+.cv4-sigbar>div{width:0;height:100%;background:var(--blue);transition:width .25s,background .25s}
+.cv4-sp-foot{margin-top:7px;font-size:9.5px;line-height:1.5;color:var(--tx-dim);display:flex;flex-direction:column;gap:3px}
+.cv4-sp-real{color:#aec7e8}
+.cv4-sp-status{color:var(--tx)}
+.cv4-sp-prov{font-size:8.5px;color:var(--tx-dim);opacity:.85}
+
+/* Geo-Layer braucht keine Pointer-Events und soll bewegte Bunches nicht ausbremsen */
+#geo-layer{pointer-events:none}
+/* Injektor-Komplex Meyrin: Detail-Beschriftung erst beim Zoom (#svg.inj-zoom),
+   im Vollbild stattdessen nur der dezente Hinweis-Ring. */
+.geo-inj-detail{opacity:0;transition:opacity .3s}
+.geo-inj-hint{opacity:1;transition:opacity .3s}
+#svg.inj-zoom .geo-inj-detail{opacity:1}
+#svg.inj-zoom .geo-inj-hint{opacity:0}
+/* Grobe Vollbild-Labels (PS/PSB/SPS-Zentroide) im Zoom ausblenden — sie wären
+   ~20× zu groß; die feinen Ersatz-Labels liefert die Detail-Ebene. */
+#svg.inj-zoom .geo-far{opacity:0}
+/* Easter Egg FCC: Ring standardmäßig versteckt, erscheint beim Heraus-Zoom. */
+.geo-fcc{opacity:0;transition:opacity .8s}
+#svg.fcc-on .geo-fcc{opacity:1}
+/* Versteckter Auslöser (Punkt im See) — klickbar trotz #geo-layer{pointer-events:none}. */
+.fcc-trigger{pointer-events:auto;cursor:pointer;transition:fill .2s}
+.fcc-trigger:hover{fill:rgba(210,120,255,0.95)}
 .info-hit{cursor:pointer;transition:fill 0.18s}
-.info-hit:hover{fill:rgba(88,166,255,0.07)!important}
+.info-hit:hover{fill:rgba(88,166,255,0.09)!important}
 .info-hit-ring{cursor:pointer;transition:stroke 0.18s}
-.info-hit-ring:hover{stroke:rgba(88,166,255,0.12)!important}
-.cv4-info-panel{position:absolute;top:16px;right:16px;width:252px;background:#0d1117;border:1px solid #30363d;border-radius:10px;z-index:20;display:none;box-shadow:0 8px 32px rgba(0,0,0,0.75);overflow:hidden;animation:cv4infoin 0.18s ease}
+.info-hit-ring:hover{stroke:rgba(88,166,255,0.16)!important}
+.cv4-info-panel{width:100%;background:var(--card);border:1px solid var(--bd);border-radius:12px;display:none;overflow:hidden;animation:cv4infoin 0.18s ease;position:relative}
 @keyframes cv4infoin{from{opacity:0;transform:scale(0.96) translateY(-4px)}to{opacity:1;transform:none}}
 .cv4-info-panel.visible{display:block}
-.cv4-info-close{position:absolute;top:7px;right:7px;background:rgba(13,17,23,0.82);border:1px solid #30363d;color:#8b949e;border-radius:4px;cursor:pointer;padding:1px 7px;font-size:11px;z-index:2;line-height:1.7;transition:all .15s}
-.cv4-info-close:hover{color:#f85149;border-color:#f85149}
-.cv4-info-body{padding:9px 12px 12px}
-.cv4-info-title{font-size:13px;font-weight:800;color:#e6edf3;margin-bottom:2px}
-.cv4-info-sub{font-size:8.5px;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.4px;line-height:1.4}
-.cv4-info-stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-bottom:8px}
-.cv4-info-stat{background:#161b22;border:1px solid #21262d;border-radius:4px;padding:4px 5px}
-.cv4-info-stat-l{display:block;font-size:7.5px;color:#8b949e;text-transform:uppercase;letter-spacing:0.3px}
+.cv4-hdr-photo{position:relative;height:200px;background:linear-gradient(135deg,#101722,#18222f);overflow:hidden}
+.cv4-hdr-photo img{width:100%;height:100%;object-fit:cover;display:block}
+.cv4-hdr-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(28,37,49,0) 45%,rgba(28,37,49,0.9) 100%);border-bottom:3px solid var(--accent);pointer-events:none}
+.cv4-hdr-cred{position:absolute;right:5px;bottom:5px;max-width:90%;font-size:7px;font-family:monospace;color:rgba(230,237,243,0.72);text-shadow:0 1px 2px #000;text-align:right;line-height:1.3;pointer-events:none}
+.cv4-hdr-fbtxt{display:none;position:absolute;inset:0;align-items:center;justify-content:center;font-size:13px;font-weight:800;letter-spacing:1px;color:var(--accent);opacity:0.55;text-transform:uppercase}
+.cv4-hdr-noimg{background:linear-gradient(135deg,#0f1d33,#103057)}
+.cv4-hdr-noimg .cv4-hdr-fbtxt{display:flex}
+.cv4-info-close{position:absolute;top:7px;right:7px;background:rgba(13,17,23,0.82);border:1px solid var(--bd);color:var(--tx-dim);border-radius:6px;cursor:pointer;padding:1px 7px;font-size:11px;z-index:2;line-height:1.7;transition:all .15s}
+.cv4-info-close:hover{color:var(--red);border-color:var(--red)}
+.cv4-info-body{padding:10px 13px 13px}
+.cv4-info-title{font-size:13.5px;font-weight:800;color:var(--tx-bright);margin-bottom:2px}
+.cv4-info-sub{font-size:8.5px;margin-bottom:9px;text-transform:uppercase;letter-spacing:0.4px;line-height:1.4}
+.cv4-info-stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:9px}
+.cv4-info-stat{background:var(--card);border:1px solid var(--bd-soft);border-radius:6px;padding:4px 6px}
+.cv4-info-stat-l{display:block;font-size:7.5px;color:var(--tx-dim);text-transform:uppercase;letter-spacing:0.3px}
 .cv4-info-stat-v{display:block;font-size:10px;font-weight:700;font-family:'Courier New',monospace}
-.cv4-info-text{font-size:10px;color:#8b949e;line-height:1.56}
-.cv4-pi-btn{background:none;border:1px solid #30363d;color:#58a6ff;border-radius:3px;cursor:pointer;padding:0 5px;font-size:10px;line-height:1.5;vertical-align:middle;margin-left:3px;transition:all .15s}
-.cv4-pi-btn:hover{background:rgba(88,166,255,.1);border-color:#58a6ff}
-.cv4-param-info{max-height:0;overflow:hidden;transition:max-height 0.28s ease,padding 0.28s ease,margin 0.28s ease;font-size:9.5px;color:#8b949e;line-height:1.55;padding:0 8px;margin:0;background:rgba(13,17,23,0.7);border-left:2px solid #30363d;border-radius:0 0 4px 4px}
-.cv4-param-info.open{max-height:180px;padding:6px 8px;margin-top:3px}
+.cv4-info-text{font-size:10.5px;color:var(--tx-dim);line-height:1.6}
+.cv4-pi-btn{background:none;border:1px solid var(--bd);color:var(--blue);border-radius:5px;cursor:pointer;padding:0 6px;font-size:10px;line-height:1.5;vertical-align:middle;margin-left:3px;transition:all .15s}
+.cv4-pi-btn:hover{background:rgba(88,166,255,.12);border-color:var(--blue)}
+.cv4-param-info{max-height:0;overflow:hidden;transition:max-height 0.28s ease,padding 0.28s ease,margin 0.28s ease;font-size:10px;color:var(--tx-dim);line-height:1.6;padding:0 9px;margin:0;background:rgba(14,20,29,0.75);border-left:2px solid var(--bd);border-radius:0 0 6px 6px}
+.cv4-param-info.open{max-height:240px;overflow:auto;padding:8px 9px;margin-top:4px}
+
+/* ═══ Responsive / Mobile (Eltern-QR: EINE Seite, am Handy nutzbar) ═══════════ */
+.cv4-preset-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:8px}
+@media(max-width:860px){
+ #cern-v4{padding:13px}
+ /* Einspaltig: Diagramm + Messwerte (colL), dann Steuerung. */
+ .cv4-grid{grid-template-columns:1fr}
+ .cv4-rg{grid-template-columns:1fr 1fr}      /* Messwerte 2×2 statt 4er-Reihe */
+ .cv4-hdr{flex-wrap:wrap;gap:8px}
+ .cv4-bottom{grid-template-columns:1fr}           /* Event-Display + Spektrum untereinander */
+ .cv4-preset-grid{grid-template-columns:1fr 1fr}
+ #btn-diagram-full{display:block!important}        /* „Großansicht" nur am Handy */
+ /* Info-Panel auf Mobile wieder als zentriertes Modal (sonst weit unten in der einspal. Liste) */
+ .cv4-info-panel{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:min(340px,94vw);max-height:86vh;overflow-y:auto;z-index:9999;border-radius:14px}
+}
+/* ═══ Vollbild-Ring (Tippen → Großansicht), CSS-Overlay (iOS-Fullscreen-API unsicher) ═══ */
+#btn-diagram-full{display:none}
+#cern-v4.diagram-full .cv4-svg-wrap{position:fixed;inset:0;z-index:9998;height:100vh;width:100vw;border-radius:0;background:var(--screen)}
+#cern-v4.diagram-full .cv4-svg-wrap #svg{max-width:none;width:auto;height:92vh;max-height:100vh}   /* füllt auch Querformat */
+.cv4-fs-hint{display:none;position:absolute;bottom:10px;left:50%;transform:translateX(-50%);font-size:11px;color:var(--tx-dim);background:rgba(14,20,29,.8);padding:4px 12px;border-radius:12px;z-index:9999;pointer-events:none;white-space:nowrap}
+#cern-v4.diagram-full .cv4-fs-hint{display:block}
