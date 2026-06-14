@@ -12,25 +12,30 @@ const s = App.state, E = App.els;
 const DETKONFIG: Record<string, DetConfig> = {
  // bend = visuelle Krümmungsstärke (skaliert mit B-Feld: CMS 3.8T > ATLAS 2T > ALICE 0.5T)
  // realRmu = echter Außenradius (m) der Myonlage → Maßstab (Mensch/Meterleiste)
+ // r = AUSSENradius je Schicht (Modell-Einheiten; Außen=86=realRmu bleibt maßstäblicher
+ //     Anker für Mensch/Meterleiste). Die Schicht-DICKEN sind bewusst KEIN Innen-Maßstab:
+ //     alle ~gleich dick, nur moduliert mit der echten relativen Dicke und gekappt auf
+ //     [1/1,5 … 1,5]× der Gleichverteilung — jede Schale bleibt lesbar, dicker/dünner
+ //     bleibt erkennbar. (Dicken→r via clamp(echteDicke/Mittel,1/1,5,1,5), Spanne 5→86.)
  ATLAS: { typ:'barrel', farbe:'#58a6ff', rolle:'Allzweck-Detektor · 2 T Solenoid + Toroid-Myonsystem', bend:0.80,
    realRmu:12.5, fakt:'46 m lang · Ø 25 m · 7 000 t',
-   lagen:[ {r:26,name:'Spurdetektor',kind:'track',job:'Spuren geladener Teilchen',infoKey:'L_TRACK'},
-           {r:38,name:'EM-Kalorimeter',kind:'em',job:'stoppt e⁻ & Photonen',infoKey:'L_EM'},
-           {r:52,name:'Hadron-Kalorimeter',kind:'had',job:'stoppt Protonen & Co.',infoKey:'L_HAD'},
-           {r:62,name:'Toroid-Magnet',kind:'coil',job:'krümmt die Bahnen',infoKey:'L_COIL'},
+   lagen:[ {r:16.4,name:'Spurdetektor',kind:'track',job:'Spuren geladener Teilchen',infoKey:'L_TRACK'},
+           {r:27.8,name:'EM-Kalorimeter',kind:'em',job:'stoppt e⁻ & Photonen',infoKey:'L_EM'},
+           {r:43.2,name:'Hadron-Kalorimeter',kind:'had',job:'stoppt Protonen & Co.',infoKey:'L_HAD'},
+           {r:68.9,name:'Toroid-Magnet',kind:'coil',job:'krümmt die Bahnen',infoKey:'L_COIL'},
            {r:86,name:'Myonkammern',kind:'muon',job:'nur Myonen kommen an',infoKey:'L_MUON'} ] },
  CMS: { typ:'barrel', farbe:'#f85149', rolle:'Allzweck-Detektor · 3,8 T Solenoid · Kristall-Kalorimeter', bend:1.40,
    realRmu:7.4, fakt:'21 m lang · Ø 15 m · 14 000 t (schwerer als der Eiffelturm)',
-   lagen:[ {r:30,name:'Silizium-Tracker',kind:'track',job:'Spuren geladener Teilchen',infoKey:'L_TRACK'},
-           {r:40,name:'ECAL (Kristalle)',kind:'em',job:'stoppt e⁻ & Photonen',infoKey:'L_EM'},
-           {r:52,name:'HCAL (Messing)',kind:'had',job:'stoppt Protonen & Co.',infoKey:'L_HAD'},
-           {r:60,name:'Solenoid-Magnet',kind:'coil',job:'krümmt die Bahnen · 3,8 T',infoKey:'L_COIL'},
+   lagen:[ {r:19.4,name:'Silizium-Tracker',kind:'track',job:'Spuren geladener Teilchen',infoKey:'L_TRACK'},
+           {r:31.6,name:'ECAL (Kristalle)',kind:'em',job:'stoppt e⁻ & Photonen',infoKey:'L_EM'},
+           {r:46.2,name:'HCAL (Messing)',kind:'had',job:'stoppt Protonen & Co.',infoKey:'L_HAD'},
+           {r:58.5,name:'Solenoid-Magnet',kind:'coil',job:'krümmt die Bahnen · 3,8 T',infoKey:'L_COIL'},
            {r:86,name:'Myonkammern im Joch',kind:'muon',job:'nur Myonen kommen an',infoKey:'L_MUON'} ] },
  ALICE: { typ:'barrel', farbe:'#e377c2', rolle:'Schwerionen · TPC · hohe Spurdichte · 0,5 T', bend:0.60,
    realRmu:8.0, fakt:'26 m lang · Ø 16 m · 10 000 t',
-   lagen:[ {r:14,name:'ITS (Silizium-Pixel)',kind:'track',job:'Spur-Ursprung & Vertices',infoKey:'L_TRACK'},
-           {r:58,name:'TPC (Gas-Kammer)',kind:'track',job:'3D-Spuren, bis zu 20 000',infoKey:'L_TPC'},
-           {r:70,name:'TOF (Stoppuhr)',kind:'em',job:'identifiziert Teilchensorte',infoKey:'L_TOF'},
+   lagen:[ {r:18.5,name:'ITS (Silizium-Pixel)',kind:'track',job:'Spur-Ursprung & Vertices',infoKey:'L_TRACK'},
+           {r:42.2,name:'TPC (Gas-Kammer)',kind:'track',job:'3D-Spuren, bis zu 20 000',infoKey:'L_TPC'},
+           {r:55.7,name:'TOF (Stoppuhr)',kind:'em',job:'identifiziert Teilchensorte',infoKey:'L_TOF'},
            {r:86,name:'Außenlagen',kind:'muon',job:'Myonen & Restsignale',infoKey:'L_MUON'} ] },
  LHCB: { typ:'forward', farbe:'#ff7f0e', rolle:'Vorwärts-Spektrometer · Sekundärvertex',
    realLen:21, fakt:'21 m lang · 5 600 t · misst nur den Vorwärtskegel',
