@@ -1,7 +1,11 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// INFO PANELS — Wikipedia-Stil Overlay für Beschleuniger & Detektoren
-// Einheitliche Stat-Struktur — Beschleuniger: [Länge/Umfang, Geschwindigkeit (% c),
-// In Betrieb seit] · Detektoren: [Maße, Schwerpunktsenergie, Gewicht]
+// INFO PANELS — Overlay für Beschleuniger, Detektoren & Detektor-Schichten.
+// EINHEITLICHE 3-Feld-Stat-Struktur je Kategorie (identische Labels → direkt
+// vergleichbar):
+//   Beschleuniger: [Länge|Umfang, Geschwindigkeit, In Betrieb seit]
+//   Detektoren:    [Maße, Schwerpunktsenergie, Gewicht]
+//   Schichten:     [Aufgabe, Prinzip, Detektor]
+// Jeder Eintrag nennt zusätzlich den Bild-Credit (cred) und die Sachquelle (src).
 // Self-contained: greift den DOM zur Klick-Zeit per document.getElementById.
 // ═══════════════════════════════════════════════════════════════════════════
 import { App } from './core.js';
@@ -14,6 +18,7 @@ const INFO_DB = {
   img: 'Linac 4 at CERN.jpg',
   cred: 'M. Brice/CERN · CC BY-SA 4.0',
   stats: [['Länge','86 m'],['Geschwindigkeit','0 → 52 % c'],['In Betrieb seit','2020']],
+  src: 'CERN · home.cern · Wikipedia',
   text: 'Der erste Schritt der Protonen-Kette: ein 86 m langer Linearbeschleuniger. Er bringt die Teilchen auf 160 MeV — schon 52 % der Lichtgeschwindigkeit. Trick an der Quelle: Gestartet wird nicht mit nackten Protonen, sondern mit H⁻-Ionen (ein Proton mit zwei zusätzlichen Elektronen), die sich leichter bündeln und einspeisen lassen. Beim Übergang zum nächsten Beschleuniger streift eine hauchdünne Folie beide Elektronen ab — übrig bleibt das reine Proton. Seit 2020 ersetzt LINAC4 den alten LINAC2 und ermöglicht doppelt so intensive Strahlen.'
  },
  LINAC3: {
@@ -23,6 +28,7 @@ const INFO_DB = {
   img: 'Linac 3 at CERN.jpg',
   cred: 'M. Brice/CERN · CC BY-SA 4.0',
   stats: [['Länge','~30 m'],['Geschwindigkeit','0 → 9 % c'],['In Betrieb seit','1994']],
+  src: 'CERN · home.cern · Wikipedia',
   text: 'Das Gegenstück zu LINAC4 für den Schwerionen-Betrieb. In einer heißen Quelle werden Blei-Atome eines Teils ihrer Elektronen beraubt (Pb²⁹⁺) und auf 4,2 MeV/Nukleon beschleunigt — nur 9 % der Lichtgeschwindigkeit. Dass es so „langsam" bleibt, liegt an der Masse: Ein Blei-Kern besteht aus 208 Nukleonen und ist damit über 200-mal schwerer als ein Proton. Anschließend sammelt der LEIR-Ring die Ionen ein.'
  },
  PSB: {
@@ -32,6 +38,7 @@ const INFO_DB = {
   img: 'The Proton Synchrotron Booster in its tunnel.jpg',
   cred: 'Loïez, Brice/CERN · CC BY 4.0',
   stats: [['Umfang','4 × 157 m'],['Geschwindigkeit','52 → 95 % c'],['In Betrieb seit','1972']],
+  src: 'CERN · home.cern · Wikipedia',
   text: 'Der erste Ring-Beschleuniger (Synchrotron) der Kette — mit einer Besonderheit: vier exakt übereinander gestapelte Ringe, die parallel arbeiten. Der Booster hebt die Protonen von 160 MeV auf 2 GeV und damit von 52 % auf 95 % der Lichtgeschwindigkeit. Ab hier wächst das Tempo kaum noch: Fast die gesamte zugeführte Energie steckt jetzt in der Bewegungsenergie der Teilchen, nicht mehr in höherer Geschwindigkeit (das ist Relativität).'
  },
  LEIR: {
@@ -41,6 +48,7 @@ const INFO_DB = {
   img: 'Low Energy Ion Ring (LEIR).jpg',
   cred: 'F. Stollberger · CC BY-SA 4.0',
   stats: [['Umfang','78 m'],['Geschwindigkeit','9 → 37 % c'],['In Betrieb seit','2005']],
+  src: 'CERN · home.cern · Wikipedia',
   text: 'Der Sammelring für Blei-Ionen, 2005 aus dem früheren Antiproton-Ring LEAR umgebaut. Er nimmt die noch dünnen Ionen-Portionen von LINAC3 auf und bündelt sie zu dichten Paketen. Das Werkzeug dazu ist die Elektronenkühlung: Ein paralleler Elektronenstrahl gleicher Geschwindigkeit „bremst" die Zappel-Bewegung der Ionen und macht den Strahl dadurch schärfer. Danach beschleunigt LEIR die Ionen auf 72 MeV/Nukleon (37 % c) und gibt sie an das PS weiter.'
  },
  PS: {
@@ -50,6 +58,7 @@ const INFO_DB = {
   img: 'https://cds.cern.ch/images/CERN-PHOTO-201405-164-2/file?size=large',
   cred: 'CERN (home.cern) · CERN-PHOTO-201405-164-2',
   stats: [['Umfang','628 m'],['Geschwindigkeit','95 → 99,94 % c'],['In Betrieb seit','1959']],
+  src: 'CERN · home.cern · Wikipedia',
   text: 'Das Arbeitspferd des CERN, seit 1959 ununterbrochen in Betrieb. Das PS beschleunigt die Protonen auf 26 GeV — die Geschwindigkeit steigt dabei nur noch von 95 % auf 99,94 % c, die Energie aber um mehr als das Zehnfache. Hier bekommt der Strahl auch seine spätere Struktur: Das PS formt aus wenigen Paketen einen „Batch" von 72 Bunches im Abstand von je 25 ns. Diese Bunches sind die eigentlichen Geschosse, die später im LHC zur Kollision gebracht werden.'
  },
  SPS: {
@@ -59,6 +68,7 @@ const INFO_DB = {
   img: 'Beamfeedingams.JPG',
   cred: 'Gillis · CC BY 3.0',
   stats: [['Umfang','6,9 km'],['Geschwindigkeit','99,94 → 99,9998 % c'],['In Betrieb seit','1976']],
+  src: 'CERN · home.cern · Wikipedia',
   text: 'Die letzte Stufe vor dem LHC. Das SPS bringt die Protonen auf 450 GeV — die Geschwindigkeit kriecht dabei nur von 99,94 % auf 99,9998 % c, doch die Energie verzwanzigfacht sich. Von hier werden die fertigen Bunch-Züge über die Tunnel TI 2 und TI 8 in beide Richtungen in den LHC eingeschossen. Berühmt wurde das SPS 1983 mit der Entdeckung der W- und Z-Bosonen (Nobelpreis 1984).'
  },
  LHC: {
@@ -67,7 +77,8 @@ const INFO_DB = {
   color: '#58a6ff',
   img: 'LHC dipole magnets.jpg',
   cred: 'alpinethread · CC BY-SA 2.0',
-  stats: [['Umfang','26,7 km'],['Geschwindigkeit','99,9998 → 99,999999 % c'],['Temperatur','1,9 K']],
+  stats: [['Umfang','26,7 km'],['Geschwindigkeit','99,9998 → 99,999999 % c'],['In Betrieb seit','2008']],
+  src: 'CERN · home.cern · Wikipedia',
   text: 'Der Ring, in dem alles zusammenläuft: 27 km Umfang, 100 m unter der Erde. Bei 6,8 TeV sind die Protonen nur noch 3 m/s langsamer als das Licht. 1 232 supraleitende Dipolmagnete (8,3 Tesla, mit 1,9 K kälter als der Weltraum) zwingen die zwei Strahlen auf ihre Kreisbahn — 11 245 Umläufe pro Sekunde (die Animation zeigt das symbolisch verlangsamt). An vier Punkten kreuzen sich die Strahlen und kollidieren mit einer Schwerpunktsenergie von √s = 13,6 TeV — mehr als je zuvor an einem Beschleuniger. 2012 führte das zur Entdeckung des Higgs-Bosons.'
  },
  ATLAS: {
@@ -77,6 +88,7 @@ const INFO_DB = {
   img: 'CERN LHC ATLAS Detector.jpg',
   cred: 'S. Waldherr · CC BY-SA 4.0',
   stats: [['Maße','46 × 25 m'],['Schwerpunktsenergie','√s ≤ 14 TeV'],['Gewicht','7 000 t']],
+  src: 'ATLAS / CERN · home.cern · Wikipedia',
   text: 'Der größte der vier Detektoren — eine 25 m hohe „Zwiebel" aus Messschichten rund um den Kollisionspunkt. Sein Markenzeichen ist das gewaltige Toroid-Magnetsystem aus acht 25-m-Spulen, das den weit außen liegenden Myon-Spuren ihre Krümmung gibt. ATLAS ist ein Allzweck-Detektor: gebaut, um möglichst jede Teilchenart zu erfassen. 2012 war ATLAS einer der beiden Entdecker des Higgs-Bosons (Masse 125 GeV).'
  },
  CMS: {
@@ -86,7 +98,8 @@ const INFO_DB = {
   img: 'CMS detector 2.jpg',
   cred: 'T. Guignard · CC BY-SA 2.0',
   stats: [['Maße','21 × 15 m'],['Schwerpunktsenergie','√s ≤ 14 TeV'],['Gewicht','14 000 t']],
-  text: 'Kleiner als ATLAS, aber mit 14 000 t fast doppelt so schwer — schwerer als der Eiffelturm. Im Zentrum sitzt der stärkste Solenoid-Magnet der Welt (3,8 Tesla, rund 100 000-mal das Erdmagnetfeld). Sein Spurdetektor besitzt 124 Millionen Silizium-Pixel, das Kalorimeter besteht aus 76 000 glasklaren Kristallen. CMS verfolgt dasselbe Allzweck-Ziel wie ATLAS — und bestätigte 2012 unabhängig die Entdeckung des Higgs-Bosons.'
+  src: 'CMS / CERN · home.cern · Wikipedia',
+  text: 'Kleiner als ATLAS, aber mit 14 000 t rund doppelt so schwer — schwerer als der Eiffelturm. Im Zentrum sitzt der stärkste Solenoid-Magnet der Welt (3,8 Tesla, rund 100 000-mal das Erdmagnetfeld). Sein Spurdetektor besitzt 124 Millionen Silizium-Pixel, das Kalorimeter besteht aus 76 000 glasklaren Kristallen. CMS verfolgt dasselbe Allzweck-Ziel wie ATLAS — und bestätigte 2012 unabhängig die Entdeckung des Higgs-Bosons.'
  },
  ALICE: {
   title: 'ALICE Detektor',
@@ -95,6 +108,7 @@ const INFO_DB = {
   img: 'ALICE experiment at CERN.jpg',
   cred: 'Andres T · CC BY-SA 2.0',
   stats: [['Maße','26 × 16 m'],['Schwerpunktsenergie','√s_NN ≤ 5,5 TeV'],['Gewicht','10 000 t']],
+  src: 'ALICE / CERN · home.cern · Wikipedia',
   text: 'Der Spezialist für Blei-Blei-Kollisionen. Prallen zwei Blei-Kerne aufeinander, entsteht für einen winzigen Moment das Quark-Gluon-Plasma — ein Urzustand der Materie wie wenige Millionstel-Sekunden nach dem Urknall: so heiß, dass Quarks und Gluonen nicht mehr in Teilchen gebunden, sondern frei sind. Eine solche Kollision erzeugt tausende Teilchen auf einmal. ALICEs Herzstück, eine 90 m³ große Gas-Kammer (TPC), kann sie alle einzeln auseinanderhalten.'
  },
  LHCB: {
@@ -103,7 +117,8 @@ const INFO_DB = {
   color: '#ff7f0e',
   img: 'The LHCb detector. Courtesy of Kathleen Yurkewicz. (10134715223).jpg',
   cred: 'STFC · CC BY-SA 2.0',
-  stats: [['Länge','21 m'],['Schwerpunktsenergie','√s ≤ 14 TeV'],['Gewicht','5 600 t']],
+  stats: [['Maße','21 × 10 m'],['Schwerpunktsenergie','√s ≤ 14 TeV'],['Gewicht','5 600 t']],
+  src: 'LHCb / CERN · home.cern · Wikipedia',
   text: 'Anders gebaut als die übrigen drei: LHCb umschließt den Kollisionspunkt nicht von allen Seiten, sondern blickt wie eine Kamera nur in eine Richtung — genau dorthin, wo bevorzugt B-Mesonen entstehen (Teilchen mit einem b-Quark). Direkt am Strahl, nur 5 mm entfernt, sitzt der VELO-Detektor; er sieht, dass B-Mesonen erst ein Stück weit fliegen und dann zerfallen. Ziel ist die große Frage, warum das Universum aus Materie und fast keiner Antimaterie besteht (CP-Verletzung).'
  },
 
@@ -114,8 +129,9 @@ const INFO_DB = {
   color: '#58a6ff',
   img: 'First half of the CMS inner tracking barrel. 2006, Courtesy of CERN. (10134648713).jpg',
   cred: 'STFC/CERN · CC BY-SA 2.0',
-  stats: [['Material','Silizium (wie Kamerachips)'],['CMS-Pixel','124 Millionen'],['Präzision','~0,01 mm']],
-  text: 'Die innerste Zwiebelschale: Millionen Silizium-Sensoren — im Kern dieselbe Technik wie der Chip einer Handykamera. Jedes elektrisch geladene Teilchen hinterlässt eine Kette von Treffern, aus der der Computer seine Bahn rekonstruiert. Das Magnetfeld krümmt die Bahn: je gerader die Spur, desto höher der Impuls. Neutrale Teilchen (Photonen, Neutronen) bleiben hier unsichtbar.'
+  stats: [['Aufgabe','Spuren geladener Teilchen'],['Prinzip','Silizium-Sensoren (Kamerachip-Technik)'],['Detektor','alle (innerste Schicht)']],
+  src: 'CERN · home.cern · Wikipedia',
+  text: 'Die innerste Zwiebelschale: Millionen Silizium-Sensoren (CMS allein: 124 Millionen Pixel, Auflösung ~0,01 mm) — im Kern dieselbe Technik wie der Chip einer Handykamera. Jedes elektrisch geladene Teilchen hinterlässt eine Kette von Treffern, aus der der Computer seine Bahn rekonstruiert. Das Magnetfeld krümmt die Bahn: je gerader die Spur, desto höher der Impuls. Neutrale Teilchen (Photonen, Neutronen) bleiben hier unsichtbar.'
  },
  L_EM: {
   title: 'Elektromagnetisches Kalorimeter (ECAL)',
@@ -123,7 +139,8 @@ const INFO_DB = {
   color: '#2ea44f',
   img: 'One Ecal Endcap Dee Installed (2681999640).jpg',
   cred: 'µµ (Flickr) · CC BY-SA 2.0',
-  stats: [['CMS-Kristalle','76 000 × PbWO₄'],['Stoppt','e⁻, e⁺, γ'],['Prinzip','Energie → Lichtblitz']],
+  stats: [['Aufgabe','stoppt Elektronen & Photonen'],['Prinzip','Energie → Lichtblitz'],['Detektor','ATLAS, CMS']],
+  src: 'CERN · home.cern · Wikipedia',
   text: 'Hier endet die Reise für Elektronen und Photonen: 76 000 Bleiwolframat-Kristalle (CMS) — glasklar, aber schwerer als Eisen. Schlägt ein Teilchen ein, erzeugt es einen winzigen Lichtblitz, dessen Helligkeit die Energie verrät. Ein Photon erkennt man genau daran, dass es hier Energie hinterlässt, OHNE vorher eine Spur im Tracker zu ziehen.'
  },
  L_HAD: {
@@ -132,7 +149,8 @@ const INFO_DB = {
   color: '#ff7f0e',
   img: 'CMS Hcal 26 01 2007.JPG',
   cred: 'Wikimedia Commons · CC BY-SA 3.0',
-  stats: [['Material','Messing + Szintillator'],['Stoppt','p, n, π — ganze „Jets"'],['Kuriosum','Messing aus Marine-Granathülsen']],
+  stats: [['Aufgabe','stoppt Hadronen (Jets)'],['Prinzip','Teilchenschauer in Messing/Stahl'],['Detektor','ATLAS, CMS']],
+  src: 'CERN · home.cern · Wikipedia',
   text: 'Die dickste Bremsschicht: Platten aus Messing und Stahl, dazwischen Kunststoff, der beim Durchschuss aufleuchtet. Hadronen — Teilchen aus Quarks, wie Protonen und Pionen — zerplatzen hier zu ganzen Teilchen-Schauern („Jets"). Kuriosum: Ein Teil des CMS-Messings wurde aus eingeschmolzenen Granathülsen der russischen Marine gefertigt.'
  },
  L_COIL: {
@@ -141,7 +159,8 @@ const INFO_DB = {
   color: '#8b949e',
   img: 'CERN toroid magnets and endcap.jpg',
   cred: 'M. Formento · CC BY-SA 2.0',
-  stats: [['CMS-Solenoid','3,8 T ≈ 100 000 × Erdfeld'],['ATLAS-Toroide','8 Spulen à 25 m'],['Betrieb','supraleitend (−269 °C)']],
+  stats: [['Aufgabe','krümmt alle Teilchenbahnen'],['Prinzip','supraleitende Spule (Solenoid/Toroid)'],['Detektor','CMS, ATLAS']],
+  src: 'CERN · home.cern · Wikipedia',
   text: 'Der Grund, warum alle Spuren gebogen sind: eine supraleitende Riesenspule. CMS hat den stärksten Solenoid-Magneten der Welt (3,8 Tesla), ATLAS das markante achtarmige Toroid-System (Foto). Aus der Krümmung der Bahn berechnet der Computer den Impuls jedes Teilchens — ohne Magnet wüsste man nur die Richtung, nicht die „Wucht".'
  },
  L_MUON: {
@@ -150,7 +169,8 @@ const INFO_DB = {
   color: '#f85149',
   img: 'CMS muon chambers.jpg',
   cred: 'zipckr (Flickr) · CC BY 2.0',
-  stats: [['Position','äußerste Schale'],['CMS-Eisenjoch','12 500 t'],['Goldene Signatur','H→ZZ*→4μ']],
+  stats: [['Aufgabe','weist Myonen nach'],['Prinzip','nur Myonen dringen so weit'],['Detektor','ATLAS, CMS']],
+  src: 'CERN · home.cern · Wikipedia',
   text: 'Alles andere ist längst steckengeblieben — was hier noch ankommt, MUSS ein Myon sein. Deshalb bilden die Myonkammern die äußerste und größte Schale (bei CMS ins 12 500-Tonnen-Eisenjoch eingebaut, das rote „Riesenrad" auf den Fotos). Vier Myonen gleichzeitig sind die goldene Higgs-Signatur — das Myon steht sogar im Namen: Compact MUON Solenoid.'
  },
  L_TPC: {
@@ -159,14 +179,16 @@ const INFO_DB = {
   color: '#e377c2',
   img: 'ALICE TPC.jpg',
   cred: 'A. Saba/CERN · CC BY-SA 3.0',
-  stats: [['Volumen','90 m³ Gas'],['Spuren pro Pb-Pb-Event','bis ~20 000'],['Prinzip','driftende Elektronen → 3D-Bild']],
+  stats: [['Aufgabe','3D-Spurbild dichter Events'],['Prinzip','driftende Elektronen im Gas'],['Detektor','ALICE']],
+  src: 'CERN · home.cern · Wikipedia',
   text: 'Die größte „Gas-Kamera" der Welt: ein Zylinder mit 90 Kubikmetern Gas. Fliegt ein geladenes Teilchen hindurch, schlägt es aus den Gasatomen Elektronen heraus; die driften zu den Endplatten und ergeben ein dreidimensionales Bild der Bahn. Nur so kann ALICE die bis zu 20 000 Spuren einer einzigen Blei-Blei-Kollision entwirren.'
  },
  L_TOF: {
   title: 'TOF — Flugzeit-Detektor',
   sub: 'ALICE · Stoppuhr mit Pikosekunden-Genauigkeit',
   color: '#2ea44f',
-  stats: [['Misst','Ankunftszeit (~10⁻¹² s genau)'],['Verrät','Teilchensorte (π/K/p)'],['Fläche','141 m²']],
+  stats: [['Aufgabe','Teilchensorte (π/K/p)'],['Prinzip','Flugzeit-Messung (~10⁻¹² s)'],['Detektor','ALICE']],
+  src: 'CERN · home.cern · Wikipedia',
   text: 'Eine gigantische Stoppuhr: Der TOF misst auf Billionstel Sekunden genau, WANN ein Teilchen ankommt. Gleiche Bahn, aber später angekommen = schwereres Teilchen. So unterscheidet ALICE Pionen, Kaonen und Protonen — die „Volkszählung" im Quark-Gluon-Plasma.'
  },
  L_VTX: {
@@ -175,7 +197,8 @@ const INFO_DB = {
   color: '#ff7f0e',
   img: 'VELO.jpg',
   cred: 'LHCb Collaboration · CC BY-SA 4.0',
-  stats: [['Abstand zum Strahl','5 mm'],['Sieht','Zerfalls-Vertices'],['B-Mesonen-Flugstrecke','mm bis cm']],
+  stats: [['Aufgabe','Zerfalls-Vertices'],['Prinzip','Silizium, 5 mm vom Strahl'],['Detektor','LHCb']],
+  src: 'CERN · home.cern · Wikipedia',
   text: 'Der Detektor, der dem Kollisionspunkt am nächsten kommt: nur 5 Millimeter. So sieht LHCb, dass B-Mesonen erst ein paar Millimeter weit fliegen und DANN zerfallen — dieser Knick (Sekundär-Vertex) ist ihr Fingerabdruck und der Schlüssel zur Frage, warum es im Universum mehr Materie als Antimaterie gibt.'
  },
  L_RICH: {
@@ -184,7 +207,8 @@ const INFO_DB = {
   color: '#58a6ff',
   img: 'RICH-2.jpg',
   cred: 'LHCb Collaboration · CC BY-SA 4.0',
-  stats: [['Prinzip','Cherenkov-Licht'],['Misst','Geschwindigkeit'],['Unterscheidet','π / K / p']],
+  stats: [['Aufgabe','Teilchensorte (π/K/p)'],['Prinzip','Cherenkov-Lichtkegel'],['Detektor','LHCb']],
+  src: 'CERN · home.cern · Wikipedia',
   text: 'Ist ein Teilchen in einem Medium schneller als das Licht dort, erzeugt es einen Lichtkegel — das optische Gegenstück zum Überschallknall. Aus dem Durchmesser des Lichtrings liest LHCb die Geschwindigkeit ab und bestimmt zusammen mit dem Impuls die Teilchensorte.'
  },
  L_MAGNET: {
@@ -193,8 +217,9 @@ const INFO_DB = {
   color: '#f1e05a',
   img: 'The LHCb magnet. 2008, Courtesy of CERN. (10134714863).jpg',
   cred: 'STFC/CERN · CC BY-SA 2.0',
-  stats: [['Gewicht','1 600 t'],['Biegekraft','4 Tm'],['Zweck','Knick → Impulsmessung']],
-  text: 'Statt einer Spule um alles herum nutzt LHCb einen riesigen Dipolmagneten mitten im Strahlengang: Jede geladene Spur bekommt hier einen Knick. Je kleiner der Knick, desto größer der Impuls — dasselbe Prinzip wie die gekrümmten Spuren in den Ring-Detektoren, nur in Vorwärtsrichtung.'
+  stats: [['Aufgabe','krümmt Bahnen (Impuls)'],['Prinzip','Dipolmagnet im Strahlengang'],['Detektor','LHCb']],
+  src: 'CERN · home.cern · Wikipedia',
+  text: 'Statt einer Spule um alles herum nutzt LHCb einen riesigen Dipolmagneten mitten im Strahlengang (1 600 t, rund 4 Tm Biegekraft): Jede geladene Spur bekommt hier einen Knick. Je kleiner der Knick, desto größer der Impuls — dasselbe Prinzip wie die gekrümmten Spuren in den Ring-Detektoren, nur in Vorwärtsrichtung.'
  }
 };
 
@@ -259,6 +284,8 @@ function showInfo(key){
   `<div class="cv4-info-stat"><span class="cv4-info-stat-l">${l}</span><span class="cv4-info-stat-v" style="color:${d.color}">${v}</span></div>`
  ).join('');
  document.getElementById('info-text').textContent = d.text;
+ const srcEl = document.getElementById('info-src');
+ if(srcEl) srcEl.textContent = d.src ? 'Quelle: ' + d.src : '';
  panel.classList.add('visible');
  if(key.startsWith('L_') && App.setActiveLayer) App.setActiveLayer(key);
 }

@@ -30,6 +30,23 @@ describe('Interaktionen (esbuild-Bundle, jsdom)', () => {
     expect(btn.textContent).toMatch(/Großansicht/);
   });
 
+  it('Info-Panels haben je Kategorie EINHEITLICHE Stat-Struktur + Quelle', () => {
+    const labels = () => [...document.querySelectorAll('#info-stats .cv4-info-stat-l')].map(e => e.textContent);
+    // Schicht zuerst (frischer ATLAS-Event-Display → Mitte = Spurdetektor)
+    $('cv-ev').dispatchEvent(new window.MouseEvent('click', { bubbles: true, clientX: 114, clientY: 90 }));
+    expect(labels()).toEqual(['Aufgabe', 'Prinzip', 'Detektor']);
+    expect($('info-src').textContent).toMatch(/^Quelle:/);
+    clickEl($('hit-sps'));     // Beschleuniger
+    expect(labels()).toEqual(['Umfang', 'Geschwindigkeit', 'In Betrieb seit']);
+    clickEl($('hit-lhc'));     // Beschleuniger (früher abweichend: „Temperatur")
+    expect(labels()).toEqual(['Umfang', 'Geschwindigkeit', 'In Betrieb seit']);
+    clickEl($('hit-atlas'));   // Detektor
+    expect(labels()).toEqual(['Maße', 'Schwerpunktsenergie', 'Gewicht']);
+    clickEl($('hit-lhcb'));    // Detektor (früher abweichend: „Länge")
+    expect(labels()).toEqual(['Maße', 'Schwerpunktsenergie', 'Gewicht']);
+    expect($('info-src').textContent).toMatch(/^Quelle:/);
+  });
+
   it('SVG-Detektor-Klick (ATLAS) öffnet Info-Panel + wählt Detektor', () => {
     clickEl($('hit-atlas'));
     expect($('info-panel').classList.contains('visible')).toBe(true);
