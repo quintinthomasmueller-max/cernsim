@@ -176,7 +176,7 @@
 .cv4-info-src{margin-top:8px;font-size:7.5px;font-family:'Courier New',monospace;color:var(--tx-dim);opacity:.7;line-height:1.4}
 .cv4-pi-btn{background:none;border:1px solid var(--bd);color:var(--blue);border-radius:5px;cursor:pointer;padding:0 6px;font-size:10px;line-height:1.5;vertical-align:middle;margin-left:3px;transition:all .15s}
 .cv4-pi-btn:hover{background:rgba(88,166,255,.12);border-color:var(--blue)}
-.cv4-param-info{max-height:0;overflow:hidden;transition:max-height 0.28s ease,padding 0.28s ease,margin 0.28s ease;font-size:10px;color:var(--tx-dim);line-height:1.6;padding:0 9px;margin:0;background:rgba(14,20,29,0.75);border-left:2px solid var(--bd);border-radius:0 0 6px 6px}
+.cv4-param-info{max-height:0;overflow:hidden;transition:max-height 0.28s ease,padding 0.28s ease,margin 0.28s ease;font-size:10px;color:var(--tx-dim);line-height:1.6;white-space:pre-line;padding:0 9px;margin:0;background:rgba(14,20,29,0.75);border-left:2px solid var(--bd);border-radius:0 0 6px 6px}
 .cv4-param-info.open{max-height:240px;overflow:auto;padding:8px 9px;margin-top:4px}
 
 /* ═══ Responsive / Mobile (Eltern-QR: EINE Seite, am Handy nutzbar) ═══════════ */
