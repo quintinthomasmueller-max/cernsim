@@ -2,7 +2,7 @@
 // INFO PANELS — Overlay für Beschleuniger, Detektoren & Detektor-Schichten.
 // EINHEITLICHE 3-Feld-Stat-Struktur je Kategorie (identische Labels → direkt
 // vergleichbar):
-//   Beschleuniger: [Länge|Umfang, Geschwindigkeit, In Betrieb seit]
+//   Beschleuniger: [Länge/Umfang, Geschwindigkeit, In Betrieb seit]
 //   Detektoren:    [Maße, Schwerpunktsenergie, Gewicht]
 //   Schichten:     [Aufgabe, Prinzip, Detektor]
 // Jeder Eintrag nennt zusätzlich den Bild-Credit (cred) und die Sachquelle (src).
@@ -17,7 +17,7 @@ const INFO_DB = {
   color: '#58a6ff',
   img: 'Linac 4 at CERN.jpg',
   cred: 'M. Brice/CERN · CC BY-SA 4.0',
-  stats: [['Länge','86 m'],['Geschwindigkeit','0 → 52 % c'],['In Betrieb seit','2020']],
+  stats: [['Länge/Umfang','86 m'],['Geschwindigkeit','0 → 52 % c'],['In Betrieb seit','2020']],
   src: 'CERN · home.cern · Wikipedia',
   text: 'LINAC4 ist der erste Beschleuniger der Protonenkette, 86 Meter lang. Er bringt die Teilchen auf 160 MeV, also etwa 52 Prozent der Lichtgeschwindigkeit. Beschleunigt werden zunächst nicht einzelne Protonen, sondern H⁻-Ionen, also ein Proton mit zwei zusätzlichen Elektronen. In dieser Form lässt sich der Strahl leichter bündeln und einspeisen. Beim Übergang zum Booster streift eine dünne Folie die beiden Elektronen ab, sodass nur das Proton übrig bleibt. LINAC4 ist seit 2020 in Betrieb und ersetzte den älteren LINAC2; er liefert etwa doppelt so intensive Strahlen.'
  },
@@ -27,7 +27,7 @@ const INFO_DB = {
   color: '#e377c2',
   img: 'Linac 3 at CERN.jpg',
   cred: 'M. Brice/CERN · CC BY-SA 4.0',
-  stats: [['Länge','~30 m'],['Geschwindigkeit','0 → 9 % c'],['In Betrieb seit','1994']],
+  stats: [['Länge/Umfang','~30 m'],['Geschwindigkeit','0 → 9 % c'],['In Betrieb seit','1994']],
   src: 'CERN · home.cern · Wikipedia',
   text: 'LINAC3 ist das Gegenstück zu LINAC4 für den Schwerionen-Betrieb. In einer heißen Quelle werden Bleiatome zunächst eines Teils ihrer Elektronen beraubt (Pb²⁹⁺) und auf 4,2 MeV pro Nukleon beschleunigt, etwa 9 Prozent der Lichtgeschwindigkeit. Dass die Ionen so langsam bleiben, liegt an ihrer Masse: Ein Bleikern besteht aus 208 Nukleonen und ist über 200-mal schwerer als ein Proton. Anschließend sammelt der Ring LEIR die Ionen ein.'
  },
@@ -37,7 +37,7 @@ const INFO_DB = {
   color: '#58a6ff',
   img: 'The Proton Synchrotron Booster in its tunnel.jpg',
   cred: 'Loïez, Brice/CERN · CC BY 4.0',
-  stats: [['Umfang','4 × 157 m'],['Geschwindigkeit','52 → 95 % c'],['In Betrieb seit','1972']],
+  stats: [['Länge/Umfang','4 × 157 m'],['Geschwindigkeit','52 → 95 % c'],['In Betrieb seit','1972']],
   src: 'CERN · home.cern · Wikipedia',
   text: 'Der Proton Synchrotron Booster ist der erste Ringbeschleuniger der Kette. Er besteht aus vier exakt übereinander gestapelten Ringen, die parallel arbeiten. Der Booster hebt die Protonen von 160 MeV auf 2 GeV und damit von 52 auf 95 Prozent der Lichtgeschwindigkeit. Ab hier wächst die Geschwindigkeit kaum noch: Fast die gesamte zugeführte Energie steckt nun in der Bewegungsenergie der Teilchen, nicht mehr in höherer Geschwindigkeit. Das ist eine Folge der Relativitätstheorie.'
  },
@@ -47,7 +47,7 @@ const INFO_DB = {
   color: '#e377c2',
   img: 'Low Energy Ion Ring (LEIR).jpg',
   cred: 'F. Stollberger · CC BY-SA 4.0',
-  stats: [['Umfang','78 m'],['Geschwindigkeit','9 → 37 % c'],['In Betrieb seit','2005']],
+  stats: [['Länge/Umfang','78 m'],['Geschwindigkeit','9 → 37 % c'],['In Betrieb seit','2005']],
   src: 'CERN · home.cern · Wikipedia',
   text: 'Der Low Energy Ion Ring ist der Sammelring für Blei-Ionen, 2005 aus dem früheren Antiprotonen-Ring LEAR umgebaut. Er nimmt die noch dünnen Ionenportionen von LINAC3 auf und bündelt sie zu dichten Paketen. Dazu dient die Elektronenkühlung: Ein paralleler Elektronenstrahl gleicher Geschwindigkeit dämpft die ungeordnete Bewegung der Ionen und macht den Strahl dadurch schärfer. Danach beschleunigt LEIR die Ionen auf 72 MeV pro Nukleon (37 Prozent der Lichtgeschwindigkeit) und gibt sie an das PS weiter.'
  },
@@ -57,7 +57,7 @@ const INFO_DB = {
   color: '#2ea44f',
   img: 'https://cds.cern.ch/images/CERN-PHOTO-201405-164-2/file?size=large',
   cred: 'CERN (home.cern) · CERN-PHOTO-201405-164-2',
-  stats: [['Umfang','628 m'],['Geschwindigkeit','95 → 99,94 % c'],['In Betrieb seit','1959']],
+  stats: [['Länge/Umfang','628 m'],['Geschwindigkeit','95 → 99,94 % c'],['In Betrieb seit','1959']],
   src: 'CERN · home.cern · Wikipedia',
   text: 'Das Proton Synchrotron ist seit 1959 ununterbrochen in Betrieb und damit der älteste noch aktive Ring am CERN. Es beschleunigt die Protonen auf 26 GeV. Die Geschwindigkeit steigt dabei nur von 95 auf 99,94 Prozent der Lichtgeschwindigkeit, die Energie aber um mehr als das Zehnfache. Hier erhält der Strahl auch seine spätere Struktur: Das PS formt aus wenigen Paketen einen Batch von 72 Bunches im Abstand von je 25 Nanosekunden. Diese Bunches sind die Pakete, die später im LHC zur Kollision gebracht werden.'
  },
@@ -67,7 +67,7 @@ const INFO_DB = {
   color: '#ff7f0e',
   img: 'Beamfeedingams.JPG',
   cred: 'Gillis · CC BY 3.0',
-  stats: [['Umfang','6,9 km'],['Geschwindigkeit','99,94 → 99,9998 % c'],['In Betrieb seit','1976']],
+  stats: [['Länge/Umfang','6,9 km'],['Geschwindigkeit','99,94 → 99,9998 % c'],['In Betrieb seit','1976']],
   src: 'CERN · home.cern · Wikipedia',
   text: 'Das Super Proton Synchrotron ist die letzte Stufe vor dem LHC. Es bringt die Protonen auf 450 GeV. Die Geschwindigkeit steigt dabei nur von 99,94 auf 99,9998 Prozent der Lichtgeschwindigkeit, die Energie aber auf das Zwanzigfache. Von hier werden die fertigen Bunch-Züge über die Transfertunnel TI 2 und TI 8 in beide Umlaufrichtungen in den LHC eingeschossen. 1983 gelang am SPS die Entdeckung der W- und Z-Bosonen, ausgezeichnet mit dem Nobelpreis 1984.'
  },
@@ -77,7 +77,7 @@ const INFO_DB = {
   color: '#58a6ff',
   img: 'LHC dipole magnets.jpg',
   cred: 'alpinethread · CC BY-SA 2.0',
-  stats: [['Umfang','26,7 km'],['Geschwindigkeit','99,9998 → 99,999999 % c'],['In Betrieb seit','2008']],
+  stats: [['Länge/Umfang','26,7 km'],['Geschwindigkeit','99,9998 → 99,999999 % c'],['In Betrieb seit','2008']],
   src: 'CERN · home.cern · Wikipedia',
   text: 'Im Large Hadron Collider laufen alle Strahlen zusammen: 27 Kilometer Umfang, rund 100 Meter unter der Erde. Bei 6,8 TeV sind die Protonen nur noch etwa 3 Meter pro Sekunde langsamer als das Licht. 1232 supraleitende Dipolmagnete mit 8,3 Tesla, gekühlt auf 1,9 Kelvin und damit kälter als der Weltraum, halten die zwei Strahlen auf ihrer Kreisbahn. Sie umrunden den Ring rund 11 245-mal pro Sekunde; die Animation zeigt das stark verlangsamt. An vier Punkten kreuzen sich die Strahlen und kollidieren mit einer Schwerpunktsenergie von √s = 13,6 TeV. 2012 führte das zur Entdeckung des Higgs-Bosons.'
  },

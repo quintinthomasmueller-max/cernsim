@@ -37,9 +37,9 @@ describe('Interaktionen (esbuild-Bundle, jsdom)', () => {
     expect(labels()).toEqual(['Aufgabe', 'Prinzip', 'Detektor']);
     expect($('info-src').textContent).toMatch(/^Quelle:/);
     clickEl($('hit-sps'));     // Beschleuniger
-    expect(labels()).toEqual(['Umfang', 'Geschwindigkeit', 'In Betrieb seit']);
+    expect(labels()).toEqual(['Länge/Umfang', 'Geschwindigkeit', 'In Betrieb seit']);
     clickEl($('hit-lhc'));     // Beschleuniger (früher abweichend: „Temperatur")
-    expect(labels()).toEqual(['Umfang', 'Geschwindigkeit', 'In Betrieb seit']);
+    expect(labels()).toEqual(['Länge/Umfang', 'Geschwindigkeit', 'In Betrieb seit']);
     clickEl($('hit-atlas'));   // Detektor
     expect(labels()).toEqual(['Maße', 'Schwerpunktsenergie', 'Gewicht']);
     clickEl($('hit-lhcb'));    // Detektor (früher abweichend: „Länge")
