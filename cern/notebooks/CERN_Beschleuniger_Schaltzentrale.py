@@ -564,7 +564,7 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
   </div>
   <div class=&quot;cv4-sig-row&quot;>
    <span>Signifikanz: <strong class=&quot;lbl-sig&quot; id=&quot;lbl-sig&quot;>0.00 σ</strong></span>
-   <span class=&quot;cv4-sig-status&quot; id=&quot;lbl-sig-status&quot;>Sammle Statistik …</span>
+   <span class=&quot;cv4-sig-status&quot; id=&quot;lbl-sig-status&quot;>Noch keine Kollisionen</span>
   </div>
   <div class=&quot;cv4-sigbar&quot;><div id=&quot;sig-bar&quot;></div></div>
   <div class=&quot;cv4-histwrap&quot;><canvas id=&quot;cv-hist&quot; style=&quot;width:100%;height:100%&quot;></canvas></div>
@@ -2082,6 +2082,13 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
     }
     return _lhcbPool;
   }
+  var _lhcbPoolPbPb = null;
+  function lhcbPoolPbPb() {
+    if (_lhcbPoolPbPb) return _lhcbPoolPbPb;
+    _lhcbPoolPbPb = [];
+    for (let i = 0; i < 1400; i++) _lhcbPoolPbPb.push(4.6 + Math.random() * 1.4);
+    return _lhcbPoolPbPb;
+  }
   var G = (v, m, sg) => Math.exp(-0.5 * ((v - m) / sg) ** 2);
   var Z0 = { key: &quot;Z0&quot;, m: 91.19, hw: 6, sg: 3, thr: 0.9, amp: 1, label: &quot;Z\u2070&quot; };
   var JPSI = { key: &quot;Jpsi&quot;, m: 3.097, hw: 0.35, sg: 0.1, thr: 0.4, amp: 0.92, label: &quot;J/\u03C8&quot; };
@@ -2240,21 +2247,21 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
         },
         PbPb: {
           channel: &quot;B&quot;,
-          pool: () => lhcbPool(),
+          pool: () => lhcbPoolPbPb(),
           range: [4.6, 6],
           bins: 50,
           bg: (v) => 0.25,
-          reson: [B0],
+          reson: [],
           primary: &quot;B0&quot;,
           disco: false,
           rate: 0.05,
           target: 600,
           title: &quot;LHCb \xB7 spezialisiertes Vorw\xE4rtsprogramm (Pb-Pb)&quot;,
-          sub: &quot;kein Standard-Schwerionen-Collider-Detektor&quot;,
-          prov: &quot;B-Masse: kalibrierte Simulation \xB7 Vertex: illustrativ&quot;,
-          real: &quot;LHCb misst Pb-Pb nur im Vorw\xE4rts-/Fixed-Target-Modus (SMOG) \u2014 geringe Akzeptanz&quot;,
+          sub: &quot;kein Standard-Schwerionen-Collider-Detektor \u2014 kein sauberes B\u2070-Signal&quot;,
+          prov: &quot;Pb-Pb-Vorw\xE4rts/SMOG: kein Standard-B\u2070-Kollider-Spektrum (didaktische Simulation)&quot;,
+          real: &quot;LHCb misst Pb-Pb nur im Vorw\xE4rts-/Fixed-Target-Modus (SMOG) \u2014 geringe Akzeptanz, kein B\u2070\u2192h\u207Ah\u207B-Peak&quot;,
           discoMsg: &quot;&quot;,
-          note: &quot;LHCb ist im Pb-Pb-Collider-Lauf nur eingeschr\xE4nkt aktiv (spezialisiertes Vorw\xE4rts-/SMOG-Programm).&quot;
+          note: &quot;LHCb ist im Pb-Pb-Collider-Lauf nur eingeschr\xE4nkt aktiv (spezialisiertes Vorw\xE4rts-/SMOG-Programm) \u2014 im Standard-Kanal nur Untergrund.&quot;
         }
       }
     }
@@ -2557,7 +2564,7 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
     let sigBar = $(&quot;sig-bar&quot;), sigStatus = $(&quot;lbl-sig-status&quot;);
     sigBar.style.width = (specialized || notProd ? 0 : Math.min(100, sig / 5 * 100)) + &quot;%&quot;;
     if (sig === 0) {
-      sigStatus.innerText = specialized ? &quot;Spezialisiert \xB7 keine Standard-Entdeckung&quot; : notProd ? &quot;Inbetriebnahme \xB7 &quot; + prim.label + &quot;-Rate zu gering&quot; : &quot;Sammle Statistik \u2026&quot;;
+      sigStatus.innerText = specialized ? &quot;Spezialisiert \xB7 keine Standard-Entdeckung&quot; : notProd ? &quot;Inbetriebnahme \xB7 &quot; + prim.label + &quot;-Rate zu gering&quot; : &quot;Noch keine Kollisionen&quot;;
       sigStatus.style.color = &quot;#a3b4c6&quot;;
       sigBar.style.background = &quot;#3a4656&quot;;
     } else if (sp.reference) {
@@ -2580,9 +2587,10 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
     let statusTxt;
     if (specialized) statusTxt = sp.note;
     else if (notProd) statusTxt = prim.label + &quot;-Produktionsrate bei &quot; + App.de(s3.paramEnergy, 2) + &quot; TeV pro Strahl zu gering f\xFCr eine Messung \u2014 wird ab ~&quot; + App.de(prim.thr, 1) + &quot; TeV pro Strahl sichtbar (Raten-Modell).&quot;;
+    else if (sig <= 0) statusTxt = &quot;Noch keine Kollisionen aufgezeichnet \u2014 Strahl in Stable Beams bringen (F\xFCllen \u2192 Ramp \u2192 Squeeze) und Datennahme starten.&quot;;
     else if (sp.supp) statusTxt = &quot;QGP-Unterdr\xFCckung (Modell): R_AA \u03A5(1S) \u2248 0,45, sequenziell \xB7 Signifikanz &quot; + App.de(sig, 1) + &quot; \u03C3 / 5 \u03C3.&quot;;
     else if (sp.reference) statusTxt = &quot;p-p-Referenz: unverdr\xE4ngte Quarkonia (Vakuum). Die QGP-Unterdr\xFCckung (R_AA < 1) erscheint erst im Pb-Pb-Lauf.&quot;;
-    else statusTxt = &quot;Sammle Statistik (Signifikanz &quot; + App.de(sig, 1) + &quot; \u03C3 von 5,0 \u03C3).&quot;;
+    else statusTxt = &quot;Datennahme l\xE4uft \u2014 Signifikanz &quot; + App.de(sig, 1) + &quot; \u03C3 von 5,0 \u03C3.&quot;;
     const elStat = $(&quot;sp-status&quot;);
     if (elStat) elStat.textContent = statusTxt;
     let realTxt = &quot;\u2192 &quot; + sp.real;
