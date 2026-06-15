@@ -14,7 +14,7 @@ beforeEach(() => {
   App.resetSpectrumData();
   s.selDet = 'ATLAS';        // Z⁰-Schwelle 0.9 TeV, target = 200, channel = 2mu (Faktor 5)
   s.isIon = false;
-  s.paramEnergy = 6.8;       // weit über allen Schwellen → prodVis = 1
+  s.paramEnergy = 6.8;       // Arbeitspunkt weit über allen Schwellen → prodVis = 1
   s.paramIntensity = 1.0;
   s.paramBetaStar = 1.0;
 });
@@ -46,6 +46,17 @@ describe('Energie formt das Spektrum (Erzeugungs-Schwellen)', () => {
     s.paramEnergy = 4.0; const e2012 = App.getSignificance();
     expect(e2012).toBeGreaterThan(0);            // historisch ehrlich: bei √s=8 TeV produzierbar
     s.paramEnergy = 6.8; expect(App.getSignificance()).toBeGreaterThan(e2012); // volle Rate Run 3
+  });
+  it('Signifikanz hängt am Arbeitspunkt, nicht an der Momentan-Energie (Mehr-Fill-Entdeckung überlebt den Strahl-Dump)', () => {
+    // Arbeitspunkt pp = paramEnergy 6,8 TeV; während der Datennahme gilt lhcEnergy = 6800.
+    s.selDet = 'ATLAS'; s.collStore.ATLAS = 400; s.paramEnergy = 6.8;
+    s.lhcEnergy = 6800; const taking = App.getSignificance();
+    expect(taking).toBeGreaterThan(4);
+    // Strahl-Dump zwischen zwei Füllungen: lhcEnergy fällt auf Injektion (450), die DATEN
+    // bleiben erhalten (resetLHC keepData). Die erreichte Signifikanz darf NICHT auf 0
+    // zurückfallen — sonst zerstörte ein momentaner Energie-Bezug die Mehr-Fill-Entdeckung.
+    s.lhcEnergy = 450;
+    expect(App.getSignificance()).toBeCloseTo(taking, 6);
   });
   it('Signifikanz steigt monoton mit der Energie über der Schwelle', () => {
     s.selDet = 'ATLAS'; s.collStore.ATLAS = 200;
@@ -101,6 +112,32 @@ describe('Gleichzeitige Datennahme: alle Experimente nehmen denselben Fill auf',
     App.liveDetectors().forEach(d => { s.collStore[d] += dCand(d); });
     for (const d of ['ATLAS', 'CMS', 'ALICE', 'LHCB']) expect(s.collStore[d]).toBeGreaterThan(0);
     expect(s.collStore.ATLAS).toBeGreaterThan(s.collStore.CMS);     // Z⁰ häufiger als Higgs
+  });
+});
+
+describe('Strahlwahl formt die Balken (nicht nur Text)', () => {
+  // füllt massStore[det] für (Strahl, Energie) und liefert den Peak-Anteil im Fenster
+  function peakFrac(det, ion, energyTeV, center, hw) {
+    App.resetSpectrumData();
+    s.selDet = det; s.isIon = ion; s.paramEnergy = energyTeV;
+    s.paramIntensity = 1.5; s.paramBetaStar = 0.5;
+    for (let i = 0; i < 3000; i++) App.accumulateStatsFor(det, 1);
+    const data = s.massStore[det];
+    return data.filter(m => Math.abs(m - center) <= hw).length / Math.max(1, data.length);
+  }
+  it('ATLAS-Z⁰ ist die Standardkerze: pp und Pb-Pb zeigen DENSELBEN Peak (EW-blind, gewollt)', () => {
+    const pp = peakFrac('ATLAS', false, 6.8, 91.19, 6);
+    const pb = peakFrac('ATLAS', true, 2.7, 91.19, 6);
+    expect(pp).toBeGreaterThan(0.5);            // klarer Z⁰-Peak
+    expect(pb / pp).toBeGreaterThan(0.9);       // in Pb-Pb unverändert (Standardkerze)
+    expect(pb / pp).toBeLessThan(1.1);
+  });
+  it('LHCb zeigt den B⁰-Peak NUR in pp; im Pb-Pb-Lauf (spezialisiert) bleibt nur Untergrund', () => {
+    const pp = peakFrac('LHCB', false, 6.8, 5.279, 0.18);
+    const pb = peakFrac('LHCB', true, 2.7, 5.279, 0.18);
+    expect(pp).toBeGreaterThan(0.5);            // pp: klarer B⁰-Peak
+    expect(pb).toBeLessThan(0.35);              // Pb-Pb: flacher Untergrund (kein Peak)
+    expect(pp).toBeGreaterThan(pb * 1.7);       // sichtbar unterschiedliche Balken
   });
 });
 

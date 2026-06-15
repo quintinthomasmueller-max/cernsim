@@ -4,7 +4,7 @@ name: Deploy simulator to GitHub Pages
 # self-contained index.html) und veröffentlicht sie über GitHub Pages.
 on:
   push:
-    branches: [main]
+    branches: [main, feat/github-pages]
   workflow_dispatch:
 
 permissions:

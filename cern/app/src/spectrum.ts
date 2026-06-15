@@ -34,6 +34,16 @@ function lhcbPool() {
  }
  return _lhcbPool;
 }
+// LHCb im Pb-Pb-Lauf: KEIN Standard-B⁰→h⁺h⁻-Kollider-Spektrum. LHCb nimmt Schwerionen
+// nur eingeschränkt im Vorwärts-/Fixed-Target-Modus (SMOG, geringe Akzeptanz) auf — der
+// saubere B⁰-Peak fehlt, es bleibt nur kombinatorischer Untergrund (didaktische Sim).
+// Eigener Pool, damit sich das Pb-Pb-Histogramm sichtbar vom pp-B⁰-Peak unterscheidet.
+let _lhcbPoolPbPb = null;
+function lhcbPoolPbPb() {
+ if (_lhcbPoolPbPb) return _lhcbPoolPbPb;
+ _lhcbPoolPbPb = []; for (let i = 0; i < 1400; i++) _lhcbPoolPbPb.push(4.6 + Math.random() * 1.4);  // nur komb. Untergrund
+ return _lhcbPoolPbPb;
+}
 
 const G = (v, m, sg) => Math.exp(-0.5 * ((v - m) / sg) ** 2);
 
@@ -142,13 +152,13 @@ const DETSPEC = {
     discoMsg: "5σ: CP-Verletzung etabliert!"
    },
    PbPb: {
-    channel: "B", pool: () => lhcbPool(), range: [4.6, 6.0], bins: 50,
-    bg: v => 0.25, reson: [B0], primary: "B0", disco: false, rate: 0.05, target: 600,
+    channel: "B", pool: () => lhcbPoolPbPb(), range: [4.6, 6.0], bins: 50,
+    bg: v => 0.25, reson: [], primary: "B0", disco: false, rate: 0.05, target: 600,
     title: "LHCb · spezialisiertes Vorwärtsprogramm (Pb-Pb)",
-    sub: "kein Standard-Schwerionen-Collider-Detektor",
-    prov: "B-Masse: kalibrierte Simulation · Vertex: illustrativ",
-    real: "LHCb misst Pb-Pb nur im Vorwärts-/Fixed-Target-Modus (SMOG) — geringe Akzeptanz",
-    discoMsg: "", note: "LHCb ist im Pb-Pb-Collider-Lauf nur eingeschränkt aktiv (spezialisiertes Vorwärts-/SMOG-Programm)."
+    sub: "kein Standard-Schwerionen-Collider-Detektor — kein sauberes B⁰-Signal",
+    prov: "Pb-Pb-Vorwärts/SMOG: kein Standard-B⁰-Kollider-Spektrum (didaktische Simulation)",
+    real: "LHCb misst Pb-Pb nur im Vorwärts-/Fixed-Target-Modus (SMOG) — geringe Akzeptanz, kein B⁰→h⁺h⁻-Peak",
+    discoMsg: "", note: "LHCb ist im Pb-Pb-Collider-Lauf nur eingeschränkt aktiv (spezialisiertes Vorwärts-/SMOG-Programm) — im Standard-Kanal nur Untergrund."
    }
   }
  }
@@ -171,6 +181,16 @@ function primaryReson(sp) { return sp.reson.find(r => r.key === sp.primary) || s
 // ── Strahl-Konfiguration → Sichtbarkeit einer Resonanz ──────────────────────
 // energyVis: 0 unter der Erzeugungs-Schwelle, weicher Anstieg auf 1 darüber.
 // prodVis:  Erzeugbarkeit (nur energieabhängig). drawVis: zusätzlich R_AA (QGP).
+//
+// GEGATET WIRD AUF DEN ARBEITSPUNKT (paramEnergy), die Energie, mit der DIESER
+// Lauf kollidiert — NICHT die Momentan-Energie der Rampe. Gemessen wird nur bei
+// Stable Beams (lhcEnergy == paramEnergy); zwischen Füllungen (Strahl-Dump →
+// lhcEnergy fällt auf Injektion, Daten bleiben aber erhalten, s. resetLHC(keepData))
+// muss die bereits erreichte Signifikanz erhalten bleiben — ein momentaner
+// Energie-Bezug würde eine laufende Mehr-Fill-Entdeckung fälschlich auf 0 σ
+// zurücksetzen. Ein Pilot-Lauf (Arbeitspunkt 0,45 TeV) zeigt daher korrekt nur
+// Untergrund; die „kein Signal vor der Rampe"-Ehrlichkeit liefert der Status-Text
+// (leeres Histogramm + „Noch keine Kollisionen"), nicht ein Umschalten der Physik.
 function energyVis(thr) { const span = 0.15 * thr + 0.30; return Math.max(0, Math.min(1, (s.paramEnergy - thr) / span)); }
 function prodVis(r) { return energyVis(r.thr); }
 function drawVis(r) { return prodVis(r) * (r.raa != null ? r.raa : 1); }
@@ -473,7 +493,7 @@ function drawHist() {
  if (sig === 0) {
   sigStatus.innerText = specialized ? "Spezialisiert · keine Standard-Entdeckung"
    : notProd ? "Inbetriebnahme · " + prim.label + "-Rate zu gering"
-   : "Sammle Statistik …";
+   : "Noch keine Kollisionen";
   sigStatus.style.color = "#a3b4c6"; sigBar.style.background = "#3a4656";
  } else if (sp.reference) {
   sigStatus.innerText = "p-p-Referenz (Vakuum) · keine Entdeckung";
@@ -493,9 +513,10 @@ function drawHist() {
  let statusTxt;
  if (specialized)        statusTxt = sp.note;
  else if (notProd)       statusTxt = prim.label + "-Produktionsrate bei " + App.de(s.paramEnergy,2) + " TeV pro Strahl zu gering für eine Messung — wird ab ~" + App.de(prim.thr,1) + " TeV pro Strahl sichtbar (Raten-Modell).";
+ else if (sig <= 0)      statusTxt = "Noch keine Kollisionen aufgezeichnet — Strahl in Stable Beams bringen (Füllen → Ramp → Squeeze) und Datennahme starten.";
  else if (sp.supp)       statusTxt = "QGP-Unterdrückung (Modell): R_AA Υ(1S) ≈ 0,45, sequenziell · Signifikanz " + App.de(sig,1) + " σ / 5 σ.";
  else if (sp.reference)  statusTxt = "p-p-Referenz: unverdrängte Quarkonia (Vakuum). Die QGP-Unterdrückung (R_AA < 1) erscheint erst im Pb-Pb-Lauf.";
- else                    statusTxt = "Sammle Statistik (Signifikanz " + App.de(sig,1) + " σ von 5,0 σ).";
+ else                    statusTxt = "Datennahme läuft — Signifikanz " + App.de(sig,1) + " σ von 5,0 σ.";
  const elStat = $("sp-status"); if (elStat) elStat.textContent = statusTxt;
  let realTxt = "→ " + sp.real;
  if (sp.channel === "4l") realTxt += " · Higgs-Fenster (120–130 GeV): " + s.higgsCands + " 4ℓ-Kandidaten";
