@@ -292,7 +292,7 @@ function drawInjector(g) {
   (INJ.leir     || []).forEach(d => addP(d, LEIRc, 1.5));
   (INJ.transfer || []).forEach(d => addP(d, TR, 1.4));
   (INJ.accel    || []).forEach(d => addP(d, ACC, 2.4));   // Linac3/Linac4 zuletzt = obenauf
-  const lc = { PS: PSc, PSB: PSBc, LEIR: LEIRc, LINAC3: ACC, LINAC4: ACC };
+  const lc = { PS: PSc, Booster: PSBc, LEIR: LEIRc, LINAC3: ACC, LINAC4: ACC };
   (INJ.labels || []).forEach(l => det.appendChild(label(l.x, l.y, l.t,
     { fill: lc[l.t] || '#fff', 'font-size': FS, 'font-family': 'monospace', 'text-anchor': 'middle', 'font-weight': 'bold' })));
   g.appendChild(det);

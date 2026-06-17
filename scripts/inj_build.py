@@ -93,11 +93,11 @@ def build():
 
     # ── Verbindungs-Snap (Vorbereitung Batch-Animation in der Realansicht) ──
     # Gerade Segmente als [Kategorie, A, B] (Widget-Koord); A/B werden in-place
-    # geschnappt: (1) Knoten <NODE_TOL zusammen auf ihren Schwerpunkt -> Mikro-Luecken
-    # zu + EIN sauberer Knotenpunkt; (2) Endpunkte <=RING_TOL an einer Ringkante exakt
-    # radial aufsetzen -> Linie trifft Kreis ohne Luecke/Ueberstand; (3) danach zu
-    # kurze Segmente verwerfen (Zeichen-Stummel). Freie Linac-Quellen (weit von jedem
-    # Ring) bleiben unberuehrt -> Position/Form aendern sich nicht.
+    # geschnappt: (1) NUR echte Duplikate (<NODE_TOL, Rundungs-Mikroluecken) auf ihren
+    # Schwerpunkt -> reale Knicke bleiben (z.B. die zwei 35-Grad-Winkel nach Linac4);
+    # (2) jedes Segment, das einen Ring erreicht/kreuzt, am EINTRITTSpunkt stoppen
+    # (Tangente/Beruehrung, NIE Sekante quer durch); knapp daneben -> radial aufsetzen;
+    # (3) echte Null-Laengen verwerfen. Freie Linac-Quellen bleiben unberuehrt.
     def ep(e):
         return [T(e.point(0).x, e.point(0).y), T(e.point(1).x, e.point(1).y)]
     segs = [['accel', l3a, l3b], ['accel'] + ep(P[ID_LINAC4]),         # Linac3 (34 m), Linac4
@@ -109,10 +109,10 @@ def build():
         return ((min(xs) + max(xs)) / 2, (min(ys) + max(ys)) / 2, (max(xs) - min(xs) + max(ys) - min(ys)) / 4)
     RINGS = [ring_of([ID_PS], 24), ring_of([ID_PSB], 24), ring_of(LEIR_IDS, 1)]
 
-    NODE_TOL, RING_TOL = 0.7, 0.30
+    NODE_TOL, RING_TOL = 0.12, 0.40
     refs = [(si, j) for si in range(len(segs)) for j in (1, 2)]        # (Segment, A=1/B=2)
     seen = [False] * len(refs)
-    for a in range(len(refs)):                                        # (1) Knoten-Cluster
+    for a in range(len(refs)):                                        # (1) nur Duplikate mergen
         if seen[a]: continue
         grp = [a]; seen[a] = True; pa = segs[refs[a][0]][refs[a][1]]
         for b in range(a + 1, len(refs)):
@@ -122,14 +122,38 @@ def build():
         cx = sum(segs[refs[g][0]][refs[g][1]][0] for g in grp) / len(grp)
         cy = sum(segs[refs[g][0]][refs[g][1]][1] for g in grp) / len(grp)
         for g in grp: segs[refs[g][0]][refs[g][1]] = (cx, cy)
-    for s in segs:                                                    # (2) Ring-Anschluss
-        for j in (1, 2):
-            x, y = s[j]
-            for cx, cy, r in RINGS:
-                d = math.hypot(x - cx, y - cy)
-                if d > 1e-6 and abs(d - r) <= RING_TOL:
-                    s[j] = (cx + (x - cx) / d * r, cy + (y - cy) / d * r); break
-    segs = [s for s in segs if math.hypot(s[1][0] - s[2][0], s[1][1] - s[2][1]) > 0.15]   # (3)
+
+    def stop_at_ring(p_keep, p_end):
+        # NUR p_end an die Ringoberflaeche ziehen, lokal. Es zaehlt ein Ring nur, wenn
+        # p_end an/in ihm liegt (de <= r+RING_TOL) -> ferne Enden/freie Quellen bleiben.
+        #  - Segment kreuzt den Ring  -> p_end auf den ERSTEN Eintritt von p_keep aus
+        #    (min t): die Linie stoppt, wo sie den Ring zuerst beruehrt (Tangente, keine
+        #    Sekante quer durch),
+        #  - kein Schnitt, aber p_end knapp neben der Kante -> radial aufsetzen (Luecke zu).
+        # Es gewinnt der Ring mit der kleinsten Verschiebung.
+        best = None
+        for cx, cy, r in RINGS:
+            ex, ey = p_end[0] - cx, p_end[1] - cy; de = math.hypot(ex, ey)
+            if de > r + RING_TOL:                                    # p_end nicht am Ring -> ignorieren
+                continue
+            dx, dy = p_end[0] - p_keep[0], p_end[1] - p_keep[1]      # p_keep(t=0) -> p_end(t=1)
+            fx, fy = p_keep[0] - cx, p_keep[1] - cy
+            A = dx * dx + dy * dy; B = 2 * (fx * dx + fy * dy); C = fx * fx + fy * fy - r * r
+            disc = B * B - 4 * A * C
+            ts = [t for t in ((-B - math.sqrt(disc)) / (2 * A), (-B + math.sqrt(disc)) / (2 * A)) if 0 <= t <= 1] if (A > 1e-9 and disc >= 0) else []
+            if ts:                                                   # erster Ring-Eintritt von p_keep aus
+                t = min(ts); cand = (p_keep[0] + t * dx, p_keep[1] + t * dy)
+            elif de > 1e-6:                                          # kein Schnitt -> radial auf die Kante
+                cand = (cx + ex / de * r, cy + ey / de * r)
+            else:
+                continue
+            mv = math.hypot(cand[0] - p_end[0], cand[1] - p_end[1])
+            if best is None or mv < best[0]: best = (mv, cand)
+        return best[1] if best else p_end
+
+    for s in segs:                                                   # (2) Ring-Eintritt/Tangente
+        s[1] = stop_at_ring(s[2], s[1]); s[2] = stop_at_ring(s[1], s[2])
+    segs = [s for s in segs if math.hypot(s[1][0] - s[2][0], s[1][1] - s[2][1]) > 0.05]   # (3)
 
     # TT2 (C) wird NICHT mehr gezeichnet: die echte PS->SPS-Trasse liegt schon als
     # geo.gen.js-'tt' (gruen) im Vollbild. C dient hier nur als Rotations-Anker (oben,
@@ -141,7 +165,8 @@ def build():
         'accel': [seg(s[1], s[2]) for s in segs if s[0] == 'accel'],
         'transfer': [seg(s[1], s[2]) for s in segs if s[0] == 'transfer'],
     }
-    # Labels (PS/PSB/LEIR/LINAC3/LINAC4)
+    # Labels (PS/Booster/LEIR/LINAC3/LINAC4). PSB wird als "Booster" beschriftet
+    # (gelaeufiger Name, didaktisch klarer); Farbzuordnung in geo.ts#drawInjector.
     cw = lambda e: T((e.bbox()[0] + e.bbox()[2]) / 2, (e.bbox()[1] + e.bbox()[3]) / 2)
     psbc = cw(P[ID_PSB])
     lx = [cw(P[i])[0] for i in LEIR_IDS]; ly = [cw(P[i])[1] for i in LEIR_IDS]
@@ -149,7 +174,7 @@ def build():
     l4s = T(P[ID_LINAC4].point(1).x, P[ID_LINAC4].point(1).y)
     INJ['labels'] = [
         {'t': 'PS', 'x': round(Wc[0], 1), 'y': round(Wc[1] + 2.5, 1)},
-        {'t': 'PSB', 'x': round(psbc[0], 1), 'y': round(psbc[1] - 2.2, 1)},
+        {'t': 'Booster', 'x': round(psbc[0] - 2.1, 1), 'y': round(psbc[1] - 0.3, 1)},
         {'t': 'LEIR', 'x': round(leirc[0] + 1.5, 1), 'y': round(leirc[1] + 0.5, 1)},
         {'t': 'LINAC3', 'x': round(l3a[0], 1), 'y': round(l3a[1] + 0.6, 1)},
         {'t': 'LINAC4', 'x': round(l4s[0], 1), 'y': round(l4s[1] + 0.6, 1)},
