@@ -277,19 +277,20 @@ function padToAspect(pts, aspect, m) {
 function drawInjector(g) {
   // Hand-Lageplan (cern/data/injector_drawing.svg) -> inj.gen.js: am PS verankert,
   // 41 Grad gedreht (TT2 auf die echte SPS-Richtung), kategorisiert. Beschleuniger
-  // hell/dick, Transfertunnel orange, TT2->SPS rot, LEIR lila. Kette real:
+  // hell/dick, Transfertunnel orange, LEIR lila. Kette real:
   //   Protonen: LINAC4 -> PSB -> PS -> (SPS via TT2)     Ionen: LINAC3 -> LEIR -> PS
   // PS/PSB-Kreise kommen aus dem Vollbild (oben), hier nur die Detail-Ebene (Zoom).
+  // TT2 wird NICHT separat gezeichnet: die echte PS->SPS-Trasse liegt schon gruen im
+  // Vollbild (geo.gen.js 'tt'); ein rotes inj.gen.js-TT2 waere eine versetzte Dublette.
   const view = INJ.view;
   if (!view) return;
   App.geoInjectorView = view;
-  const PSc = '#2ea44f', PSBc = '#58a6ff', LEIRc = '#c678dd', ACC = '#eaeaea', TR = '#e8820e', TT2c = '#ff5b5b';
+  const PSc = '#2ea44f', PSBc = '#58a6ff', LEIRc = '#c678dd', ACC = '#eaeaea', TR = '#e8820e';
   const FS = (13 * view.w / 700).toFixed(2) + 'px';
   const det = mk('g'); det.setAttribute('class', 'geo-element geo-inj-detail');
   const addP = (d, c, sw) => det.appendChild(mk('path', { d, fill: 'none', stroke: c, 'stroke-width': sw }));
   (INJ.leir     || []).forEach(d => addP(d, LEIRc, 1.5));
   (INJ.transfer || []).forEach(d => addP(d, TR, 1.4));
-  (INJ.tt2      || []).forEach(d => addP(d, TT2c, 1.8));
   (INJ.accel    || []).forEach(d => addP(d, ACC, 2.4));   // Linac3/Linac4 zuletzt = obenauf
   const lc = { PS: PSc, PSB: PSBc, LEIR: LEIRc, LINAC3: ACC, LINAC4: ACC };
   (INJ.labels || []).forEach(l => det.appendChild(label(l.x, l.y, l.t,
