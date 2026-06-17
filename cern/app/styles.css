@@ -146,8 +146,12 @@
 /* Klickbare Geo-Hitboxen (Real-Modus): oeffnen dasselbe Info-Panel wie im Schema.
    Aktiv trotz #geo-layer{pointer-events:none}. Detail-Hits (LEIR/Linacs) nur im
    Injektor-Zoom; Vollbild-Hits (Detektoren) nur ausserhalb des Zooms (s. geo-far). */
-.geo-hit{pointer-events:all;cursor:pointer}
-#svg:not(.inj-zoom) .geo-inj-detail .geo-hit{pointer-events:none}
+.geo-hit{pointer-events:all;cursor:pointer;transition:fill .15s}
+.geo-hit:hover{fill:rgba(88,166,255,0.22)!important}
+.geo-hit-ring{pointer-events:stroke;cursor:pointer;transition:stroke .15s}
+.geo-hit-ring:hover{stroke:rgba(88,166,255,0.55)!important}
+#svg:not(.inj-zoom) .geo-inj-detail .geo-hit,
+#svg:not(.inj-zoom) .geo-inj-detail .geo-hit-ring{pointer-events:none}
 /* Easter Egg FCC: Ring standardmäßig versteckt, erscheint beim Heraus-Zoom. */
 .geo-fcc{opacity:0;transition:opacity .8s}
 #svg.fcc-on .geo-fcc{opacity:1}

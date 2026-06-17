@@ -71,7 +71,9 @@ describe('Interaktionen (esbuild-Bundle, jsdom)', () => {
       expect($('info-title').textContent).toMatch(titleRe);
       $('info-close').click();
     };
-    open('PS', /Proton Synchrotron/);
+    open('LHC', /Large Hadron Collider/);
+    open('SPS', /Super Proton Synchrotron/);
+    open('PS', /^Proton Synchrotron$/);
     open('PSB', /Proton Synchrotron Booster/);
     open('LEIR', /Low Energy Ion Ring/);
     open('LINAC3', /LINAC 3/);

@@ -35,12 +35,17 @@ function label(x, y, t, attrs) { const el = mk('text', Object.assign({ x, y }, a
 // sie wieder (CSS regelt zoom-abhaengig an/aus, daher NICHT inline). Detektoren werden
 // zusaetzlich als aktiver Detektor gewaehlt (Spektrum/Tabs), aber NICHT gezoomt
 // (zoomToDetector wirkt auf die Schema-Ansicht).
-function hit(el, key, isDet?) {
-  el.classList.add('geo-hit'); el.setAttribute('id', 'geohit-' + key);
+// opts.ring -> Ring/Linien-Hitbox (.geo-hit-ring, Hover hebt den STRICH hervor, wie
+// .info-hit-ring beim LHC im Schema); sonst gefuellte Hitbox (.geo-hit, Hover-Fill).
+// opts.det -> Detektor: zusaetzlich aktiv waehlen.
+function hit(el, key, opts?) {
+  const o = opts || {};
+  el.classList.add(o.ring ? 'geo-hit-ring' : 'geo-hit');
+  el.setAttribute('id', 'geohit-' + key);
   el.addEventListener('click', e => {
     e.stopPropagation();
     if (App.showInfo) App.showInfo(key);
-    if (isDet && App.selectDetector) App.selectDetector(key);
+    if (o.det && App.selectDetector) App.selectDetector(key);
   });
   return el;
 }
@@ -52,9 +57,9 @@ function drawGeo() {
 
   // Satellitenfotos (Sentinel-2 cloudless, EOX) — drei Kacheln für die drei Zoom-
   // Stufen, je pixelgenau auf das SVG-Fenster ausgerichtet (geo_build.py#svg_window_to_bbox_3857).
-  // Alle bei niedriger Opazität hinter der Vektorebene → geografischer Kontext ohne
-  // die Schema-Farben zu überdecken. Wrapper-<g> mit der Sichtbarkeits-Klasse, innen
-  // <image opacity="0.22"> → CSS-Überblendung (0↔1) × 0.22 = korrekte Opazität.
+  // Bei hoher Opazität (0.9) als dominanter geografischer Hintergrund; die Vektorebene
+  // liegt darüber. Wrapper-<g> mit der Sichtbarkeits-Klasse, innen
+  // <image opacity="0.9"> → CSS-Überblendung (0↔1) × 0.9 = korrekte Opazität.
 
   // FCC-Kachel (geo-fcc → versteckt; bei fcc-on sichtbar)
   if (SAT_FCC && SAT_FCC_VIEW) {
@@ -64,7 +69,7 @@ function drawGeo() {
     const img = document.createElementNS(SVG_NS, 'image');
     img.setAttribute('x', String(v.x)); img.setAttribute('y', String(v.y));
     img.setAttribute('width', String(v.w)); img.setAttribute('height', String(v.h));
-    img.setAttribute('opacity', '0.22'); img.setAttribute('preserveAspectRatio', 'none');
+    img.setAttribute('opacity', '0.9'); img.setAttribute('preserveAspectRatio', 'none');
     img.setAttribute('href', SAT_FCC);
     wrap.appendChild(img); g.appendChild(wrap);
   }
@@ -77,7 +82,7 @@ function drawGeo() {
     const img = document.createElementNS(SVG_NS, 'image');
     img.setAttribute('x', String(v.x)); img.setAttribute('y', String(v.y));
     img.setAttribute('width', String(v.w)); img.setAttribute('height', String(v.h));
-    img.setAttribute('opacity', '0.22'); img.setAttribute('preserveAspectRatio', 'none');
+    img.setAttribute('opacity', '0.9'); img.setAttribute('preserveAspectRatio', 'none');
     img.setAttribute('href', SAT_INJ);
     wrap.appendChild(img); g.appendChild(wrap);
   }
@@ -85,25 +90,39 @@ function drawGeo() {
   // Normal-Kachel (0,0–700,480; geo-far → beim Injektor-Zoom ausgeblendet)
   if (SAT) {
     const img = mk('image', { x: 0, y: 0, width: 700, height: 480,
-      opacity: 0.22, preserveAspectRatio: 'none' });
+      opacity: 0.9, preserveAspectRatio: 'none' });
     img.setAttribute('href', SAT);
     img.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', SAT);
     img.classList.add('geo-far');
     g.appendChild(img);
   }
 
-  // Lac Léman (Wasserfläche): EIN geschlossenes Polygon (geo_build.py#lake_path
-  // verkettet die Außenkontur + clippt am Frame) → Fill deckt die ganze Seefläche.
-  GEO.lake.forEach(d => g.appendChild(path(d, {
-    fill: 'rgba(88,166,255,0.13)', stroke: 'rgba(88,166,255,0.40)', 'stroke-width': 1 })));
+  // (Der See-Wasserfläche-Overlay ist entfernt — der Lac Léman ist im 0.9-Satellitenbild
+  //  ohnehin sichtbar; ein blaues Füll-Polygon darüber wäre nur Redundanz.)
+
+  // CERN-Gelände (Meyrin, Prévessin) als dezent gefülltes Gebiets-Polygon markieren.
+  // Stilisierte ~1-km-Fläche (Achteck) um die beiden CERN-Standort-POIs herum — KEINE
+  // vermessene Grenze, sondern ein flächiger Standort-Hinweis bei niedriger Opazität,
+  // damit das Satellitenbild durchscheint. geo-far: im Injektor-Zoom ausgeblendet.
+  (GEO.poi || []).filter(p => /^CERN /.test(p.t)).forEach(p => {
+    const w = 26, h = 22, ch = 8;   // Halbbreite/-höhe + abgeschrägte Ecke (Nord oben, achsen-parallel)
+    const d = `M ${p.x - w + ch},${p.y - h} L ${p.x + w - ch},${p.y - h} L ${p.x + w},${p.y - h + ch}`
+      + ` L ${p.x + w},${p.y + h - ch} L ${p.x + w - ch},${p.y + h} L ${p.x - w + ch},${p.y + h}`
+      + ` L ${p.x - w},${p.y + h - ch} L ${p.x - w},${p.y - h + ch} Z`;
+    const poly = path(d, { fill: 'rgba(46,164,79,0.22)', stroke: 'rgba(57,211,83,0.95)', 'stroke-width': 1.4, 'stroke-dasharray': '5,3' });
+    poly.classList.add('geo-far'); g.appendChild(poly);
+  });
+
   // CH/FR-Staatsgrenze
   GEO.border.forEach(d => g.appendChild(path(d, {
     stroke: 'rgba(255,255,255,0.26)', 'stroke-width': 1.1, 'stroke-dasharray': '6,5' })));
 
   // LHC-Ring (echte Form/Lage) — im Real-Modus die Hauptstruktur
   GEO.lhc.forEach(d => g.appendChild(path(d, { stroke: 'rgba(88,166,255,0.85)', 'stroke-width': 2 })));
+  g.appendChild(hit(path(GEO.lhc.join(' '), { stroke: 'rgba(88,166,255,0)', 'stroke-width': 16 }), 'LHC', { ring: true }));
   // Vorbeschleuniger in ECHTER Größe (SPS ≈ ¼ LHC; PS/PSB winzig)
   (GEO.sps || []).forEach(d => g.appendChild(path(d, { stroke: 'rgba(255,127,14,0.85)', 'stroke-width': 1.8 })));
+  if ((GEO.sps || []).length) g.appendChild(hit(path(GEO.sps.join(' '), { stroke: 'rgba(255,127,14,0)', 'stroke-width': 13 }), 'SPS', { ring: true }));
   // PS & PSB als saubere KREISE — jetzt aus den VERMESSUNGSGENAUEN acc-models-Survey-
   // Ringen (INJ, CCS-Meter → SVG; PS R=100,0 m, PSB R=25,0 m), nicht mehr aus den groben
   // OSM-Polygonen. Die echten Ringe sind kreisrund; Survey-Zentroid+Radius ergibt saubere Kreise.
@@ -111,11 +130,11 @@ function drawGeo() {
   const psbRing = ptsOf(INJ.psb).length ? bboxC(ptsOf(INJ.psb)) : null;
   if (psRing) {
     g.appendChild(mk('circle', { cx: psRing.cx, cy: psRing.cy, r: psRing.r, fill: 'none', stroke: 'rgba(46,164,79,0.9)', 'stroke-width': 1.5 }));
-    g.appendChild(hit(mk('circle', { cx: psRing.cx, cy: psRing.cy, r: psRing.r, fill: 'rgba(0,0,0,0.001)' }), 'PS'));
+    g.appendChild(hit(mk('circle', { cx: psRing.cx, cy: psRing.cy, r: psRing.r, fill: 'none', stroke: 'rgba(46,164,79,0)', 'stroke-width': 12 }), 'PS', { ring: true }));
   }
   if (psbRing) {
     g.appendChild(mk('circle', { cx: psbRing.cx, cy: psbRing.cy, r: psbRing.r, fill: 'none', stroke: 'rgba(88,166,255,0.9)', 'stroke-width': 1.5 }));
-    g.appendChild(hit(mk('circle', { cx: psbRing.cx, cy: psbRing.cy, r: Math.max(psbRing.r, 2.2), fill: 'rgba(0,0,0,0.001)' }), 'PSB'));
+    g.appendChild(hit(mk('circle', { cx: psbRing.cx, cy: psbRing.cy, r: Math.max(psbRing.r, 1.5), fill: 'none', stroke: 'rgba(88,166,255,0)', 'stroke-width': 10 }), 'PSB', { ring: true }));
   }
 
   // Echte interne Transferlinien TT2/TT10 + TT60 (OSM)
@@ -134,7 +153,7 @@ function drawGeo() {
     const p = GEO.ip[name], c = DET_COL[name] || '#fff';
     const circ = mk('circle', { cx: p.x, cy: p.y, r: 4, fill: c, stroke: '#0e141d', 'stroke-width': 1 });   // = --screen (Theme)
     const lab = label(p.x, p.y - 7, name, { fill: c, 'font-size': '8px', 'font-family': 'monospace', 'font-weight': 'bold', 'text-anchor': 'middle' });
-    const hb = hit(mk('circle', { cx: p.x, cy: p.y, r: 9, fill: 'rgba(0,0,0,0.001)' }), name, true);   // grosszuegige Hitbox
+    const hb = hit(mk('circle', { cx: p.x, cy: p.y, r: 9, fill: 'rgba(0,0,0,0.001)' }), name, { det: true });   // grosszuegige Hitbox
     circ.classList.add('geo-far'); lab.classList.add('geo-far'); hb.classList.add('geo-far');
     g.appendChild(circ); g.appendChild(lab); g.appendChild(hb);
   }
@@ -321,8 +340,8 @@ function drawInjector(g) {
   // Hitboxen (Real-Modus, nur im Injektor-Zoom aktiv via CSS): LEIR + die zwei Linacs.
   // PS/PSB liegen als Ring-Hitboxen schon im Vollbild (oben). accel[0]=Linac3, [1]=Linac4.
   const acc = INJ.accel || [];
-  if (acc[0]) det.appendChild(hit(mk('path', { d: acc[0], fill: 'none', stroke: 'rgba(0,0,0,0.001)', 'stroke-width': 8 }), 'LINAC3'));
-  if (acc[1]) det.appendChild(hit(mk('path', { d: acc[1], fill: 'none', stroke: 'rgba(0,0,0,0.001)', 'stroke-width': 8 }), 'LINAC4'));
+  if (acc[0]) det.appendChild(hit(mk('path', { d: acc[0], fill: 'none', stroke: 'rgba(234,234,234,0)', 'stroke-width': 8 }), 'LINAC3', { ring: true }));
+  if (acc[1]) det.appendChild(hit(mk('path', { d: acc[1], fill: 'none', stroke: 'rgba(234,234,234,0)', 'stroke-width': 8 }), 'LINAC4', { ring: true }));
   const leirP = ptsOf(INJ.leir);
   if (leirP.length) { const c = bboxC(leirP); det.appendChild(hit(mk('circle', { cx: c.cx, cy: c.cy, r: c.r + 0.8, fill: 'rgba(0,0,0,0.001)' }), 'LEIR')); }
   g.appendChild(det);
