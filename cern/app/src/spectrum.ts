@@ -78,17 +78,17 @@ const DETSPEC = {
     title: "ATLAS · Z⁰→μ⁺μ⁻ (p-p · echte CMS-Daten)",
     sub: "EW-Eichkanal · Z⁰-Resonanz bei 91 GeV",
     prov: "Massen: echte CMS-Open-Data (μ⁺μ⁻) · Spuren & Pile-up: illustrativ",
-    real: "Real ~30 Z⁰→μμ pro s bei L=2·10³⁴ — Präzisions-Eichkanal",
-    discoMsg: "5σ: Z⁰-Resonanz präzise vermessen!"
+    real: "Real ~30 Z⁰→μμ pro s bei L=2·10³⁴, ein Präzisions-Eichkanal",
+    discoMsg: "5σ: Z⁰-Resonanz präzise vermessen."
    },
    PbPb: {
     channel: "2mu", pool: () => R.pp, range: [50, 150], bins: 60,
     bg: v => Math.exp(-(v - 50) / 30) * 0.12, reson: [Z0], primary: "Z0", disco: true, rate: 0.6, target: 200,
     title: "ATLAS · Z⁰→μ⁺μ⁻ (Pb-Pb · Standardkerze)",
-    sub: "Z⁰ ist elektroschwach → koppelt NICHT ans QGP, bleibt unverändert",
+    sub: "Z⁰ ist elektroschwach und koppelt nicht ans QGP, bleibt also unverändert",
     prov: "Massen: echte CMS-p-p-Z⁰ (in Pb-Pb identisch, EW) · Spuren: illustrativ",
-    real: "Z⁰ als QGP-blinde Standardkerze — eicht den Pb-Pb-Lauf",
-    discoMsg: "5σ: Z⁰-Standardkerze in Pb-Pb vermessen!"
+    real: "Z⁰ als QGP-blinde Standardkerze, eicht den Pb-Pb-Lauf",
+    discoMsg: "5σ: Z⁰-Standardkerze in Pb-Pb vermessen."
    }
   }
  },
@@ -100,9 +100,9 @@ const DETSPEC = {
     bg: v => Math.exp(-(v - 80) / 46), reson: [HIG, Z4L], primary: "H", disco: true, rate: 0.12, target: 90,
     title: "CMS · H→ZZ*→4ℓ (p-p · Goldkanal)",
     sub: "Z→4ℓ-Peak (91) + Higgs-Bump (125) auf ZZ*-Untergrund · Higgs-Rate steigt steil mit der Energie",
-    prov: "4ℓ-Massen & -Kinematik: ECHTE CMS-Open-Data (Record 5200, 278 Kandidaten 2011/2012)",
-    real: "Real nur ~1 H→4ℓ pro Tag — die 278 echten Kandidaten zeigen Z→4ℓ UND den Higgs-Bump",
-    discoMsg: "5σ: Higgs-Boson entdeckt!"
+    prov: "4ℓ-Massen und -Kinematik: echte CMS-Open-Data (Record 5200, 278 Kandidaten 2011/2012)",
+    real: "Real nur ~1 H→4ℓ pro Tag; die 278 echten Kandidaten zeigen Z→4ℓ und den Higgs-Bump",
+    discoMsg: "5σ: Higgs-Boson entdeckt."
    },
    PbPb: {
     channel: "2mu", pool: () => R.ion, range: [7, 12], bins: 50,
@@ -111,7 +111,7 @@ const DETSPEC = {
     sub: "Bottomonium-Thermometer: Υ(3S)>Υ(2S)>Υ(1S) zunehmend geschmolzen",
     prov: "Υ-Massen: echte CMS-p-p · Pb-Pb-Unterdrückung modelliert (R_AA)",
     real: "Sequentielle Υ-Unterdrückung misst die QGP-Temperatur (reales CMS-Resultat)",
-    discoMsg: "5σ: sequentielle Υ-Unterdrückung (QGP) nachgewiesen!", supp: true
+    discoMsg: "5σ: sequentielle Υ-Unterdrückung (QGP) nachgewiesen.", supp: true
    }
   }
  },
@@ -122,10 +122,10 @@ const DETSPEC = {
     channel: "2mu", pool: () => R.ion, range: [1, 12], bins: 55,
     bg: v => 0.27, reson: [JPSI, PSI2, U1, U2, U3], primary: "Jpsi", disco: true, reference: true, rate: 1.2, target: 450,
     title: "ALICE · J/ψ + Υ → μ⁺μ⁻ (p-p-Referenz · echte CMS-Daten)",
-    sub: "Vakuum-Referenz: unverdrängte Quarkonia — KEINE Entdeckung (QGP nur in Pb-Pb)",
+    sub: "Vakuum-Referenz: unverdrängte Quarkonia, keine Entdeckung (QGP nur in Pb-Pb)",
     prov: "Massen: echte CMS-Open-Data (μ⁺μ⁻) · Spuren & Multiplizität: illustrativ",
-    real: "Unverdrängte Quarkonia — die p-p-Baseline, gegen die Pb-Pb verglichen wird",
-    discoMsg: "5σ: Quarkonia-Referenzspektrum (Vakuum) etabliert!"
+    real: "Unverdrängte Quarkonia, die p-p-Baseline, gegen die Pb-Pb verglichen wird",
+    discoMsg: "5σ: Quarkonia-Referenzspektrum (Vakuum) etabliert."
    },
    PbPb: {
     channel: "2mu", pool: () => R.ion, range: [1, 12], bins: 55,
@@ -134,8 +134,8 @@ const DETSPEC = {
     title: "ALICE · Quarkonia in Pb-Pb (QGP-Unterdrückung)",
     sub: "R_AA < 1 vs. p-p-Referenz · Schmelzen gebundener Zustände im Quark-Gluon-Plasma",
     prov: "Massen: echte CMS-p-p-Quarkonia · QGP-Unterdrückung modelliert (R_AA)",
-    real: "J/ψ & Υ im QGP unterdrückt (R_AA<1) — vs. der unverdrängten p-p-Referenz",
-    discoMsg: "5σ: Quarkonia-Unterdrückung (QGP) nachgewiesen!", supp: true
+    real: "J/ψ und Υ im QGP unterdrückt (R_AA<1), verglichen mit der unverdrängten p-p-Referenz",
+    discoMsg: "5σ: Quarkonia-Unterdrückung (QGP) nachgewiesen.", supp: true
    }
   }
  },
@@ -147,18 +147,18 @@ const DETSPEC = {
     bg: v => 0.25, reson: [B0], primary: "B0", disco: true, rate: 0.7, target: 500,
     title: "LHCb · B⁰→h⁺h⁻ (p-p · CP-Verletzung)",
     sub: "Materie-Antimaterie-Asymmetrie im B-Mesonen-Zerfall",
-    prov: "B-Masse: kalibrierte SIMULATION (kein B im Dimuon-Set) · Vertex: illustrativ",
-    real: "B⁰→h⁺h⁻ — CP-Asymmetrie baut sich über viele Fills auf",
-    discoMsg: "5σ: CP-Verletzung etabliert!"
+    prov: "B-Masse: kalibrierte Simulation (kein B im Dimuon-Set) · Vertex: illustrativ",
+    real: "B⁰→h⁺h⁻: CP-Asymmetrie baut sich über viele Fills auf",
+    discoMsg: "5σ: CP-Verletzung etabliert."
    },
    PbPb: {
     channel: "B", pool: () => lhcbPoolPbPb(), range: [4.6, 6.0], bins: 50,
     bg: v => 0.25, reson: [], primary: "B0", disco: false, rate: 0.05, target: 600,
     title: "LHCb · spezialisiertes Vorwärtsprogramm (Pb-Pb)",
-    sub: "kein Standard-Schwerionen-Collider-Detektor — kein sauberes B⁰-Signal",
+    sub: "kein Standard-Schwerionen-Collider-Detektor, daher kein sauberes B⁰-Signal",
     prov: "Pb-Pb-Vorwärts/SMOG: kein Standard-B⁰-Kollider-Spektrum (didaktische Simulation)",
-    real: "LHCb misst Pb-Pb nur im Vorwärts-/Fixed-Target-Modus (SMOG) — geringe Akzeptanz, kein B⁰→h⁺h⁻-Peak",
-    discoMsg: "", note: "LHCb ist im Pb-Pb-Collider-Lauf nur eingeschränkt aktiv (spezialisiertes Vorwärts-/SMOG-Programm) — im Standard-Kanal nur Untergrund."
+    real: "LHCb misst Pb-Pb nur im Vorwärts- oder Fixed-Target-Modus (SMOG): geringe Akzeptanz, kein B⁰→h⁺h⁻-Peak",
+    discoMsg: "", note: "LHCb ist im Pb-Pb-Collider-Lauf nur eingeschränkt aktiv (spezialisiertes Vorwärts-/SMOG-Programm); im Standard-Kanal nur Untergrund."
    }
   }
  }
@@ -502,7 +502,7 @@ function drawHist() {
   sigStatus.innerText = "Rauschen (keine Signifikanz)";
   sigStatus.style.color = "#a3b4c6"; sigBar.style.background = "#58a6ff";
  } else if (sig < 5.0) {
-  sigStatus.innerText = "Signal-Hinweis (Evidenz!)";
+  sigStatus.innerText = "Signal-Hinweis (Evidenz)";
   sigStatus.style.color = "#ff7f0e"; sigBar.style.background = "#ff7f0e";
  } else {
   sigStatus.innerText = sp.discoMsg;
@@ -512,11 +512,11 @@ function drawHist() {
  // Detail-Status + „was man real misst" + Datenherkunft → HTML-Fuß (war im Canvas).
  let statusTxt;
  if (specialized)        statusTxt = sp.note;
- else if (notProd)       statusTxt = prim.label + "-Produktionsrate bei " + App.de(s.paramEnergy,2) + " TeV pro Strahl zu gering für eine Messung — wird ab ~" + App.de(prim.thr,1) + " TeV pro Strahl sichtbar (Raten-Modell).";
- else if (sig <= 0)      statusTxt = "Noch keine Kollisionen aufgezeichnet — Strahl in Stable Beams bringen (Füllen → Ramp → Squeeze) und Datennahme starten.";
+ else if (notProd)       statusTxt = prim.label + "-Produktionsrate bei " + App.de(s.paramEnergy,2) + " TeV pro Strahl zu gering für eine Messung; wird ab ~" + App.de(prim.thr,1) + " TeV pro Strahl sichtbar (Raten-Modell).";
+ else if (sig <= 0)      statusTxt = "Noch keine Kollisionen aufgezeichnet. Bring den Strahl in Stable Beams (Füllen, Ramp, Squeeze) und starte die Datennahme.";
  else if (sp.supp)       statusTxt = "QGP-Unterdrückung (Modell): R_AA Υ(1S) ≈ 0,45, sequenziell · Signifikanz " + App.de(sig,1) + " σ / 5 σ.";
  else if (sp.reference)  statusTxt = "p-p-Referenz: unverdrängte Quarkonia (Vakuum). Die QGP-Unterdrückung (R_AA < 1) erscheint erst im Pb-Pb-Lauf.";
- else                    statusTxt = "Datennahme läuft — Signifikanz " + App.de(sig,1) + " σ von 5,0 σ.";
+ else                    statusTxt = "Datennahme läuft, Signifikanz " + App.de(sig,1) + " σ von 5,0 σ.";
  const elStat = $("sp-status"); if (elStat) elStat.textContent = statusTxt;
  let realTxt = "→ " + sp.real;
  if (sp.channel === "4l") realTxt += " · Higgs-Fenster (120–130 GeV): " + s.higgsCands + " 4ℓ-Kandidaten";

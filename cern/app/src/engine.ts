@@ -317,7 +317,7 @@ async function injectTrain(beam, nBatches, gen){
 async function doRamp(){
  if(s.ramped||s.filling||s.cryoRecovery||s.isPilot) return;
  E.btnRamp.classList.add("off"); E.btnAuto.classList.add("off");
- setStatus(`HOCHFAHREN (1 s ≈ ${simScale()} s real) — Magnetfeld & Energie steigen …`,"on");
+ setStatus(`HOCHFAHREN (1 s ≈ ${simScale()} s real): Magnetfeld und Energie steigen …`,"on");
  const startE=s.isIon?177:450;
  const maxE=s.isIon?2760:7000;   // Ionen: 7 TeV·(82/208) ≈ 2,76 TeV/u (gleiche Dipol-Steifigkeit)
  const targetE=Math.max(s.paramEnergy*1000, startE);   // nie unter Injektionsenergie -> Ramping BESCHLEUNIGT immer
@@ -351,19 +351,19 @@ async function doRamp(){
  });
  if(quenched) { triggerQuench(); return; }
  s.ramped=true; E.btnSqueeze.classList.remove("off");
- setStatus("HOCHFAHREN ABGESCHLOSSEN — jetzt Beam Squeeze starten!","on");
+ setStatus("HOCHFAHREN ABGESCHLOSSEN. Weiter mit dem Beam Squeeze.","on");
 }
 
 function triggerQuench(){
  s.cryoRecovery = true; stopAutoCollide();
- setStatus("QUENCH! Ein Magnet hat seine Supraleitung verloren — Strahl notabgeworfen!", "danger");
+ setStatus("QUENCH! Ein Magnet hat seine Supraleitung verloren, der Strahl wurde notabgeworfen.", "danger");
  E.sdot.className = "cv4-dot flash";
  E.svg.style.transition = "filter 0.5s";
  E.svg.style.filter = "sepia(1) saturate(3) hue-rotate(320deg)";
  let secLeft = 5;
  function cryoTick(){
-  if(secLeft > 0){ setStatus(`QUENCH — Helium-Kühlung fährt die Magnete wieder herunter … (${secLeft} s)`, "danger"); secLeft--; setTimeout(cryoTick, 1000); }
-  else { E.svg.style.filter = "none"; s.cryoRecovery = false; resetLHC(); setStatus("KÜHLUNG ABGESCHLOSSEN — LHC wieder bereit", "on"); }
+  if(secLeft > 0){ setStatus(`QUENCH: Helium-Kühlung fährt die Magnete wieder herunter … (${secLeft} s)`, "danger"); secLeft--; setTimeout(cryoTick, 1000); }
+  else { E.svg.style.filter = "none"; s.cryoRecovery = false; resetLHC(); setStatus("KÜHLUNG ABGESCHLOSSEN. LHC wieder bereit", "on"); }
  }
  cryoTick();
 }
@@ -371,7 +371,7 @@ function triggerQuench(){
 async function doSqueeze(){
  if(!s.ramped||s.squeezed||s.squeezing||s.cryoRecovery) return;
  s.squeezing = true; E.btnSqueeze.classList.add("off");
- setStatus("BEAM SQUEEZE — bündele die Strahlen an den Kollisionspunkten … (stark gerafft; real dauert das einige Minuten)","on");
+ setStatus("BEAM SQUEEZE: Die Strahlen werden an den Kollisionspunkten gebündelt. (stark gerafft; real dauert das einige Minuten)","on");
  // Bewusste Raffung über den Füll-Maßstab hinaus (real ~10–15 min wären 40–60 s
  // Darstellung — didaktisch tot). Skaliert aber mit dem Tempo-Modus mit.
  // Ziel-β* kommt jetzt aus dem Preset (s.targetBetaStar), nicht mehr aus einem Slider.
@@ -389,7 +389,7 @@ async function doSqueeze(){
  s.squeezing = false; s.squeezed = true; E.btnColl.classList.remove("off"); E.btnAutoColl.classList.remove("off");
  [g.nodes.atlas,g.nodes.cms,g.nodes.alice,g.nodes.lhcb].forEach(n=>n.classList.add("glow"));
  g.paths.lhc.classList.add(s.isIon?"lit-i":"lit");
- setStatus("STABLE BEAMS — Strahlen gebündelt, bereit für Kollisionen!","on");
+ setStatus("STABLE BEAMS: Strahlen gebündelt, bereit für Kollisionen.","on");
 }
 
 function addPermanentDot(beam){
@@ -479,7 +479,7 @@ function startAutoCollide(){
  // Burn-off-Uhr läuft PRO FILL: nur beim ersten Start nach dem Füllen auf null
  // (Pause/Weiter verjüngt den Strahl NICHT — sonst „Unendlich-Fill"-Exploit).
  if(s.dtElapsed === 0) s.intensity0 = s.paramIntensity;   // Stable Beams: N₀ = Intensität bei Fill-Start
- setStatus(`DATENNAHME (1 s ≈ ${dtLabel()} real) — der Strahl verbraucht sich langsam …`, "on");
+ setStatus(`DATENNAHME (1 s ≈ ${dtLabel()} real): Der Strahl verbraucht sich langsam …`, "on");
  const tau = BEAM_LIFETIME_H * 3600;                    // Intensitäts-Lebensdauer in s
  let lastTick = performance.now();
  s.autoCollInterval = setInterval(()=>{
@@ -533,7 +533,7 @@ function startAutoCollide(){
   }
   App.drawHist();
   E.spInfo.innerText = `Kandidaten (${s.selDet}): ${Math.round(s.collStore[s.selDet]).toLocaleString("de-DE")} · L ${Math.round(L*100)} %`;
-  setStatus(`DATENNAHME (1 s ≈ ${dtLabel()} real) — N ${fmtIntensity(s.intensityNow)} (${Math.round(frac*100)} %) · L ${Math.round(L*100)} %`, "on");
+  setStatus(`DATENNAHME (1 s ≈ ${dtLabel()} real): N ${fmtIntensity(s.intensityNow)} (${Math.round(frac*100)} %) · L ${Math.round(L*100)} %`, "on");
   if(frac <= DUMP_FRAC) beamDump();
  }, 125);
 }
@@ -542,16 +542,16 @@ function startAutoCollide(){
 function beamDump(){
  s.dumping = true;   // Gate: bis zum Reset KEINE manuellen Kollisionen / kein Neustart
  stopAutoCollide();  // (der Strahl ist weg — ramped/squeezed sind nur noch Restzustand)
- setStatus(`STRAHL-DUMP — N < ${Math.round(DUMP_FRAC*100)} % (L < ${Math.round(DUMP_FRAC*DUMP_FRAC*100)} %): Strahl verbraucht, neue Füllung nötig.`, "danger");
+ setStatus(`STRAHL-DUMP: N < ${Math.round(DUMP_FRAC*100)} % (L < ${Math.round(DUMP_FRAC*DUMP_FRAC*100)} %): Strahl verbraucht, neue Füllung nötig.`, "danger");
  // keepData=true: Spektrum/Signifikanz BLEIBEN (mehrere Füllungen summieren sich zur Entdeckung).
- setTimeout(()=>{ if(!s.cryoRecovery){ resetLHC(true); setStatus("STRAHL ABGEWORFEN — Daten bleiben erhalten. Füllprotokoll für die nächste Füllung starten.", "on"); } }, 1600);
+ setTimeout(()=>{ if(!s.cryoRecovery){ resetLHC(true); setStatus("STRAHL ABGEWORFEN. Daten bleiben erhalten; starte das Füllprotokoll für die nächste Füllung.", "on"); } }, 1600);
 }
 
 function stopAutoCollide(){
  const had = !!s.autoCollInterval;
  if(had) { clearInterval(s.autoCollInterval); s.autoCollInterval = null; }
  E.btnAutoColl.innerText = "Auto-Datennahme"; E.btnAutoColl.classList.remove("act");
- if(had && !s.dumping) setStatus("DATENNAHME PAUSIERT — die Verbrauchs-Uhr läuft beim Fortsetzen weiter", "on");
+ if(had && !s.dumping) setStatus("DATENNAHME PAUSIERT. Die Verbrauchs-Uhr läuft beim Fortsetzen weiter.", "on");
  // Manuelle Kollisionen nur freigeben, wenn der Strahl noch existiert (kein Dump).
  if(s.ramped && s.squeezed && !s.cryoRecovery && !s.dumping) E.btnColl.classList.remove("off");
 }

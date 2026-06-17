@@ -86,7 +86,7 @@ function revealFCC(){
  E.svg.classList.add("fcc-on");                 // blendet den FCC-Ring ein (CSS)
  E.btnZoomMeyrin.style.display = "none";
  E.btnZoomOut.classList.remove("off");
- App.setStatus("FCC — Future Circular Collider: der geplante 91-km-Ring (×3,4 LHC), maßstäblich. „Ansicht zurücksetzen\" kehrt zurück.","on");
+ App.setStatus("FCC, Future Circular Collider: der geplante 91-km-Ring, 3,4-mal so groß wie der LHC, maßstäblich. „Ansicht zurücksetzen\" kehrt zurück.","on");
  animateViewBox(v.x, v.y, v.w, v.h, 1700);      // langsam = dramatisch
 }
 App.revealFCC = revealFCC;
@@ -107,7 +107,7 @@ async function fuellProtokoll(){
  s.filling = true; s.resetFlag = false;
  const gen = s.fillGen;   // Füll-Generation DIESES Laufs (ältere In-Flight-Batches zählen nicht mehr)
  E.btnAuto.classList.add("off");
- App.setStatus(`FÜLLPROTOKOLL (1 s ≈ ${s.isFastMode?SIM_SCALE.fast:SIM_SCALE.slow} s real): Pakete durchlaufen die Vorbeschleuniger — das PS formt die 72er-Bunch-Struktur, das SPS bündelt sie zu Zügen …`,"on");
+ App.setStatus(`FÜLLPROTOKOLL (1 s ≈ ${s.isFastMode?SIM_SCALE.fast:SIM_SCALE.slow} s real): Pakete durchlaufen die Vorbeschleuniger; das PS formt die 72er-Bunch-Struktur, das SPS bündelt sie zu Zügen …`,"on");
 
  // 1 Punkt = 1 PS-Batch. Pro SPS-Zug fusionieren batchesPerTrain Batches; der letzte
  // Zug ist ggf. kürzer. Abwechselnd B1 (TI 2) / B2 (TI 8), je Zug ein realer SPS-Zyklus.
@@ -132,10 +132,10 @@ async function fuellProtokoll(){
    // Pilot-Strahl: Injektionsenergie 0,45 TeV ist bereits die Endenergie — kein Ramping.
    s.ramped = true;
    E.btnSqueeze.classList.remove("off");
-   App.setStatus(`LHC GEFÜLLT — ${totalStr()} Bunches/Strahl. Pilot-Strahl bleibt auf 0,45 TeV (Injektionsenergie = Betriebsenergie, kein Ramping). Beam Squeeze möglich!`,"on");
+   App.setStatus(`LHC GEFÜLLT: ${totalStr()} Bunches pro Strahl. Der Pilot-Strahl bleibt auf 0,45 TeV; Injektionsenergie und Betriebsenergie sind gleich, daher kein Ramping. Beam Squeeze möglich.`,"on");
   } else {
    E.btnRamp.classList.remove("off");
-   App.setStatus(`LHC GEFÜLLT — ${totalStr()} Bunches/Strahl (${sizes.length} Züge), beide Strahlen stabil. Energie-Ramping möglich!`,"on");
+   App.setStatus(`LHC GEFÜLLT: ${totalStr()} Bunches pro Strahl (${sizes.length} Züge), beide Strahlen stabil. Energie-Ramping möglich.`,"on");
   }
  } else {
   App.setStatus(`Füllung beendet: B1 ${fmtBunch(1)}/${totalStr()}, B2 ${fmtBunch(2)}/${totalStr()} Bunches.`,"on");
@@ -175,8 +175,8 @@ export function wireHandlers(){
   E.btnToggleGeo.innerText = realMode ? "Didaktik-Modus" : "Reale Ansicht";
   resetView();   // Moduswechsel → Vollbild + Meyrin-Button passend ein/aus
   App.setStatus(realMode
-    ? "REALE ANSICHT — echte OSM-Geometrie. Tipp: Injektor-Komplex zoomt auf Meyrin."
-    : "DIDAKTIK-MODUS — schematische, animierte Beschleuniger-Kette", "on");
+    ? "REALE ANSICHT: echte OSM-Geometrie. Tipp: Injektor-Komplex zoomt auf Meyrin."
+    : "DIDAKTIK-MODUS: schematische, animierte Beschleuniger-Kette", "on");
  });
 
  // Event-Display-Tabs sind klickbar → wechseln Detektor + Spektrum (ohne Kamera-Zoom)
@@ -262,7 +262,7 @@ export function wireHandlers(){
   s.targetBetaStar = 0.3; E.lblBeta.innerText = App.de(1.5,2) + " m";   // β* live: 1,50 m unsqueezed → 0,30 m nach Squeeze
   s.paramRampSpeed = 0.05; E.lblRampSpeed.innerText = App.de(0.05,2) + " T/s"; E.lblRampSpeed.style.color = "#58a6ff";
   App.updateReadouts(); selectDetector("CMS");   // CMS = Higgs-Goldkanal H→ZZ*→4ℓ
-  App.setStatus("Preset Protonen-Physik (Run 3 · √s = 13,6 TeV) — Higgs (CMS), Z⁰ (ATLAS) & CP-Verletzung (LHCb) laufen gleichzeitig auf demselben Strahl. Tab wechseln zeigt jeden Stand. (Spektren: echte CMS-Open-Data.)", "on");
+  App.setStatus("Preset Protonen-Physik (Run 3, √s = 13,6 TeV). Higgs (CMS), Z⁰ (ATLAS) und CP-Verletzung (LHCb) laufen gleichzeitig auf demselben Strahl; ein Wechsel des Reiters zeigt jeden Stand. (Spektren: echte CMS-Open-Data.)", "on");
  });
 
  E.btnPreQgp.addEventListener("click",()=>{
@@ -273,7 +273,7 @@ export function wireHandlers(){
   s.targetBetaStar = 0.5; E.lblBeta.innerText = App.de(1.5,2) + " m";   // β* live: 1,50 m → 0,50 m nach Squeeze
   s.paramRampSpeed = 0.05; E.lblRampSpeed.innerText = App.de(0.05,2) + " T/s"; E.lblRampSpeed.style.color = "#58a6ff";
   App.updateReadouts(); selectDetector("ALICE");
-  App.setStatus("Preset Schwerionen (Pb-Pb · √s_NN = 5,36 TeV) — ALICE & CMS messen das Aufschmelzen gebundener Quark-Paare im Quark-Gluon-Plasma, ATLAS das Z⁰ als Vergleichsmaßstab. Massen echt (CMS), Plasma-Unterdrückung modelliert.", "on");
+  App.setStatus("Preset Schwerionen (Pb-Pb, √s_NN = 5,36 TeV). ALICE und CMS messen das Aufschmelzen gebundener Quark-Paare im Quark-Gluon-Plasma, ATLAS das Z⁰ als Vergleichsmaßstab. Massen echt (CMS), Plasma-Unterdrückung modelliert.", "on");
  });
 
  E.btnPrePilot.addEventListener("click",()=>{
@@ -284,7 +284,7 @@ export function wireHandlers(){
   s.targetBetaStar = 1.5; E.lblBeta.innerText = App.de(1.5,2) + " m";   // Pilot: kein Squeeze (β* bleibt 1,50 m)
   s.paramRampSpeed = 0.02; E.lblRampSpeed.innerText = App.de(0.02,2) + " T/s"; E.lblRampSpeed.style.color = "#58a6ff";
   App.updateReadouts(); selectDetector("ATLAS");
-  App.setStatus("Preset Pilot-Strahl (Inbetriebnahme · 0,45 TeV) — zu wenig Energie für Entdeckungen; im Spektrum erscheint nur Untergrund.", "on");
+  App.setStatus("Preset Pilot-Strahl (Inbetriebnahme, 0,45 TeV). Zu wenig Energie für Entdeckungen; im Spektrum erscheint nur Untergrund.", "on");
  });
 
  E.btnAutoColl.addEventListener("click", App.toggleAutoCollide);

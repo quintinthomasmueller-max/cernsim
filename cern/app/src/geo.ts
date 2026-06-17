@@ -168,7 +168,7 @@ function drawFCC(g) {
   const fcc = mk('g'); fcc.setAttribute('class', 'geo-element geo-fcc');
   fcc.appendChild(mk('circle', { cx, cy, r: R, fill: FC + '0.05)', stroke: FC + '0.85)', 'stroke-width': 2, 'stroke-dasharray': '10,7' }));
   const fs = s => (s * view.w / 700).toFixed(1) + 'px';
-  const ti = label(cx, cy - R + (24 * view.w / 700), 'FCC — Future Circular Collider (geplant, ~91 km)',
+  const ti = label(cx, cy - R + (24 * view.w / 700), 'FCC, Future Circular Collider (geplant, ~91 km)',
     { fill: FC + '0.95)', 'font-size': fs(16), 'font-family': 'monospace', 'font-weight': 'bold', 'text-anchor': 'middle' });
   fcc.appendChild(ti);
   fcc.appendChild(label(cx, cy - R + (44 * view.w / 700), 'LHC 27 km · SPS 7 km · FCC 91 km   (×3,4)',
@@ -275,79 +275,35 @@ function padToAspect(pts, aspect, m) {
 }
 
 function drawInjector(g) {
-  const labs = GEO.accelLabels || [];
-  const PS = labs.find(l => l.t === 'PS');
-  if (!PS) return;
-  const P = '#58a6ff', I = '#e377c2', PSc = '#2ea44f';
-
-  const psPts = ptsOf(INJ.ps), psbPts = ptsOf(INJ.psb), leirPts = ptsOf(INJ.leir), l4p = ptsOf(GEO.linac4);
-  const psC = psPts.length ? bboxC(psPts) : { cx: PS.x, cy: PS.y, r: 3.6 };
-  const psbC = psbPts.length ? bboxC(psbPts) : null;
-
-  // Maßstab aus echtem PS-Ring (Bbox-Radius ≙ real 100 m) → geo-Einheiten/Meter.
-  const gpm = psC.r / 100, M = (m) => m * gpm;
-  const seg = (a, b) => `M ${a[0].toFixed(2)},${a[1].toFixed(2)} L ${b[0].toFixed(2)},${b[1].toFixed(2)}`;
-  const FRAME = [...psPts, ...psbPts];      // sammelt Punkte fürs Zoom-Fenster
-
-  // LINAC 4 (real OSM-Lage) → EINE gerade Strahllinie vom Gebäude bis AN den PSB-Ring,
-  // tangential einlaufend (echte Injektion läuft streifend, nicht radial; KEIN Knick,
-  // endet AM Ring statt in der leeren Mitte). l4src = Gebäude-Zentroid (Strahlquelle).
-  let l4src = null;
-  if (l4p.length) { l4src = bboxC(l4p); FRAME.push([l4src.cx, l4src.cy]); }
-
-  // ── Linac-Komplex nach PS-Lageplan: LINAC4 (Proton, SW) → PSB; LINAC3 (Ion) als
-  // paralleler Nachbar NE davon → LEIR → PS. Ein-/Auslauf an PSB UND LEIR über Kreuz. ──
-  const unit = (dx, dy) => { const d = Math.hypot(dx, dy) || 1; return [dx / d, dy / d]; };
-
-  // LEIR an der ECHTEN Survey-Lage (acc-models): kleiner Racetrack INNERHALB des PS-Rings
-  // (~21 m vom PS-Zentrum, R≈12 m). Form/Position direkt aus INJ.leir, nicht mehr geschätzt.
-  // LINAC 3 (∉ geholter Survey) bleibt schematisch als WSW-Quelle, an LEIR verankert; der
-  // Strahl läuft LINAC3 → LEIR → PS (Auslauf zum SW-Inflektor des PS-Rings).
-  const leirC = leirPts.length ? bboxC(leirPts) : { cx: psC.cx, cy: psC.cy, r: M(12) };
-  const l3dir = unit(-0.97, 0.26);                        // LINAC3-Quelle WSW von LEIR (Strahl läuft ENE)
-  const l3src = { cx: leirC.cx + M(40) * l3dir[0], cy: leirC.cy + M(40) * l3dir[1] };
-  const infl = [psC.cx - psC.r * 0.707, psC.cy + psC.r * 0.707];                         // SW-Inflektor am PS-Ring
-  FRAME.push(...leirPts, [l3src.cx, l3src.cy]);
-
-  // Zoom-Zielfenster (nur der Cluster, ohne das riesige SPS), aufs SVG-Seitenverhältnis.
-  const view = padToAspect(FRAME, 700 / 480, M(18));
+  // Hand-Lageplan (cern/data/injector_drawing.svg) -> inj.gen.js: am PS verankert,
+  // 41 Grad gedreht (TT2 auf die echte SPS-Richtung), kategorisiert. Beschleuniger
+  // hell/dick, Transfertunnel orange, TT2->SPS rot, LEIR lila. Kette real:
+  //   Protonen: LINAC4 -> PSB -> PS -> (SPS via TT2)     Ionen: LINAC3 -> LEIR -> PS
+  // PS/PSB-Kreise kommen aus dem Vollbild (oben), hier nur die Detail-Ebene (Zoom).
+  const view = INJ.view;
+  if (!view) return;
   App.geoInjectorView = view;
-
-  // Detail-Ebene: erst beim Zoom sichtbar (CSS). Schrift ~ Zoomfaktor (≈13px lesbar);
-  // Linien non-scaling (Bildschirm-px). Reale Kette:
-  //   Protonen: LINAC4 → PSB → PS → (SPS)     Ionen: LINAC3 → LEIR → PS
+  const PSc = '#2ea44f', PSBc = '#58a6ff', LEIRc = '#c678dd', ACC = '#eaeaea', TR = '#e8820e', TT2c = '#ff5b5b';
   const FS = (13 * view.w / 700).toFixed(2) + 'px';
   const det = mk('g'); det.setAttribute('class', 'geo-element geo-inj-detail');
-  const beam = (d, c, sw, dash?) => det.appendChild(mk('path', Object.assign(
-    { d, fill: 'none', stroke: c, 'stroke-width': sw }, dash ? { 'stroke-dasharray': dash } : {})));
-
-  // Ionen-Kette (∉ OSM → gestrichelt): LINAC3 → LEIR → PS, Ein-/Auslauf am LEIR ÜBER KREUZ
-  // (Auslauf zum SW-Inflektor gebogen).
-  (INJ.leir || []).forEach(d => det.appendChild(mk('path', { d, fill: 'none', stroke: I, 'stroke-width': 1.4, 'stroke-dasharray': '3,2' })));
-  const ic = injectCross(l3src, leirC, psC, infl);
-  beam(ic.inj, I, 1.8, '3,2');                              // LINAC3 → LEIR
-  beam(ic.ext, I, 1.2, '4,3');                              // LEIR → PS (Einlaufkreuz, Inflektor)
-  // Protonen-Kette (real → durchgezogen): LINAC4 → PSB → PS, Ein-/Auslauf am PSB ÜBER KREUZ.
-  if (l4src && psbC) {
-    const pc = injectCross({ cx: l4src.cx, cy: l4src.cy }, psbC, psC);
-    beam(pc.inj, P, 1.8);                                   // LINAC4 → PSB
-    beam(pc.ext, PSc, 1.2);                                 // PSB → PS (Einlaufkreuz)
-  }
-
-  const dl = (x, y, t, c, anc?) => det.appendChild(label(x, y, t, { fill: c, 'font-size': FS, 'font-family': 'monospace', 'text-anchor': anc || 'middle', 'font-weight': 'bold' }));
-  // Im Zoom sind die groben accelLabels ausgeblendet (geo-far) → hier alle fein.
-  dl(psC.cx, psC.cy + M(4), 'PS', PSc);
-  if (psbC) dl(psbC.cx, psbC.cy - psbC.r - M(7), 'PSB', P);
-  if (l4src) dl(l4src.cx - M(8), l4src.cy + M(2), 'LINAC4', P, 'end');
-  dl(leirC.cx + leirC.r + M(6), leirC.cy + M(2), 'LEIR', I, 'start');
-  dl(l3src.cx - M(4), l3src.cy + M(3), 'LINAC3', I, 'end');
+  const addP = (d, c, sw) => det.appendChild(mk('path', { d, fill: 'none', stroke: c, 'stroke-width': sw }));
+  (INJ.leir     || []).forEach(d => addP(d, LEIRc, 1.5));
+  (INJ.transfer || []).forEach(d => addP(d, TR, 1.4));
+  (INJ.tt2      || []).forEach(d => addP(d, TT2c, 1.8));
+  (INJ.accel    || []).forEach(d => addP(d, ACC, 2.4));   // Linac3/Linac4 zuletzt = obenauf
+  const lc = { PS: PSc, PSB: PSBc, LEIR: LEIRc, LINAC3: ACC, LINAC4: ACC };
+  (INJ.labels || []).forEach(l => det.appendChild(label(l.x, l.y, l.t,
+    { fill: lc[l.t] || '#fff', 'font-size': FS, 'font-family': 'monospace', 'text-anchor': 'middle', 'font-weight': 'bold' })));
   g.appendChild(det);
 
   // Dezenter Dauer-Hinweis im Vollbild (verschwindet beim Zoom): markiert die Lage.
-  const hint = mk('g'); hint.setAttribute('class', 'geo-element geo-inj-hint');
-  hint.appendChild(mk('circle', { cx: PS.x, cy: PS.y, r: 8, fill: 'none', stroke: 'rgba(46,164,79,0.55)', 'stroke-width': 0.9, 'stroke-dasharray': '2.5,2' }));
-  hint.appendChild(label(PS.x - 11, PS.y + 18, '⊕ Injektor-Komplex (Zoom)', { fill: 'rgba(205,214,228,0.72)', 'font-size': '6.5px', 'font-family': 'monospace', 'text-anchor': 'start' }));
-  g.appendChild(hint);
+  const PS = (GEO.accelLabels || []).find(l => l.t === 'PS');
+  if (PS) {
+    const hint = mk('g'); hint.setAttribute('class', 'geo-element geo-inj-hint');
+    hint.appendChild(mk('circle', { cx: PS.x, cy: PS.y, r: 8, fill: 'none', stroke: 'rgba(46,164,79,0.55)', 'stroke-width': 0.9, 'stroke-dasharray': '2.5,2' }));
+    hint.appendChild(label(PS.x - 11, PS.y + 18, 'Injektor-Komplex (Zoom)', { fill: 'rgba(205,214,228,0.72)', 'font-size': '6.5px', 'font-family': 'monospace', 'text-anchor': 'start' }));
+    g.appendChild(hint);
+  }
 }
 
 // ── Modus-Umschaltung (hart: kein Overlay/Overlap) ──────────────────────────

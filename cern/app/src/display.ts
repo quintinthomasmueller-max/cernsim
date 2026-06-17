@@ -74,9 +74,9 @@ function detGeo(){
 // didaktisch reduziert (real mehrere Tausend Spuren).
 function evProvenance(){
  const ion=s.isIon;
- if(s.selDet==='CMS' && !ion) return "4ℓ-Kinematik & -Masse: ECHTE CMS-Open-Data (Record 5200)";
- if(s.selDet==='LHCB')        return "Vertex & Spuren: illustrativ · B-Masse: SIMULATION";
- return "Signal- & Untergrund-μμ: ECHTE CMS-Kinematik" + (ion ? " · Multipl. didakt. reduziert" : "");
+ if(s.selDet==='CMS' && !ion) return "4ℓ-Kinematik und -Masse: echte CMS-Open-Data (Record 5200)";
+ if(s.selDet==='LHCB')        return "Vertex und Spuren: illustrativ · B-Masse: Simulation";
+ return "Signal- und Untergrund-μμ: echte CMS-Kinematik" + (ion ? " · Multipl. didakt. reduziert" : "");
 }
 function rKind(D,kind,last?){ let r=null; (D.lagen||[]).forEach(l=>{ if(l.kind===kind && (last||r===null)) r=l.r; }); return r; }
 function radii(D,sc){ const trk=(rKind(D,'track',true)||30), em=(rKind(D,'em')||trk+10),
@@ -307,17 +307,17 @@ function drawTrack(x0,y0,ang,len,curv,color,lw){
 // dem Canvas. Schritt 6 = komplette Kollision. Gesteuert über s.tourStep (0=aus).
 const TOUR=[
  {typ:'mu', name:'Myon (μ)', col:'#2ea44f', hl:['muon'],
-  text:'Der Marathonläufer: Ein Myon (schwerer Verwandter des Elektrons) durchfliegt ALLE Schichten und wird als Einziges ganz außen in den Myonkammern registriert. Vier solche grünen Spuren auf einmal = der „Goldkanal", mit dem 2012 das Higgs entdeckt wurde.'},
+  text:'Ein Myon, ein schwererer Verwandter des Elektrons, durchfliegt alle Schichten und wird als einziges Teilchen ganz außen in den Myonkammern registriert. Vier solche grünen Spuren auf einmal bilden den Goldkanal, mit dem 2012 das Higgs entdeckt wurde.'},
  {typ:'e', name:'Elektron (e⁻)', col:'#58a6ff', hl:['track','em'],
-  text:'Das Elektron zieht erst eine vom Magnetfeld gekrümmte Spur durch den Spurdetektor und bleibt dann im EM-Kalorimeter stecken — der blaue Keil ist seine dort deponierte Energie.'},
+  text:'Das Elektron zieht erst eine vom Magnetfeld gekrümmte Spur durch den Spurdetektor und bleibt dann im EM-Kalorimeter stecken; der blaue Keil ist seine dort deponierte Energie.'},
  {typ:'gamma', name:'Photon (γ)', col:'#f1e05a', hl:['em'],
-  text:'Das Photon (Lichtteilchen) ist elektrisch neutral: KEINE Spur im Spurdetektor! Es taucht wie aus dem Nichts als gelber Energie-Klumpen im EM-Kalorimeter auf. Genau daran erkennt man es.'},
+  text:'Das Photon ist elektrisch neutral und zieht deshalb keine Spur im Spurdetektor. Es erscheint erst als gelbes Energiebündel im EM-Kalorimeter. Dieses fehlende Spursignal ist sein Erkennungsmerkmal.'},
  {typ:'had', name:'Hadron (p, π, …)', col:'#ff7f0e', hl:['had'],
   text:'Hadronen (Protonen, Pionen …) fliegen durch das EM-Kalorimeter fast ungebremst hindurch und zerplatzen erst im Hadron-Kalorimeter zu einem orangen Teilchen-Schauer („Jet").'},
  {typ:'nu', name:'Neutrino (ν)', col:'#8b949e', hl:[],
-  text:'Das Geisterteilchen: Ein Neutrino durchquert den ganzen Detektor (und die Erde!) völlig spurlos. Verraten wird es nur durch die Bilanz: Auf einer Seite fehlt Impuls — der gestrichelte Pfeil zeigt, wohin er verschwand.'},
+  text:'Ein Neutrino durchquert den ganzen Detektor, und sogar die Erde, völlig spurlos. Verraten wird es nur durch die Bilanz: Auf einer Seite fehlt Impuls; der gestrichelte Pfeil zeigt, wohin er verschwand.'},
  {typ:'all', name:'Alles zusammen', col:'#f0f6fc', hl:null,
-  text:'Eine komplette Kollision: viele Untergrund-Spuren plus die Signaturen von eben. Aus genau diesen Mustern lesen die Physiker ab, welches Teilchen für 10⁻²² Sekunden existiert hat. Tipp: Klicke auf eine Schicht für Foto & Details!'}
+  text:'Eine komplette Kollision: viele Untergrund-Spuren und dazu die Signaturen von eben. Aus diesen Mustern lesen die Physiker ab, welches Teilchen für rund 10⁻²² Sekunden existiert hat. Ein Klick auf eine Schicht zeigt Foto und Details.'}
 ];
 function evTourDraw(){
  const st=TOUR[s.tourStep-1]; if(!st) return;

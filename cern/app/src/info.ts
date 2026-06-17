@@ -247,7 +247,7 @@ const PARAM_INFO_FIG = {
  evRead: {
   img: 'Candidate Higgs Events in ATLAS and CMS.png',
   cred: 'CERN, ATLAS/CMS · CC BY-SA 3.0',
-  cap: 'Das Original: zwei ECHTE Higgs-Kandidaten von 2012 — oben CMS (H→γγ: zwei grüne Energie-Bündel im Kristall-Kalorimeter), unten ATLAS (H→4μ: rote Spuren bis ganz nach außen). Unser Display zeichnet genau diese Art Bild vereinfacht nach.'
+  cap: 'Das Original: zwei echte Higgs-Kandidaten von 2012. Oben CMS (H→γγ: zwei grüne Energiebündel im Kristall-Kalorimeter), unten ATLAS (H→4μ: rote Spuren bis ganz nach außen). Unser Display zeichnet diese Art Bild vereinfacht nach.'
  }
 };
 
