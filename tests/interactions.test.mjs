@@ -62,6 +62,26 @@ describe('Interaktionen (esbuild-Bundle, jsdom)', () => {
     expect($('info-title').textContent).toMatch(/Super Proton Synchrotron/);
   });
 
+  it('Reale Ansicht: Geo-Hitboxen öffnen DIESELBEN Info-Panels wie im Schema', () => {
+    const open = (key, titleRe) => {
+      const el = $('geohit-' + key);
+      expect(el, 'Hitbox geohit-' + key + ' fehlt').toBeTruthy();
+      clickEl(el);
+      expect($('info-panel').classList.contains('visible')).toBe(true);
+      expect($('info-title').textContent).toMatch(titleRe);
+      $('info-close').click();
+    };
+    open('PS', /Proton Synchrotron/);
+    open('PSB', /Proton Synchrotron Booster/);
+    open('LEIR', /Low Energy Ion Ring/);
+    open('LINAC3', /LINAC 3/);
+    open('LINAC4', /LINAC 4/);
+    // Detektor-Hitbox öffnet Info UND wählt den Detektor aktiv (Spektrum/Tabs)
+    clickEl($('geohit-ALICE'));
+    expect($('info-title').textContent).toMatch(/ALICE/);
+    expect($('dt-alice').classList.contains('act')).toBe(true);
+  });
+
   it('Param-Info-Akkordeon füllt Text und öffnet genau eine Box', () => {
     const btn = document.querySelector('.cv4-pi-btn[data-pi="prePp"]');
     btn.click();

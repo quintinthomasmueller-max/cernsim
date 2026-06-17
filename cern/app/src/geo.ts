@@ -30,6 +30,21 @@ function mk(tag, attrs?) {
 function path(d, attrs) { return mk('path', Object.assign({ d, fill: 'none' }, attrs)); }
 function label(x, y, t, attrs) { const el = mk('text', Object.assign({ x, y }, attrs)); el.textContent = t; return el; }
 
+// Klickbare Hitbox im Real-Modus: oeffnet dasselbe Info-Panel (App.showInfo) wie die
+// Schema-Hitboxen. #geo-layer hat pointer-events:none -> die Klasse .geo-hit aktiviert
+// sie wieder (CSS regelt zoom-abhaengig an/aus, daher NICHT inline). Detektoren werden
+// zusaetzlich als aktiver Detektor gewaehlt (Spektrum/Tabs), aber NICHT gezoomt
+// (zoomToDetector wirkt auf die Schema-Ansicht).
+function hit(el, key, isDet?) {
+  el.classList.add('geo-hit'); el.setAttribute('id', 'geohit-' + key);
+  el.addEventListener('click', e => {
+    e.stopPropagation();
+    if (App.showInfo) App.showInfo(key);
+    if (isDet && App.selectDetector) App.selectDetector(key);
+  });
+  return el;
+}
+
 function drawGeo() {
   const g = E.geoLayer;
   if (!g || !GEO) return;
@@ -94,8 +109,14 @@ function drawGeo() {
   // OSM-Polygonen. Die echten Ringe sind kreisrund; Survey-Zentroid+Radius ergibt saubere Kreise.
   const psRing = ptsOf(INJ.ps).length ? bboxC(ptsOf(INJ.ps)) : null;
   const psbRing = ptsOf(INJ.psb).length ? bboxC(ptsOf(INJ.psb)) : null;
-  if (psRing) g.appendChild(mk('circle', { cx: psRing.cx, cy: psRing.cy, r: psRing.r, fill: 'none', stroke: 'rgba(46,164,79,0.9)', 'stroke-width': 1.5 }));
-  if (psbRing) g.appendChild(mk('circle', { cx: psbRing.cx, cy: psbRing.cy, r: psbRing.r, fill: 'none', stroke: 'rgba(88,166,255,0.9)', 'stroke-width': 1.5 }));
+  if (psRing) {
+    g.appendChild(mk('circle', { cx: psRing.cx, cy: psRing.cy, r: psRing.r, fill: 'none', stroke: 'rgba(46,164,79,0.9)', 'stroke-width': 1.5 }));
+    g.appendChild(hit(mk('circle', { cx: psRing.cx, cy: psRing.cy, r: psRing.r, fill: 'rgba(0,0,0,0.001)' }), 'PS'));
+  }
+  if (psbRing) {
+    g.appendChild(mk('circle', { cx: psbRing.cx, cy: psbRing.cy, r: psbRing.r, fill: 'none', stroke: 'rgba(88,166,255,0.9)', 'stroke-width': 1.5 }));
+    g.appendChild(hit(mk('circle', { cx: psbRing.cx, cy: psbRing.cy, r: Math.max(psbRing.r, 2.2), fill: 'rgba(0,0,0,0.001)' }), 'PSB'));
+  }
 
   // Echte interne Transferlinien TT2/TT10 + TT60 (OSM)
   (GEO.tt || []).forEach(d => g.appendChild(path(d, {
@@ -113,8 +134,9 @@ function drawGeo() {
     const p = GEO.ip[name], c = DET_COL[name] || '#fff';
     const circ = mk('circle', { cx: p.x, cy: p.y, r: 4, fill: c, stroke: '#0e141d', 'stroke-width': 1 });   // = --screen (Theme)
     const lab = label(p.x, p.y - 7, name, { fill: c, 'font-size': '8px', 'font-family': 'monospace', 'font-weight': 'bold', 'text-anchor': 'middle' });
-    circ.classList.add('geo-far'); lab.classList.add('geo-far');
-    g.appendChild(circ); g.appendChild(lab);
+    const hb = hit(mk('circle', { cx: p.x, cy: p.y, r: 9, fill: 'rgba(0,0,0,0.001)' }), name, true);   // grosszuegige Hitbox
+    circ.classList.add('geo-far'); lab.classList.add('geo-far'); hb.classList.add('geo-far');
+    g.appendChild(circ); g.appendChild(lab); g.appendChild(hb);
   }
 
   // Beschleuniger-Labels (Zentroide). Klasse geo-far → im Injektor-Zoom
@@ -295,6 +317,14 @@ function drawInjector(g) {
   const lc = { PS: PSc, Booster: PSBc, LEIR: LEIRc, LINAC3: ACC, LINAC4: ACC };
   (INJ.labels || []).forEach(l => det.appendChild(label(l.x, l.y, l.t,
     { fill: lc[l.t] || '#fff', 'font-size': FS, 'font-family': 'monospace', 'text-anchor': 'middle', 'font-weight': 'bold' })));
+
+  // Hitboxen (Real-Modus, nur im Injektor-Zoom aktiv via CSS): LEIR + die zwei Linacs.
+  // PS/PSB liegen als Ring-Hitboxen schon im Vollbild (oben). accel[0]=Linac3, [1]=Linac4.
+  const acc = INJ.accel || [];
+  if (acc[0]) det.appendChild(hit(mk('path', { d: acc[0], fill: 'none', stroke: 'rgba(0,0,0,0.001)', 'stroke-width': 8 }), 'LINAC3'));
+  if (acc[1]) det.appendChild(hit(mk('path', { d: acc[1], fill: 'none', stroke: 'rgba(0,0,0,0.001)', 'stroke-width': 8 }), 'LINAC4'));
+  const leirP = ptsOf(INJ.leir);
+  if (leirP.length) { const c = bboxC(leirP); det.appendChild(hit(mk('circle', { cx: c.cx, cy: c.cy, r: c.r + 0.8, fill: 'rgba(0,0,0,0.001)' }), 'LEIR')); }
   g.appendChild(det);
 
   // Dezenter Dauer-Hinweis im Vollbild (verschwindet beim Zoom): markiert die Lage.

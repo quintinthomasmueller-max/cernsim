@@ -243,7 +243,12 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
 #svg.inj-zoom .geo-inj-hint{opacity:0}
 /* Grobe Vollbild-Labels (PS/PSB/SPS-Zentroide) im Zoom ausblenden — sie wären
    ~20× zu groß; die feinen Ersatz-Labels liefert die Detail-Ebene. */
-#svg.inj-zoom .geo-far{opacity:0}
+#svg.inj-zoom .geo-far{opacity:0;pointer-events:none}
+/* Klickbare Geo-Hitboxen (Real-Modus): oeffnen dasselbe Info-Panel wie im Schema.
+   Aktiv trotz #geo-layer{pointer-events:none}. Detail-Hits (LEIR/Linacs) nur im
+   Injektor-Zoom; Vollbild-Hits (Detektoren) nur ausserhalb des Zooms (s. geo-far). */
+.geo-hit{pointer-events:all;cursor:pointer}
+#svg:not(.inj-zoom) .geo-inj-detail .geo-hit{pointer-events:none}
 /* Easter Egg FCC: Ring standardmäßig versteckt, erscheint beim Heraus-Zoom. */
 .geo-fcc{opacity:0;transition:opacity .8s}
 #svg.fcc-on .geo-fcc{opacity:1}
@@ -3033,6 +3038,16 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
     el.textContent = t;
     return el;
   }
+  function hit(el, key, isDet) {
+    el.classList.add(&quot;geo-hit&quot;);
+    el.setAttribute(&quot;id&quot;, &quot;geohit-&quot; + key);
+    el.addEventListener(&quot;click&quot;, (e) => {
+      e.stopPropagation();
+      if (App.showInfo) App.showInfo(key);
+      if (isDet &amp;&amp; App.selectDetector) App.selectDetector(key);
+    });
+    return el;
+  }
   function drawGeo() {
     const g2 = E4.geoLayer;
     if (!g2 || !GEO) return;
@@ -3095,8 +3110,14 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
     (GEO.sps || []).forEach((d) => g2.appendChild(path(d, { stroke: &quot;rgba(255,127,14,0.85)&quot;, &quot;stroke-width&quot;: 1.8 })));
     const psRing = ptsOf(INJ.ps).length ? bboxC(ptsOf(INJ.ps)) : null;
     const psbRing = ptsOf(INJ.psb).length ? bboxC(ptsOf(INJ.psb)) : null;
-    if (psRing) g2.appendChild(mk(&quot;circle&quot;, { cx: psRing.cx, cy: psRing.cy, r: psRing.r, fill: &quot;none&quot;, stroke: &quot;rgba(46,164,79,0.9)&quot;, &quot;stroke-width&quot;: 1.5 }));
-    if (psbRing) g2.appendChild(mk(&quot;circle&quot;, { cx: psbRing.cx, cy: psbRing.cy, r: psbRing.r, fill: &quot;none&quot;, stroke: &quot;rgba(88,166,255,0.9)&quot;, &quot;stroke-width&quot;: 1.5 }));
+    if (psRing) {
+      g2.appendChild(mk(&quot;circle&quot;, { cx: psRing.cx, cy: psRing.cy, r: psRing.r, fill: &quot;none&quot;, stroke: &quot;rgba(46,164,79,0.9)&quot;, &quot;stroke-width&quot;: 1.5 }));
+      g2.appendChild(hit(mk(&quot;circle&quot;, { cx: psRing.cx, cy: psRing.cy, r: psRing.r, fill: &quot;rgba(0,0,0,0.001)&quot; }), &quot;PS&quot;));
+    }
+    if (psbRing) {
+      g2.appendChild(mk(&quot;circle&quot;, { cx: psbRing.cx, cy: psbRing.cy, r: psbRing.r, fill: &quot;none&quot;, stroke: &quot;rgba(88,166,255,0.9)&quot;, &quot;stroke-width&quot;: 1.5 }));
+      g2.appendChild(hit(mk(&quot;circle&quot;, { cx: psbRing.cx, cy: psbRing.cy, r: Math.max(psbRing.r, 2.2), fill: &quot;rgba(0,0,0,0.001)&quot; }), &quot;PSB&quot;));
+    }
     (GEO.tt || []).forEach((d) => g2.appendChild(path(d, {
       stroke: &quot;rgba(46,164,79,0.6)&quot;,
       &quot;stroke-width&quot;: 1.3,
@@ -3115,10 +3136,13 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
       const p = GEO.ip[name], c = DET_COL[name] || &quot;#fff&quot;;
       const circ = mk(&quot;circle&quot;, { cx: p.x, cy: p.y, r: 4, fill: c, stroke: &quot;#0e141d&quot;, &quot;stroke-width&quot;: 1 });
       const lab = label(p.x, p.y - 7, name, { fill: c, &quot;font-size&quot;: &quot;8px&quot;, &quot;font-family&quot;: &quot;monospace&quot;, &quot;font-weight&quot;: &quot;bold&quot;, &quot;text-anchor&quot;: &quot;middle&quot; });
+      const hb = hit(mk(&quot;circle&quot;, { cx: p.x, cy: p.y, r: 9, fill: &quot;rgba(0,0,0,0.001)&quot; }), name, true);
       circ.classList.add(&quot;geo-far&quot;);
       lab.classList.add(&quot;geo-far&quot;);
+      hb.classList.add(&quot;geo-far&quot;);
       g2.appendChild(circ);
       g2.appendChild(lab);
+      g2.appendChild(hb);
     }
     (GEO.accelLabels || []).forEach((p) => {
       const el = label(p.x, p.y, p.t, {
@@ -3259,6 +3283,14 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
       l.t,
       { fill: lc[l.t] || &quot;#fff&quot;, &quot;font-size&quot;: FS, &quot;font-family&quot;: &quot;monospace&quot;, &quot;text-anchor&quot;: &quot;middle&quot;, &quot;font-weight&quot;: &quot;bold&quot; }
     )));
+    const acc = INJ.accel || [];
+    if (acc[0]) det.appendChild(hit(mk(&quot;path&quot;, { d: acc[0], fill: &quot;none&quot;, stroke: &quot;rgba(0,0,0,0.001)&quot;, &quot;stroke-width&quot;: 8 }), &quot;LINAC3&quot;));
+    if (acc[1]) det.appendChild(hit(mk(&quot;path&quot;, { d: acc[1], fill: &quot;none&quot;, stroke: &quot;rgba(0,0,0,0.001)&quot;, &quot;stroke-width&quot;: 8 }), &quot;LINAC4&quot;));
+    const leirP = ptsOf(INJ.leir);
+    if (leirP.length) {
+      const c = bboxC(leirP);
+      det.appendChild(hit(mk(&quot;circle&quot;, { cx: c.cx, cy: c.cy, r: c.r + 0.8, fill: &quot;rgba(0,0,0,0.001)&quot; }), &quot;LEIR&quot;));
+    }
     g2.appendChild(det);
     const PS = (GEO.accelLabels || []).find((l) => l.t === &quot;PS&quot;);
     if (PS) {
