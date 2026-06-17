@@ -91,6 +91,46 @@ def build():
     split = (src[0] + (dst[0] - src[0]) * f, src[1] + (dst[1] - src[1]) * f)
     l3a, l3b, trB = T(*src), T(*split), T(*dst)
 
+    # ── Verbindungs-Snap (Vorbereitung Batch-Animation in der Realansicht) ──
+    # Gerade Segmente als [Kategorie, A, B] (Widget-Koord); A/B werden in-place
+    # geschnappt: (1) Knoten <NODE_TOL zusammen auf ihren Schwerpunkt -> Mikro-Luecken
+    # zu + EIN sauberer Knotenpunkt; (2) Endpunkte <=RING_TOL an einer Ringkante exakt
+    # radial aufsetzen -> Linie trifft Kreis ohne Luecke/Ueberstand; (3) danach zu
+    # kurze Segmente verwerfen (Zeichen-Stummel). Freie Linac-Quellen (weit von jedem
+    # Ring) bleiben unberuehrt -> Position/Form aendern sich nicht.
+    def ep(e):
+        return [T(e.point(0).x, e.point(0).y), T(e.point(1).x, e.point(1).y)]
+    segs = [['accel', l3a, l3b], ['accel'] + ep(P[ID_LINAC4]),         # Linac3 (34 m), Linac4
+            ['transfer', l3b, trB]] + [['transfer'] + ep(P[i]) for i in TRANSFER_IDS]
+
+    rp = lambda ids, n: [T(P[i].point(t).x, P[i].point(t).y) for i in ids for t in [j / n for j in range(n + 1)]]
+    def ring_of(ids, n):
+        q = rp(ids, n); xs = [p[0] for p in q]; ys = [p[1] for p in q]
+        return ((min(xs) + max(xs)) / 2, (min(ys) + max(ys)) / 2, (max(xs) - min(xs) + max(ys) - min(ys)) / 4)
+    RINGS = [ring_of([ID_PS], 24), ring_of([ID_PSB], 24), ring_of(LEIR_IDS, 1)]
+
+    NODE_TOL, RING_TOL = 0.7, 0.30
+    refs = [(si, j) for si in range(len(segs)) for j in (1, 2)]        # (Segment, A=1/B=2)
+    seen = [False] * len(refs)
+    for a in range(len(refs)):                                        # (1) Knoten-Cluster
+        if seen[a]: continue
+        grp = [a]; seen[a] = True; pa = segs[refs[a][0]][refs[a][1]]
+        for b in range(a + 1, len(refs)):
+            pb = segs[refs[b][0]][refs[b][1]]
+            if not seen[b] and math.hypot(pa[0] - pb[0], pa[1] - pb[1]) < NODE_TOL:
+                grp.append(b); seen[b] = True
+        cx = sum(segs[refs[g][0]][refs[g][1]][0] for g in grp) / len(grp)
+        cy = sum(segs[refs[g][0]][refs[g][1]][1] for g in grp) / len(grp)
+        for g in grp: segs[refs[g][0]][refs[g][1]] = (cx, cy)
+    for s in segs:                                                    # (2) Ring-Anschluss
+        for j in (1, 2):
+            x, y = s[j]
+            for cx, cy, r in RINGS:
+                d = math.hypot(x - cx, y - cy)
+                if d > 1e-6 and abs(d - r) <= RING_TOL:
+                    s[j] = (cx + (x - cx) / d * r, cy + (y - cy) / d * r); break
+    segs = [s for s in segs if math.hypot(s[1][0] - s[2][0], s[1][1] - s[2][1]) > 0.15]   # (3)
+
     # TT2 (C) wird NICHT mehr gezeichnet: die echte PS->SPS-Trasse liegt schon als
     # geo.gen.js-'tt' (gruen) im Vollbild. C dient hier nur als Rotations-Anker (oben,
     # th), sonst gaebe es eine versetzte rote Dublette desselben Tunnels.
@@ -98,8 +138,8 @@ def build():
         'ps': [dstr(P[ID_PS], arc=True)],
         'psb': [dstr(P[ID_PSB], arc=True)],
         'leir': [dstr(P[i]) for i in LEIR_IDS],
-        'accel': [seg(l3a, l3b), dstr(P[ID_LINAC4])],                 # Linac3 (34 m), Linac4
-        'transfer': [seg(l3b, trB)] + [dstr(P[i]) for i in TRANSFER_IDS],
+        'accel': [seg(s[1], s[2]) for s in segs if s[0] == 'accel'],
+        'transfer': [seg(s[1], s[2]) for s in segs if s[0] == 'transfer'],
     }
     # Labels (PS/PSB/LEIR/LINAC3/LINAC4)
     cw = lambda e: T((e.bbox()[0] + e.bbox()[2]) / 2, (e.bbox()[1] + e.bbox()[3]) / 2)
