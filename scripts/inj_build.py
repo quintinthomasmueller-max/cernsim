@@ -109,6 +109,17 @@ def build():
         return ((min(xs) + max(xs)) / 2, (min(ys) + max(ys)) / 2, (max(xs) - min(xs) + max(ys) - min(ys)) / 4)
     RINGS = [ring_of([ID_PS], 24), ring_of([ID_PSB], 24), ring_of(LEIR_IDS, 1)]
 
+    # Zusatz-TT (geschaetzt, keine Geodaten): kurz nach Linac3 (am Knoten l3b) schraeg
+    # hinueber an den PS-Ring. CERN-plausibel als Anschluss des Ionen-Zweigs an PS;
+    # gezielt als TANGENTE vom Knoten an PS (oberer Beruehrpunkt) -> stop_at_ring clippt
+    # sie unten sauber auf den Eintritt (grazing, wie PSB->PS).
+    pscx, pscy, psr = RINGS[0]; gx, gy = l3b
+    dPS = math.hypot(gx - pscx, gy - pscy)
+    if dPS > psr:
+        gam = math.atan2(gy - pscy, gx - pscx); phi = math.acos(psr / dPS)
+        tang = min(((pscx + psr * math.cos(gam + s * phi), pscy + psr * math.sin(gam + s * phi)) for s in (1, -1)), key=lambda p: p[1])
+        segs.append(['transfer', list(l3b), list(tang)])   # exakter Tangentenpunkt -> volle Diagonale, beruehrt PS sauber
+
     NODE_TOL, RING_TOL = 0.12, 0.40
     refs = [(si, j) for si in range(len(segs)) for j in (1, 2)]        # (Segment, A=1/B=2)
     seen = [False] * len(refs)
