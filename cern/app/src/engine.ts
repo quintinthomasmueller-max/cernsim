@@ -33,16 +33,24 @@ function placeTwinPath(el, railEl, frac){
 function placeTwinRing(el, ring, a){ if(!el || !ring) return; el.setAttribute("cx",ring.cx+ring.r*Math.cos(a)); el.setAttribute("cy",ring.cy+ring.r*Math.sin(a)); }
 function endDot(el){ if(!el) return; if(el.__geo){ el.__geo.remove(); el.__geo=null; } el.remove(); }
 // velKey (+ Strahl/Ion) → Geo-Rail des aktuellen Schritts. r = Geo-Punktgroesse.
+// entryA/exitA: vorberechnete Geo-Ring-Winkel aus App.geoRails (geo.ts#buildGeoRails)
+// fuer lueckenlose Twin-Uebergaenge zwischen Linac→Ring→Transfer→Ring→TI.
 function geoRailFor(velKey, beam){
  const R=App.geoRails||{}, RG=App.geoRings||{}, ion=s.isIon, ps=RG.ps;
- const toward=(rg)=> (rg&&ps)? Math.atan2(rg.cy-ps.cy, rg.cx-ps.cx) : Math.PI;
  switch(velKey){
   case 'linac':   return { kind:'path', el: ion?R.linac3:R.linac4, r:0.18 };
-  case 'ring1':   { const rg=ion?RG.leir:RG.psb; return { kind:'ring', ring:rg, r:0.18, entryA:toward(rg) }; }
+  case 'ring1':   { const rg=ion?RG.leir:RG.psb;
+    return { kind:'ring', ring:rg, r:0.18,
+      entryA: ion?(R.leirEntryA??Math.PI):(R.psbEntryA??Math.PI),
+      exitA:  ion?(R.leirExitA??0):(R.psbExitA??0) }; }
   case 'trToPs':  return { kind:'path', el: ion?R.leirPs:R.psbPs, r:0.18 };
-  case 'ps':      { const src=ion?RG.leir:RG.psb; return { kind:'ring', ring:ps, r:0.20, entryA:(ps&&src)?Math.atan2(src.cy-ps.cy,src.cx-ps.cx):Math.PI }; }
+  case 'ps':      return { kind:'ring', ring:ps, r:0.20,
+    entryA: ion?(R.psEntryFromLeirA??Math.PI):(R.psEntryFromPsbA??Math.PI),
+    exitA:  R.psExitA??0 };
   case 'trToSps': return { kind:'path', el: R.psSps, r:0.22 };
-  case 'sps':     return { kind:'ring', ring:RG.sps, r:2.4, entryA:Math.PI };
+  case 'sps':     return { kind:'ring', ring:RG.sps, r:2.4,
+    entryA: R.spsEntryA??Math.PI,
+    exitA:  beam===1?(R.spsExitB1A??0):(R.spsExitB2A??0) };
   case 'ti':      return { kind:'path', el: beam===1?R.ti2:R.ti8, r:2.4 };
  }
  return null;
@@ -171,8 +179,13 @@ async function moveAlongPath(dot, pathEl, vpx, abort, geo?){
 async function orbitRing(dot, ring, entryA, exitA, orbits, vpx, abort, geo?){
   let partial=((exitA-entryA)%(2*Math.PI)+2*Math.PI)%(2*Math.PI);
   let totalA=orbits*2*Math.PI+partial;
-  const dur=Math.max(1, (ring.r*totalA)/vpx);   // Dauer = Bogenlänge / Geschwindigkeit (gleiche Leiter wie Transfers)
+  const dur=Math.max(1, (ring.r*totalA)/vpx);   // Dauer = Bogenlänge / Geschwindigkeit
   const gEntry = geo && geo.entryA!=null ? geo.entryA : 0;
+  // Eigener Geo-Schwenkwinkel: falls geo.exitA gesetzt, landet der Twin am echten
+  // Geo-Ausstiegspunkt (unabhaengig vom Schema-Winkel), sonst gleicher Schwenk wie Schema.
+  const gExit = geo && geo.exitA!=null ? geo.exitA : null;
+  const gPartial = gExit!=null ? ((gExit-gEntry)%(2*Math.PI)+2*Math.PI)%(2*Math.PI) : partial;
+  const gTotalA = orbits*2*Math.PI+gPartial;
   return new Promise<void>(res=>{
    let t0=null;
    function step(ts){
@@ -182,7 +195,7 @@ async function orbitRing(dot, ring, entryA, exitA, orbits, vpx, abort, geo?){
     let a=entryA+p*totalA;
     dot.setAttribute("cx",ring.cx+ring.r*Math.cos(a));
     dot.setAttribute("cy",ring.cy+ring.r*Math.sin(a));
-    if(geo && geo.kind==='ring') placeTwinRing(dot.__geo, geo.ring, gEntry+p*totalA);   // gleicher Umlauf, Geo-Ring
+    if(geo && geo.kind==='ring') placeTwinRing(dot.__geo, geo.ring, gEntry+p*gTotalA);
     p<1 ? requestAnimationFrame(step) : res();
    }
    requestAnimationFrame(step);

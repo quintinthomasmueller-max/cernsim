@@ -197,26 +197,128 @@ function drawGeo() {
 // ── Geo-Rails fuer die Batch-Animation (geo-flow, engine.ts) ─────────────────
 // Unsichtbare <path> (getPointAtLength) + Ring-Geometrien {cx,cy,r}. Jeder Schema-
 // Punkt bekommt einen Geo-Zwilling, der mit DEMSELBEN Fortschritt/Winkel hier
-// entlanglaeuft -> Real- und Schema-Ansicht sind per Konstruktion synchron. Die
-// Transfer-Verbinder sind als gerade Kantenlinien zwischen den Ringen geschaetzt
-// (keine eigenen Geodaten); LHC/SPS/TI/Linacs nutzen die echten Trassen.
+// entlanglaeuft -> Real- und Schema-Ansicht synchron.
+//
+// WICHTIG: Die Rails folgen den TATSAECHLICH GEZEICHNETEN orangen Trassen
+// (INJ.accel/INJ.transfer, gezeichnet in drawInjector) — KEINE geraden Ersatz-
+// Linien. Die Linacs muenden in einen HUB (wo sich die orangen Trassen kreuzen),
+// von dort verzweigen die Transfers zu den Ringen (so wie der Hand-Lageplan es
+// zeichnet). Knoten N0..N11 = Segment-Endpunkte (siehe inj_build.py). Reale Routen:
+//   Ionen:    LINAC3(N0→N1 Hub) → t[2](N7→N8) in LEIR → zurueck t[2](N8→N7)
+//             → t[6](N1→N11) an PS            [t[6] = Ionen-Zweig→PS, inj_build.py]
+//   Protonen: LINAC4(N3→N2) → t[5](N2→N6) → t[1](N6→N5) → Hub → t[0](N1→N4) in PSB
+//             → t[3](N9→N10) an PS
+//   PS→SPS = GEO.tt[0] (gruen gestrichelt) · SPS→LHC = GEO.tt[1]+ti2 / Bruecke+ti8
+// Ring-beruehrende Knoten werden auf den Ringrand projiziert (Mikro-Versatz) →
+// lueckenloser Uebergang Rail↔Umlauf (entryA/exitA aus genau diesen Punkten).
 function buildGeoRails(g, psRing, psbRing) {
   const railPath = (d) => { if (!d) return null; const p = mk('path', { d, fill: 'none', stroke: 'none' }); p.style.pointerEvents = 'none'; g.appendChild(p); return p; };
   const ringOf = (pts) => pts.length ? bboxC(pts) : null;
-  const rings: any = { ps: psRing, psb: psbRing, leir: ringOf(ptsOf(INJ.leir)), sps: ringOf(ptsOf(GEO.sps || [])) };
-  const edge = (a, b) => {                                   // Linie Kante(a)->Kante(b)
-    if (!a || !b) return null;
-    const dx = b.cx - a.cx, dy = b.cy - a.cy, d = Math.hypot(dx, dy) || 1, ux = dx / d, uy = dy / d;
-    return `M ${(a.cx + ux * a.r).toFixed(2)},${(a.cy + uy * a.r).toFixed(2)} L ${(b.cx - ux * b.r).toFixed(2)},${(b.cy - uy * b.r).toFixed(2)}`;
+  // Ersten oder letzten Punkt eines SVG-Pfads lesen
+  const ptOf = (d: string, last = true): {x: number, y: number} | null => {
+    if (!d) return null;
+    const pts = d.replace(/^M /, '').split(' L ');
+    const v = (last ? pts[pts.length - 1] : pts[0]).trim().split(',');
+    return { x: +v[0], y: +v[1] };
   };
+  // Winkel vom Ring-Zentrum zu einem Punkt
+  const angTo = (ring: {cx: number, cy: number}, pt: {x: number, y: number}) =>
+    Math.atan2(pt.y - ring.cy, pt.x - ring.cx);
+  // Zwei Pfade zusammenkleben (d2 ohne fuehrendes "M x,y")
+  const joinPaths = (d1: string, d2: string): string =>
+    d1 + ' ' + d2.replace(/^M [^ ]+ /, '');
+
   const acc = INJ.accel || [];
+  const tra = INJ.transfer || [];
+  const leirRing = ringOf(ptsOf(INJ.leir));
+  const spsRing  = ringOf(ptsOf(GEO.sps || []));
+  const rings: any = { ps: psRing, psb: psbRing, leir: leirRing, sps: spsRing };
+
+  // Endpunkte [start, end] eines Segments als [x,y]-Paare.
+  const endsOf = (d: string): number[][] | null => {
+    if (!d) return null;
+    const pts = d.replace(/^M /, '').split(' L ').map(s => s.split(',').map(Number));
+    return [pts[0], pts[pts.length - 1]];
+  };
+  // Knoten aus den orangen Segmenten (Indizes stabil aus inj_build.py).
+  const a0 = endsOf(acc[0]), a1 = endsOf(acc[1]);
+  const t0 = endsOf(tra[0]), t1 = endsOf(tra[1]), t2 = endsOf(tra[2]),
+        t3 = endsOf(tra[3]), t5 = endsOf(tra[5]), t6 = endsOf(tra[6]);
+  // N0 LINAC3-Quelle, N1 Hub; N2/N3 LINAC4; N4/N9 PSB-Rand; N7/N8 (Hub/LEIR);
+  // N5/N6 LINAC4-Knoten; N10/N11 PS-Rand.
+  const N0 = a0 && a0[0], N1 = a0 && a0[1];
+  const N2 = a1 && a1[0], N3 = a1 && a1[1];
+  const N4 = t0 && t0[1], N5 = t1 && t1[0], N6 = t1 && t1[1];
+  const N7 = t2 && t2[0], N8 = t2 && t2[1], N9 = t3 && t3[0], N10 = t3 && t3[1], N11 = t6 && t6[1];
+
+  // Ring-beruehrenden Knoten auf den Ringrand projizieren {p:[x,y], a:Winkel}.
+  const onRing = (pt, ring) => {
+    const dx = pt[0] - ring.cx, dy = pt[1] - ring.cy, d = Math.hypot(dx, dy) || 1;
+    return { p: [ring.cx + ring.r * dx / d, ring.cy + ring.r * dy / d], a: Math.atan2(dy, dx) };
+  };
+  // Punkt-Kette → SVG-Polyline "M x,y L x,y …" (folgt exakt den orangen Trassen).
+  const chain = (pts) => 'M ' + pts.filter(Boolean).map(p => p[0].toFixed(3) + ',' + p[1].toFixed(3)).join(' L ');
+
+  // ── Ring-Anschlusspunkte (projiziert) + Winkel ──────────────────────────
+  const psbIn  = N4  ? onRing(N4,  psbRing)  : { p: null, a: Math.PI };  // Protonen: PSB-Eingang
+  const psbOut = N9  ? onRing(N9,  psbRing)  : { p: null, a: 0 };        // Protonen: PSB-Ausgang → t[3]
+  const leirAt = N8  ? onRing(N8,  leirRing) : { p: null, a: Math.PI };  // Ionen: LEIR Ein-/Ausgang (t[2])
+  const psFromPsb  = N10 ? onRing(N10, psRing) : { p: null, a: Math.PI };// Protonen: PS-Eingang (t[3])
+  const psFromLeir = N11 ? onRing(N11, psRing) : { p: null, a: Math.PI };// Ionen: PS-Eingang (t[6])
+  const psbEntryA = psbIn.a, psbExitA = psbOut.a;
+  const leirEntryA = leirAt.a, leirExitA = leirAt.a;          // Ionen: LEIR an derselben Trasse rein/raus
+  const psEntryFromPsbA  = psFromPsb.a;
+  const psEntryFromLeirA = psFromLeir.a;
+
+  // ── Rails als Ketten der echten orangen Segmente (Hub = N1/N5/N7-Kreuzung) ─
+  // Ionen: LINAC3 → Hub → in LEIR
+  const l3 = { d: chain([N0, N1, N7, leirAt.p]) };
+  // Ionen: aus LEIR zurueck ueber den Hub an PS (t[2] zurueck + t[6])
+  const leirPs = { d: chain([leirAt.p, N7, N1, psFromLeir.p]) };
+  // Protonen: LINAC4 → Knoten → Hub → in PSB
+  const l4 = { d: chain([N3, N2, N6, N5, N1, psbIn.p]) };
+  // Protonen: PSB → PS (t[3])
+  const psbPs = { d: chain([psbOut.p, psFromPsb.p]) };
+
+  // psSps: echter GEO.tt[0]-Tunnel (PS-Ring → SPS-Ring), Richtung bereits korrekt
+  const ttPS     = (GEO.tt || [])[0] || null;
+  const tt0Start = ttPS ? ptOf(ttPS, false) : null;
+  const tt0End   = ttPS ? ptOf(ttPS)        : null;
+  const psExitA   = (psRing  && tt0Start) ? angTo(psRing,  tt0Start) : 0;
+  const spsEntryA = (spsRing && tt0End)   ? angTo(spsRing, tt0End)   : Math.PI;
+
+  // TI 2: GEO.tt[1] (SPS-Ring-Punkt→TI2-Start) + GEO.ti.ti2 zusammensetzen
+  const tt1      = (GEO.tt || [])[1]  || null;
+  const ti2Base  = (GEO.ti || {}).ti2 || null;
+  const ti2Rail  = (tt1 && ti2Base) ? joinPaths(tt1, ti2Base) : ti2Base;
+  const tt1Start = tt1 ? ptOf(tt1, false) : null;
+  const spsExitB1A = (spsRing && tt1Start) ? angTo(spsRing, tt1Start) : 0;
+
+  // TI 8: Bruecke vom SPS-Ring-Rand zu ti8-Start (kein tt-Pfad in GEO fuer B2)
+  const ti8Base    = (GEO.ti || {}).ti8 || null;
+  const ti8StartPt = ti8Base ? ptOf(ti8Base, false) : null;
+  const spsExitB2A = (spsRing && ti8StartPt) ? angTo(spsRing, ti8StartPt) : 0;
+  let ti8Rail = ti8Base;
+  if (spsRing && ti8StartPt && ti8Base) {
+    const f = (n: number) => n.toFixed(2);
+    const bx = spsRing.cx + spsRing.r * Math.cos(spsExitB2A);
+    const by = spsRing.cy + spsRing.r * Math.sin(spsExitB2A);
+    ti8Rail = `M ${f(bx)},${f(by)} L ` + ti8Base.replace(/^M /, '');
+  }
+
   App.geoRings = rings;
   App.geoRails = {
-    linac4: railPath(acc[1]), linac3: railPath(acc[0]),
-    psbPs: railPath(edge(rings.psb, rings.ps)), leirPs: railPath(edge(rings.leir, rings.ps)),
-    psSps: railPath(edge(rings.ps, rings.sps)),
-    ti2: railPath((GEO.ti || {}).ti2), ti8: railPath((GEO.ti || {}).ti8),
-    lhc: railPath(GEO.lhc.join(' ')),
+    linac4: railPath(l4.d), linac3: railPath(l3.d),   // orange Trassen via Hub bis in PSB/LEIR
+    psbPs:  railPath(psbPs.d),                         // t[3]: PSB-Rand → PS-Rand
+    leirPs: railPath(leirPs.d),                        // t[2] zurueck + t[6]: LEIR → Hub → PS
+    psSps:  railPath(ttPS),                           // GEO.tt[0]: echter PS→SPS-Tunnel (gruen gestrichelt)
+    ti2:    railPath(ti2Rail),                        // GEO.tt[1] + GEO.ti.ti2
+    ti8:    railPath(ti8Rail),                        // Bruecke + GEO.ti.ti8
+    lhc:    railPath(GEO.lhc.join(' ')),
+    // Vorberechnete Ring-Winkel fuer lueckenlose Twin-Uebergaenge:
+    psbEntryA, psbExitA, leirEntryA, leirExitA,
+    psEntryFromPsbA, psEntryFromLeirA, psExitA,
+    spsEntryA, spsExitB1A, spsExitB2A,
   };
 }
 
@@ -241,6 +343,9 @@ function drawFCC(g) {
   fcc.appendChild(ti);
   fcc.appendChild(label(cx, cy - R + (44 * view.w / 700), 'LHC 27 km · SPS 7 km · FCC 91 km   (×3,4)',
     { fill: FC + '0.7)', 'font-size': fs(11), 'font-family': 'monospace', 'text-anchor': 'middle' }));
+  // Klickbare Ring-Hitbox (oeffnet das FCC-Info-Panel). Liegt im geo-fcc-Wrapper →
+  // nur bei #svg.fcc-on aktiv (CSS), sonst kein unsichtbarer Klickfaenger im See.
+  fcc.appendChild(hit(mk('circle', { cx, cy, r: R, fill: 'none', stroke: FC + '0)', 'stroke-width': 16 }), 'FCC', { ring: true }));
   g.appendChild(fcc);
 
   // Versteckter Auslöser: dezenter Punkt im See (FCC verläuft real unter dem Léman).

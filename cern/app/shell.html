@@ -4,14 +4,13 @@
 <div class="cv4-hdr">
  <div><span class="cv4-logo">CERN-Schaltzentrale</span><span class="cv4-badge">interaktives Modell</span></div>
  <div style="display:flex;align-items:center;gap:12px">
-  <button class="cv4-btn" id="btn-toggle-geo" style="padding:5px 9px;font-size:10.5px">Reale Ansicht</button>
   <div class="cv4-status"><span class="cv4-dot" id="sdot"></span><span id="stxt">OFFLINE</span></div>
  </div>
 </div>
 
 <div class="cv4-tagline">
  <b>Steuere den größten Teilchenbeschleuniger der Welt.</b> Beschleunige Teilchen fast auf Lichtgeschwindigkeit, bring sie zur Kollision und entdecke daraus neue Teilchen, wie im echten Kontrollzentrum (CCC) am CERN bei Genf.
- <span class="cv4-pi-btn" data-pi="introCern">Was ist der CERN?</span>
+ <span class="cv4-pi-btn" data-pi="introCern">Was ist das CERN?</span>
  <span class="cv4-pi-btn" data-pi="introUse">Wie bediene ich das?</span>
 </div>
 <div class="cv4-param-info" id="pi-introCern"></div>
@@ -25,6 +24,8 @@
   <button class="cv4-btn off" id="btn-zoom-out" style="position:absolute;top:12px;left:12px;padding:5px 10px;font-size:10px;background:rgba(28,37,49,0.92);border-color:#3c4a5c;z-index:10;transition:all 0.2s">Ansicht zurücksetzen</button>
   <!-- Zoom auf den Injektor-Komplex Meyrin (nur in der Realen Ansicht sichtbar) -->
   <button class="cv4-btn" id="btn-zoom-meyrin" style="position:absolute;bottom:12px;left:12px;padding:5px 10px;font-size:10px;background:rgba(28,37,49,0.92);border-color:#2ea44f;color:#a3b4c6;z-index:10;transition:all 0.2s;display:none">Injektor-Komplex (Meyrin)</button>
+  <!-- Ansicht-Umschalter Didaktik ↔ Reale Ansicht (oben rechts im Kollider-Bild) -->
+  <button class="cv4-btn" id="btn-toggle-geo" style="position:absolute;top:12px;right:12px;padding:5px 9px;font-size:10.5px;background:rgba(28,37,49,0.92);border-color:#3c4a5c;z-index:10;transition:all 0.2s">Reale Ansicht</button>
   <!-- Großansicht/Vollbild des Plans (nur am Handy sichtbar, CSS schaltet display) -->
   <button class="cv4-btn" id="btn-diagram-full" style="position:absolute;top:12px;right:12px;padding:5px 10px;font-size:11px;background:rgba(28,37,49,0.92);border-color:#58a6ff;color:#58a6ff;z-index:9999;transition:all 0.2s">Großansicht</button>
   <div class="cv4-fs-hint">Querformat zeigt mehr Detail · Schaltfläche schließt</div>
@@ -168,7 +169,7 @@
       Die Parameter sind keine Regler mehr, sondern Anzeigen des gewählten Presets.
       IDs unverändert (engine#updateReadouts / Preset-Handler). -->
  <div class="cv4-readouts">
-  <div class="cv4-ptitle">MESSWERTE & STRAHL-PARAMETER</div>
+  <div class="cv4-ptitle">LHC-MESSWERTE & STRAHL-PARAMETER</div>
   <div class="cv4-rg">
    <div class="cv4-ro"><span class="cv4-ro-l">Energie/Strahl</span><span class="cv4-ro-v" id="v-e">0,00 TeV</span></div>
    <div class="cv4-ro"><span class="cv4-ro-l">Magnetfeld B</span><span class="cv4-ro-v" id="v-b">0.000 T</span></div>
@@ -207,7 +208,7 @@
 
   <div>
    <div class="cv4-ptitle">LHC-FÜLLSTAND</div>
-   <div style="font-size:8.5px;color:#8b949e;margin:-2px 0 4px;line-height:1.35">1 Punkt = 1 Strahl-Paket: vor dem PS nur wenige Bunches, im PS zum 72-Bunch-Batch geformt (Punkt wächst). Im SPS rücken bis 4 Batches zu 1 Zug zusammen (≤288 B). 1 LHC-Punkt = 1 ganzer Zug, nicht ein einzelner Bunch. ~10 Züge füllen den LHC (Pb-Ionen: 592 B). Die Balken zählen die im LHC angekommenen Bunches.</div>
+   <div style="font-size:8.5px;color:#8b949e;margin:-2px 0 4px;line-height:1.35">1 Punkt = 1 Strahl-Paket im LHC. Die Paketierung davor: &nbsp;• Bunch — winziges Protonen-Paket (vor dem PS nur wenige). &nbsp;• Batch — 72 Bunches, im PS geformt (der Punkt wächst). &nbsp;• Zug — bis 4 Batches, im SPS gebündelt (≤ 288 Bunches). 1 LHC-Punkt entspricht einem ganzen Zug, nicht einem einzelnen Bunch. Ca. 10 Züge füllen den LHC (Pb-Ionen: 592 Bunches). Die Balken zählen die im LHC angekommenen Bunches.</div>
    <div class="cv4-fill-row"><span style="width:108px;font-size:9.5px">B1 <span id="b1c">0 / 2.808</span></span><div class="cv4-fill-bar"><div class="cv4-fill-bar-inner b1" id="b1bar" style="width:0%"></div></div></div>
    <div class="cv4-fill-row" style="margin-top:4px"><span style="width:108px;font-size:9.5px">B2 <span id="b2c">0 / 2.808</span></span><div class="cv4-fill-bar"><div class="cv4-fill-bar-inner b2" id="b2bar" style="width:0%"></div></div></div>
   </div>

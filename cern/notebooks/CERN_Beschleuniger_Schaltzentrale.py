@@ -256,6 +256,9 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
 /* Easter Egg FCC: Ring standardmäßig versteckt, erscheint beim Heraus-Zoom. */
 .geo-fcc{opacity:0;transition:opacity .8s}
 #svg.fcc-on .geo-fcc{opacity:1}
+/* FCC-Hitbox erst klickbar, wenn der FCC-Ring eingeblendet ist (sonst kein unsichtbarer Klickfaenger). */
+.geo-fcc .geo-hit-ring{pointer-events:none}
+#svg.fcc-on .geo-fcc .geo-hit-ring{pointer-events:stroke}
 /* Versteckter Auslöser (Punkt im See) — klickbar trotz #geo-layer{pointer-events:none}. */
 .fcc-trigger{pointer-events:auto;cursor:pointer;transition:fill .2s}
 .fcc-trigger:hover{fill:rgba(210,120,255,0.95)}
@@ -314,14 +317,13 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
 <div class=&quot;cv4-hdr&quot;>
  <div><span class=&quot;cv4-logo&quot;>CERN-Schaltzentrale</span><span class=&quot;cv4-badge&quot;>interaktives Modell</span></div>
  <div style=&quot;display:flex;align-items:center;gap:12px&quot;>
-  <button class=&quot;cv4-btn&quot; id=&quot;btn-toggle-geo&quot; style=&quot;padding:5px 9px;font-size:10.5px&quot;>Reale Ansicht</button>
   <div class=&quot;cv4-status&quot;><span class=&quot;cv4-dot&quot; id=&quot;sdot&quot;></span><span id=&quot;stxt&quot;>OFFLINE</span></div>
  </div>
 </div>
 
 <div class=&quot;cv4-tagline&quot;>
  <b>Steuere den größten Teilchenbeschleuniger der Welt.</b> Beschleunige Teilchen fast auf Lichtgeschwindigkeit, bring sie zur Kollision und entdecke daraus neue Teilchen, wie im echten Kontrollzentrum (CCC) am CERN bei Genf.
- <span class=&quot;cv4-pi-btn&quot; data-pi=&quot;introCern&quot;>Was ist der CERN?</span>
+ <span class=&quot;cv4-pi-btn&quot; data-pi=&quot;introCern&quot;>Was ist das CERN?</span>
  <span class=&quot;cv4-pi-btn&quot; data-pi=&quot;introUse&quot;>Wie bediene ich das?</span>
 </div>
 <div class=&quot;cv4-param-info&quot; id=&quot;pi-introCern&quot;></div>
@@ -335,6 +337,8 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
   <button class=&quot;cv4-btn off&quot; id=&quot;btn-zoom-out&quot; style=&quot;position:absolute;top:12px;left:12px;padding:5px 10px;font-size:10px;background:rgba(28,37,49,0.92);border-color:#3c4a5c;z-index:10;transition:all 0.2s&quot;>Ansicht zurücksetzen</button>
   <!-- Zoom auf den Injektor-Komplex Meyrin (nur in der Realen Ansicht sichtbar) -->
   <button class=&quot;cv4-btn&quot; id=&quot;btn-zoom-meyrin&quot; style=&quot;position:absolute;bottom:12px;left:12px;padding:5px 10px;font-size:10px;background:rgba(28,37,49,0.92);border-color:#2ea44f;color:#a3b4c6;z-index:10;transition:all 0.2s;display:none&quot;>Injektor-Komplex (Meyrin)</button>
+  <!-- Ansicht-Umschalter Didaktik ↔ Reale Ansicht (oben rechts im Kollider-Bild) -->
+  <button class=&quot;cv4-btn&quot; id=&quot;btn-toggle-geo&quot; style=&quot;position:absolute;top:12px;right:12px;padding:5px 9px;font-size:10.5px;background:rgba(28,37,49,0.92);border-color:#3c4a5c;z-index:10;transition:all 0.2s&quot;>Reale Ansicht</button>
   <!-- Großansicht/Vollbild des Plans (nur am Handy sichtbar, CSS schaltet display) -->
   <button class=&quot;cv4-btn&quot; id=&quot;btn-diagram-full&quot; style=&quot;position:absolute;top:12px;right:12px;padding:5px 10px;font-size:11px;background:rgba(28,37,49,0.92);border-color:#58a6ff;color:#58a6ff;z-index:9999;transition:all 0.2s&quot;>Großansicht</button>
   <div class=&quot;cv4-fs-hint&quot;>Querformat zeigt mehr Detail · Schaltfläche schließt</div>
@@ -478,7 +482,7 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
       Die Parameter sind keine Regler mehr, sondern Anzeigen des gewählten Presets.
       IDs unverändert (engine#updateReadouts / Preset-Handler). -->
  <div class=&quot;cv4-readouts&quot;>
-  <div class=&quot;cv4-ptitle&quot;>MESSWERTE &amp; STRAHL-PARAMETER</div>
+  <div class=&quot;cv4-ptitle&quot;>LHC-MESSWERTE &amp; STRAHL-PARAMETER</div>
   <div class=&quot;cv4-rg&quot;>
    <div class=&quot;cv4-ro&quot;><span class=&quot;cv4-ro-l&quot;>Energie/Strahl</span><span class=&quot;cv4-ro-v&quot; id=&quot;v-e&quot;>0,00 TeV</span></div>
    <div class=&quot;cv4-ro&quot;><span class=&quot;cv4-ro-l&quot;>Magnetfeld B</span><span class=&quot;cv4-ro-v&quot; id=&quot;v-b&quot;>0.000 T</span></div>
@@ -517,7 +521,7 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
 
   <div>
    <div class=&quot;cv4-ptitle&quot;>LHC-FÜLLSTAND</div>
-   <div style=&quot;font-size:8.5px;color:#8b949e;margin:-2px 0 4px;line-height:1.35&quot;>1 Punkt = 1 Strahl-Paket: vor dem PS nur wenige Bunches, im PS zum 72-Bunch-Batch geformt (Punkt wächst). Im SPS rücken bis 4 Batches zu 1 Zug zusammen (≤288 B). 1 LHC-Punkt = 1 ganzer Zug, nicht ein einzelner Bunch. ~10 Züge füllen den LHC (Pb-Ionen: 592 B). Die Balken zählen die im LHC angekommenen Bunches.</div>
+   <div style=&quot;font-size:8.5px;color:#8b949e;margin:-2px 0 4px;line-height:1.35&quot;>1 Punkt = 1 Strahl-Paket im LHC. Die Paketierung davor: &amp;nbsp;• Bunch — winziges Protonen-Paket (vor dem PS nur wenige). &amp;nbsp;• Batch — 72 Bunches, im PS geformt (der Punkt wächst). &amp;nbsp;• Zug — bis 4 Batches, im SPS gebündelt (≤ 288 Bunches). 1 LHC-Punkt entspricht einem ganzen Zug, nicht einem einzelnen Bunch. Ca. 10 Züge füllen den LHC (Pb-Ionen: 592 Bunches). Die Balken zählen die im LHC angekommenen Bunches.</div>
    <div class=&quot;cv4-fill-row&quot;><span style=&quot;width:108px;font-size:9.5px&quot;>B1 <span id=&quot;b1c&quot;>0 / 2.808</span></span><div class=&quot;cv4-fill-bar&quot;><div class=&quot;cv4-fill-bar-inner b1&quot; id=&quot;b1bar&quot; style=&quot;width:0%&quot;></div></div></div>
    <div class=&quot;cv4-fill-row&quot; style=&quot;margin-top:4px&quot;><span style=&quot;width:108px;font-size:9.5px&quot;>B2 <span id=&quot;b2c&quot;>0 / 2.808</span></span><div class=&quot;cv4-fill-bar&quot;><div class=&quot;cv4-fill-bar-inner b2&quot; id=&quot;b2bar&quot; style=&quot;width:0%&quot;></div></div></div>
   </div>
@@ -780,24 +784,39 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
   }
   function geoRailFor(velKey, beam) {
     const R3 = App.geoRails || {}, RG = App.geoRings || {}, ion = s.isIon, ps = RG.ps;
-    const toward = (rg) => rg &amp;&amp; ps ? Math.atan2(rg.cy - ps.cy, rg.cx - ps.cx) : Math.PI;
     switch (velKey) {
       case &quot;linac&quot;:
         return { kind: &quot;path&quot;, el: ion ? R3.linac3 : R3.linac4, r: 0.18 };
       case &quot;ring1&quot;: {
         const rg = ion ? RG.leir : RG.psb;
-        return { kind: &quot;ring&quot;, ring: rg, r: 0.18, entryA: toward(rg) };
+        return {
+          kind: &quot;ring&quot;,
+          ring: rg,
+          r: 0.18,
+          entryA: ion ? R3.leirEntryA ?? Math.PI : R3.psbEntryA ?? Math.PI,
+          exitA: ion ? R3.leirExitA ?? 0 : R3.psbExitA ?? 0
+        };
       }
       case &quot;trToPs&quot;:
         return { kind: &quot;path&quot;, el: ion ? R3.leirPs : R3.psbPs, r: 0.18 };
-      case &quot;ps&quot;: {
-        const src = ion ? RG.leir : RG.psb;
-        return { kind: &quot;ring&quot;, ring: ps, r: 0.2, entryA: ps &amp;&amp; src ? Math.atan2(src.cy - ps.cy, src.cx - ps.cx) : Math.PI };
-      }
+      case &quot;ps&quot;:
+        return {
+          kind: &quot;ring&quot;,
+          ring: ps,
+          r: 0.2,
+          entryA: ion ? R3.psEntryFromLeirA ?? Math.PI : R3.psEntryFromPsbA ?? Math.PI,
+          exitA: R3.psExitA ?? 0
+        };
       case &quot;trToSps&quot;:
         return { kind: &quot;path&quot;, el: R3.psSps, r: 0.22 };
       case &quot;sps&quot;:
-        return { kind: &quot;ring&quot;, ring: RG.sps, r: 2.4, entryA: Math.PI };
+        return {
+          kind: &quot;ring&quot;,
+          ring: RG.sps,
+          r: 2.4,
+          entryA: R3.spsEntryA ?? Math.PI,
+          exitA: beam === 1 ? R3.spsExitB1A ?? 0 : R3.spsExitB2A ?? 0
+        };
       case &quot;ti&quot;:
         return { kind: &quot;path&quot;, el: beam === 1 ? R3.ti2 : R3.ti8, r: 2.4 };
     }
@@ -938,6 +957,9 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
     let totalA = orbits * 2 * Math.PI + partial;
     const dur = Math.max(1, ring.r * totalA / vpx);
     const gEntry = geo &amp;&amp; geo.entryA != null ? geo.entryA : 0;
+    const gExit = geo &amp;&amp; geo.exitA != null ? geo.exitA : null;
+    const gPartial = gExit != null ? ((gExit - gEntry) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) : partial;
+    const gTotalA = orbits * 2 * Math.PI + gPartial;
     return new Promise((res) => {
       let t0 = null;
       function step(ts) {
@@ -950,7 +972,7 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
         let a = entryA + p * totalA;
         dot.setAttribute(&quot;cx&quot;, ring.cx + ring.r * Math.cos(a));
         dot.setAttribute(&quot;cy&quot;, ring.cy + ring.r * Math.sin(a));
-        if (geo &amp;&amp; geo.kind === &quot;ring&quot;) placeTwinRing(dot.__geo, geo.ring, gEntry + p * totalA);
+        if (geo &amp;&amp; geo.kind === &quot;ring&quot;) placeTwinRing(dot.__geo, geo.ring, gEntry + p * gTotalA);
         p < 1 ? requestAnimationFrame(step) : res();
       }
       requestAnimationFrame(step);
@@ -2831,7 +2853,7 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
       cred: &quot;M. Brice/CERN \xB7 CC BY-SA 4.0&quot;,
       stats: [[&quot;L\xE4nge/Umfang&quot;, &quot;86 m&quot;], [&quot;Geschwindigkeit&quot;, &quot;0 \u2192 52 % c&quot;], [&quot;In Betrieb seit&quot;, &quot;2020&quot;]],
       src: &quot;CERN \xB7 home.cern \xB7 Wikipedia&quot;,
-      text: &quot;LINAC4 ist der erste Beschleuniger der Protonenkette, 86 Meter lang. Er bringt die Teilchen auf 160 MeV, also etwa 52 Prozent der Lichtgeschwindigkeit. Beschleunigt werden zun\xE4chst nicht einzelne Protonen, sondern H\u207B-Ionen, also ein Proton mit zwei zus\xE4tzlichen Elektronen. In dieser Form l\xE4sst sich der Strahl leichter b\xFCndeln und einspeisen. Beim \xDCbergang zum Booster streift eine d\xFCnne Folie die beiden Elektronen ab, sodass nur das Proton \xFCbrig bleibt. LINAC4 ist seit 2020 in Betrieb und ersetzte den \xE4lteren LINAC2; er liefert etwa doppelt so intensive Strahlen.&quot;
+      text: &quot;LINAC4 ist der erste Beschleuniger der Protonenkette, 86 Meter lang. Er bringt die Teilchen auf 160 MeV, also etwa 52 Prozent der Lichtgeschwindigkeit. Beschleunigt werden zun\xE4chst nicht einzelne Protonen, sondern H\u207B-Ionen: ein Wasserstoffatom (ein Proton mit einem Elektron) mit einem zus\xE4tzlichen zweiten Elektron, daher negativ geladen. In dieser Form l\xE4sst sich der Strahl leichter b\xFCndeln und einspeisen. Beim \xDCbergang zum Booster streift eine d\xFCnne Folie die beiden Elektronen ab, sodass nur das Proton \xFCbrig bleibt. LINAC4 ist seit 2020 in Betrieb und ersetzte den \xE4lteren LINAC2; er liefert etwa doppelt so intensive Strahlen.&quot;
     },
     LINAC3: {
       title: &quot;LINAC 3&quot;,
@@ -2891,7 +2913,15 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
       cred: &quot;alpinethread \xB7 CC BY-SA 2.0&quot;,
       stats: [[&quot;L\xE4nge/Umfang&quot;, &quot;26,7 km&quot;], [&quot;Geschwindigkeit&quot;, &quot;99,9998 \u2192 99,999999 % c&quot;], [&quot;In Betrieb seit&quot;, &quot;2008&quot;]],
       src: &quot;CERN \xB7 home.cern \xB7 Wikipedia&quot;,
-      text: &quot;Im Large Hadron Collider laufen alle Strahlen zusammen: 27 Kilometer Umfang, rund 100 Meter unter der Erde. Bei 6,8 TeV sind die Protonen nur noch etwa 3 Meter pro Sekunde langsamer als das Licht. 1232 supraleitende Dipolmagnete mit 8,3 Tesla, gek\xFChlt auf 1,9 Kelvin und damit k\xE4lter als der Weltraum, halten die zwei Strahlen auf ihrer Kreisbahn. Sie umrunden den Ring rund 11 245-mal pro Sekunde; die Animation zeigt das stark verlangsamt. An vier Punkten kreuzen sich die Strahlen und kollidieren mit einer Schwerpunktsenergie von \u221As = 13,6 TeV. 2012 f\xFChrte das zur Entdeckung des Higgs-Bosons.&quot;
+      text: &quot;Im Large Hadron Collider laufen alle Strahlen zusammen: 27 Kilometer Umfang, rund 100 Meter unter der Erde. Bei 6,8 TeV sind die Protonen nur noch etwa 3 Meter pro Sekunde langsamer als das Licht. 1 232 supraleitende Dipolmagnete mit 8,3 Tesla, gek\xFChlt auf 1,9 Kelvin und damit k\xE4lter als der Weltraum, halten die zwei Strahlen auf ihrer Kreisbahn. Sie umrunden den Ring rund 11 245-mal pro Sekunde; die Animation zeigt das stark verlangsamt. An vier Punkten kreuzen sich die Strahlen und kollidieren mit einer Schwerpunktsenergie von \u221As = 13,6 TeV. 2012 f\xFChrte das zur Entdeckung des Higgs-Bosons.&quot;
+    },
+    FCC: {
+      title: &quot;Future Circular Collider&quot;,
+      sub: &quot;Geplanter LHC-Nachfolger \xB7 ~91-km-Ring&quot;,
+      color: &quot;#d278ff&quot;,
+      stats: [[&quot;L\xE4nge/Umfang&quot;, &quot;~91 km (\xD73,4 LHC)&quot;], [&quot;Schwerpunktsenergie&quot;, &quot;bis 100 TeV (FCC-hh)&quot;], [&quot;Status&quot;, &quot;geplant, fr\xFChestens 2040er&quot;]],
+      src: &quot;CERN \xB7 home.cern \xB7 FCC-Studie&quot;,
+      text: &quot;Der Future Circular Collider ist das geplante Nachfolgeprojekt des LHC: ein Ringtunnel von rund 91 Kilometern Umfang, etwa 3,4-mal so gro\xDF wie der heutige LHC. In einer ersten Stufe (FCC-ee) sollen Elektronen und Positronen das Higgs- und das Z-Boson besonders pr\xE4zise vermessen, in einer zweiten Stufe (FCC-hh) Protonen bei einer Schwerpunktsenergie von bis zu 100 TeV kollidieren, rund siebenmal mehr als am LHC. Damit lie\xDFen sich noch schwerere, bislang unentdeckte Teilchen erzeugen. Das Projekt steckt in der Planungs- und Machbarkeitsphase; ein Betrieb w\xE4re fr\xFChestens in den 2040er-Jahren m\xF6glich.&quot;
     },
     ATLAS: {
       title: &quot;ATLAS Detektor&quot;,
@@ -2901,7 +2931,7 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
       cred: &quot;S. Waldherr \xB7 CC BY-SA 4.0&quot;,
       stats: [[&quot;Ma\xDFe&quot;, &quot;46 \xD7 25 m&quot;], [&quot;Schwerpunktsenergie&quot;, &quot;\u221As \u2264 14 TeV&quot;], [&quot;Gewicht&quot;, &quot;7 000 t&quot;]],
       src: &quot;ATLAS / CERN \xB7 home.cern \xB7 Wikipedia&quot;,
-      text: &quot;ATLAS ist der gr\xF6\xDFte der vier Detektoren, eine etwa 25 Meter hohe Anordnung konzentrischer Messschichten um den Kollisionspunkt. Kennzeichnend ist sein gro\xDFes Toroid-Magnetsystem aus acht 25 Meter langen Spulen, das die weit au\xDFen liegenden Myonspuren kr\xFCmmt. ATLAS is ein Allzweckdetektor, gebaut, um m\xF6glichst jede Teilchenart zu erfassen. 2012 war ATLAS einer der beiden Detektoren, die das Higgs-Boson nachwiesen (Masse 125 GeV).&quot;
+      text: &quot;ATLAS ist der gr\xF6\xDFte der vier Detektoren, eine etwa 25 Meter hohe Anordnung konzentrischer Messschichten um den Kollisionspunkt. Kennzeichnend ist sein gro\xDFes Toroid-Magnetsystem aus acht 25 Meter langen Spulen, das die weit au\xDFen liegenden Myonspuren kr\xFCmmt. ATLAS ist ein Allzweckdetektor, gebaut, um m\xF6glichst jede Teilchenart zu erfassen. 2012 war ATLAS einer der beiden Detektoren, die das Higgs-Boson nachwiesen (Masse 125 GeV).&quot;
     },
     CMS: {
       title: &quot;CMS Detektor&quot;,
@@ -2921,7 +2951,7 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
       cred: &quot;Andres T \xB7 CC BY-SA 2.0&quot;,
       stats: [[&quot;Ma\xDFe&quot;, &quot;26 \xD7 16 m&quot;], [&quot;Schwerpunktsenergie&quot;, &quot;\u221As_NN \u2264 5,5 TeV&quot;], [&quot;Gewicht&quot;, &quot;10 000 t&quot;]],
       src: &quot;ALICE / CERN \xB7 home.cern \xB7 Wikipedia&quot;,
-      text: &quot;ALICE ist der Spezialist f\xFCr Blei-Blei-Kollisionen. Prallen zwei Bleikerne aufeinander, entsteht f\xFCr einen winzigen Moment das Quark-Gluon-Plasma, ein Urzustand der Materie wie wenige Millionstelsekunden nach dem Urknall: so hei\xDF, dass Quarks und Gluonen nicht mehr in Teilchen gebunden, sondern frei sind. Eine einzige solche Kollision erzeugt tausende Teilchen gleichzeitig. Das Herzst\xFCck von ALICE, eine 90 Kubikmeter gro\xDFe Gas-Kammer (TPC), kann sie einzeln auseinanderhalten.&quot;
+      text: &quot;ALICE ist der Spezialist f\xFCr Blei-Blei-Kollisionen. Prallen zwei Bleikerne aufeinander, entsteht f\xFCr einen winzigen Moment das Quark-Gluon-Plasma, ein Urzustand der Materie wie einige Mikrosekunden nach dem Urknall: so hei\xDF, dass Quarks und Gluonen nicht mehr in Teilchen gebunden, sondern frei sind. Eine einzige solche Kollision erzeugt tausende Teilchen gleichzeitig. Das Herzst\xFCck von ALICE, eine 90 Kubikmeter gro\xDFe Gas-Kammer (TPC), kann sie einzeln auseinanderhalten.&quot;
     },
     LHCB: {
       title: &quot;LHCb Detektor&quot;,
@@ -2981,7 +3011,7 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
       cred: &quot;zipckr (Flickr) \xB7 CC BY 2.0&quot;,
       stats: [[&quot;Aufgabe&quot;, &quot;weist Myonen nach&quot;], [&quot;Prinzip&quot;, &quot;nur Myonen dringen so weit&quot;], [&quot;Detektor&quot;, &quot;ATLAS, CMS&quot;]],
       src: &quot;CERN \xB7 home.cern \xB7 Wikipedia&quot;,
-      text: &quot;Was hier noch ankommt, kann nur ein Myon sein, denn alle anderen Teilchen sind l\xE4ngst steckengeblieben. Deshalb bilden die Myonkammern die \xE4u\xDFerste und gr\xF6\xDFte Schale; bei CMS sind sie in das 12 500 Tonnen schwere Eisenjoch eingebaut. Vier Myonen gleichzeitig sind die typische Signatur eines Higgs-Zerfalls. Das Myon steht sogar im Namen des Detektors: Compact Muon Solenoid.&quot;
+      text: &quot;Was hier noch ankommt, kann nur ein Myon sein, denn alle anderen Teilchen sind l\xE4ngst steckengeblieben. Deshalb bilden die Myonkammern die \xE4u\xDFerste und gr\xF6\xDFte Schale; bei CMS sind sie in das 12 500 Tonnen schwere Eisenjoch eingebaut. Vier Myonen gleichzeitig sind eine besonders saubere Signatur eines Higgs-Zerfalls. Das Myon steht sogar im Namen des Detektors: Compact Muon Solenoid.&quot;
     },
     L_TPC: {
       title: &quot;TPC \u2014 Zeitprojektionskammer&quot;,
@@ -3029,7 +3059,7 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
       cred: &quot;STFC/CERN \xB7 CC BY-SA 2.0&quot;,
       stats: [[&quot;Aufgabe&quot;, &quot;kr\xFCmmt Bahnen (Impuls)&quot;], [&quot;Prinzip&quot;, &quot;Dipolmagnet im Strahlengang&quot;], [&quot;Detektor&quot;, &quot;LHCb&quot;]],
       src: &quot;CERN \xB7 home.cern \xB7 Wikipedia&quot;,
-      text: &quot;Statt einer Spule um den ganzen Detektor nutzt LHCb einen gro\xDFen Dipolmagneten mitten im Strahlengang (1600 Tonnen, etwa 4 Tesla-Meter Biegekraft). Jede geladene Spur bekommt hier einen Knick. Je kleiner der Knick, desto gr\xF6\xDFer der Impuls. Das ist dasselbe Prinzip wie bei den gekr\xFCmmten Spuren in den Ring-Detektoren, nur in Vorw\xE4rtsrichtung.&quot;
+      text: &quot;Statt einer Spule um den ganzen Detektor nutzt LHCb einen gro\xDFen Dipolmagneten mitten im Strahlengang (1 600 Tonnen, etwa 4 Tesla-Meter Biegekraft). Jede geladene Spur bekommt hier einen Knick. Je kleiner der Knick, desto gr\xF6\xDFer der Impuls. Das ist dasselbe Prinzip wie bei den gekr\xFCmmten Spuren in den Ring-Detektoren, nur in Vorw\xE4rtsrichtung.&quot;
     }
   };
   var PARAM_INFO = {
@@ -3039,14 +3069,14 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
     rampspeed: &quot;dB/dt ist das Tempo, mit dem das Magnetfeld beim Hochfahren ansteigt. In den Magneten d\xFCrfen keine zu starken Wirbelstr\xF6me entstehen, um die Teilchenbahn nicht zu st\xF6ren. Real l\xE4sst sich der LHC daf\xFCr rund 20 Minuten Zeit, was im Mittel etwa 0,006 Tesla pro Sekunde entspricht. Ein Quench, also ein pl\xF6tzlicher Zusammenbruch der Supraleitung, w\xFCrde den Betrieb f\xFCr Stunden lahmlegen.&quot;,
     ramp: &quot;Beim Hochfahren (Ramping) steigt der Strom in den Dipolmagneten von 760 Ampere bei 0,45 TeV auf etwa 11 500 Ampere bei 6,8 TeV. Die 1 232 supraleitenden Magnete m\xFCssen durchgehend auf 1,9 Kelvin gek\xFChlt bleiben. Gleichzeitig erh\xF6hen die Hochfrequenz-Resonatoren (400 MHz) ihre Spannung, um die Teilchenpakete zusammenzuhalten. Die Dauer der Rampe ist physikalisch berechnet: Dauer = Feldhub \u0394B geteilt durch die Ramp-Rate. Bei einer Fahrt auf eine geringere Zielenergie ist die Rampe entsprechend schneller abgeschlossen.&quot;,
     squeeze: &quot;Nach dem Hochfahren werden die Strahlen an den Kollisionspunkten eng geb\xFCndelt. Quadrupol-Magnete rund 30 Meter vor jedem Detektor verringern \u03B2* vom Injektionswert (real rund 11 Meter, in dieser Anzeige vereinfacht 1,50 Meter) auf den Zielwert von beispielsweise 0,30 Meter. Der Strahldurchmesser schrumpft dabei auf etwa 13 Mikrometer, um eine hohe Kollisionsrate zu erm\xF6glichen. Das muss langsam geschehen, damit der Strahl stabil bleibt.&quot;,
-    prePp: &quot;Der Standardlauf des LHC macht rund 90 Prozent der Betriebszeit aus. Hier kollidieren Protonen bei voller Energie (Run 3: 6,8 TeV pro Strahl, \u221As = 13,6 TeV). Auf dem Strahl arbeiten in Wirklichkeit alle Experimente parallel. ATLAS und CMS suchen das Higgs-Boson im Zerfallskanal H\u2192ZZ*\u21924\u2113 und vermessen das Z-Boson zur Kalibrierung. LHCb untersucht die CP-Verletzung an B-Mesonen, um den Materie-Antimaterie-Unterschied im Universum zu ergr\xFCnden. Da alle Experimente denselben Strahl nutzen, gen\xFCgt im Widget ein Wechsel des Detektor-Reiters. Die Datenbasis des Widgets nutzt CMS-Open-Data: die Dimuon-Massen (\u03BC\u207A\u03BC\u207B) sowie die 278 ver\xF6ffentlichten 4-Lepton-Higgs-Kandidaten von 2011 und 2012. Darin ist der Z-Peak bei 91 GeV und der Higgs-Anstieg bei 125 GeV zu sehen. Die Massen der Resonanzen sind physikalisch konstant; die Produktionsraten sind an die Strahlenergie angepasst.&quot;,
-    preQgp: &quot;Der Schwerionenlauf findet etwa einen Monat pro Jahr statt. Dabei kollidieren Bleikerne bei 2,68 TeV pro Nukleon (\u221As_NN = 5,36 TeV). In der Kollision entsteht f\xFCr einen winzigen Moment das Quark-Gluon-Plasma. Dies ist ein Urzustand der Materie, in dem Quarks und Gluonen frei beweglich sind, \xE4hnlich wie wenige Millionstelsekunden nach dem Urknall. ALICE rekonstruiert die Spuren und misst, wie das Plasma gebundene Quark-Paare (J/\u03C8, \u03A5) aufschmilzt. CMS nutzt die Reihenfolge dieses Aufschmelzens als Thermometer. ATLAS und CMS vermessen das Z-Boson als Referenz, da es das Plasma unbeeinflusst durchdringt. Die Teilchenmassen basieren auf CMS-Daten. Die Effekte der Plasma-Unterdr\xFCckung sind didaktisch modelliert, da f\xFCr Blei-Blei-Kollisionen keine freien Open-Data-S\xE4tze vorliegen. Die Spurzahl im Display ist aus Gr\xFCnden der \xDCbersichtlichkeit reduziert.&quot;,
+    prePp: &quot;Der Standardlauf des LHC macht rund 90 Prozent der Betriebszeit aus. Hier kollidieren Protonen bei voller Energie (Run 3: 6,8 TeV pro Strahl, \u221As = 13,6 TeV). An diesem Strahl arbeiten in Wirklichkeit alle vier Detektoren gleichzeitig. ATLAS und CMS suchen das Higgs-Boson im Zerfallskanal H\u2192ZZ*\u21924\u2113 und vermessen das Z-Boson zur Kalibrierung. LHCb untersucht die CP-Verletzung an B-Mesonen, um den Materie-Antimaterie-Unterschied im Universum zu ergr\xFCnden. Da alle Experimente denselben Strahl nutzen, gen\xFCgt im Widget ein Wechsel des Detektor-Reiters. Die Datenbasis des Widgets nutzt CMS-Open-Data: die Dimuon-Massen (\u03BC\u207A\u03BC\u207B) sowie die 278 ver\xF6ffentlichten 4-Lepton-Higgs-Kandidaten von 2011 und 2012. Darin ist der Z-Peak bei 91 GeV und der Higgs-Anstieg bei 125 GeV zu sehen. Die Massen der Resonanzen sind physikalisch konstant; die Produktionsraten sind an die Strahlenergie angepasst.&quot;,
+    preQgp: &quot;Der Schwerionenlauf findet etwa einen Monat pro Jahr statt. Dabei kollidieren Bleikerne bei 2,68 TeV pro Nukleon (\u221As_NN = 5,36 TeV). In der Kollision entsteht f\xFCr einen winzigen Moment das Quark-Gluon-Plasma. Dies ist ein Urzustand der Materie, in dem Quarks und Gluonen frei beweglich sind, \xE4hnlich wie einige Mikrosekunden nach dem Urknall. ALICE rekonstruiert die Spuren und misst, wie das Plasma gebundene Quark-Antiquark-Paare (die Mesonen J/\u03C8 und \u03A5) aufschmilzt. CMS nutzt die Reihenfolge dieses Aufschmelzens als Thermometer. ATLAS und CMS vermessen das Z-Boson als Referenz, da es das Plasma unbeeinflusst durchdringt. Die Teilchenmassen basieren auf CMS-Daten. Die Effekte der Plasma-Unterdr\xFCckung sind didaktisch modelliert, da f\xFCr Blei-Blei-Kollisionen keine freien Open-Data-S\xE4tze vorliegen. Die Spurzahl im Display ist aus Gr\xFCnden der \xDCbersichtlichkeit reduziert.&quot;,
     prePilot: &quot;Dieser Modus dient der Inbetriebnahme und dem Testbetrieb. Der Strahl kreist mit der Injektionsenergie von 0,45 TeV ohne weiteres Hochfahren und mit geringer Intensit\xE4t. Bei dieser Energie entstehen keine schweren Teilchen, was f\xFCr Tests der Strahlf\xFChrung und Steuerung beabsichtigt ist. Erst wenn alle Systeme stabil arbeiten, wird die Energie erh\xF6ht. So beginnt jeder Betriebszyklus des LHC. Im Massenspektrum ist daher nur der kontinuierliche Untergrund zu sehen, da die Energie f\xFCr die Erzeugung schwerer Teilchen wie Z-Bosonen oder des Higgs-Bosons nicht ausreicht.&quot;,
     // ── Laien-Einstieg (Elternabend) ────────────────────────────────────────────
     introCern: &quot;Das CERN bei Genf betreibt den Large Hadron Collider (LHC) in einem 27 Kilometer langen Ringtunnel etwa 100 Meter unter der Erde. Darin werden zwei Strahlen aus Teilchen fast auf Lichtgeschwindigkeit beschleunigt und an vier Punkten zur Kollision gebracht. Bei den Zusammenst\xF6\xDFen wandelt sich Energie in neue Teilchen um (nach E = mc\xB2), die von den Detektoren ATLAS, CMS, ALICE und LHCb vermessen werden. So wurde 2012 das Higgs-Boson nachgewiesen. Vor dem LHC durchlaufen die Teilchen eine Kette von Vorbeschleunigern (LINAC, PSB/LEIR, PS und SPS), die oben im Schema dargestellt ist.&quot;,
-    introUse: &quot;So bedienst du die Schaltzentrale. Die Schritte folgen der Reihenfolge im echten LHC-Betrieb.\n\n(1) Preset w\xE4hlen: Oben stehen drei reale Betriebsmodi (Protonen-Physik, Schwerionen und Pilot-Strahl). Das gew\xE4hlte Preset stellt alle Strahl-Parameter automatisch ein. Sie erscheinen links unter \u201EMesswerte und Strahl-Parameter\u201C. \xDCber das Feld \u201ETeilchen\u201C kann zwischen Protonen und Blei-Ionen gewechselt werden.\n\n(2) Strahl f\xFCllen: Der Knopf \u201EF\xFCllprotokoll starten\u201C schickt die Teilchenpakete durch die Vorbeschleuniger in den LHC. Das PS formt die Pakete zu Gruppen aus 72 Bunches, das SPS b\xFCndelt bis zu vier Gruppen zu einem Zug. Der Tempo-Knopf wechselt zwischen zwei Zeitma\xDFst\xE4ben. F\xFCllen und Hochfahren laufen im Zeitraffer (1 Sekunde entspricht 15 Sekunden real), die sp\xE4tere Datennahme l\xE4uft langsamer, da ein realer Fill viele Stunden dauert.\n\n(3) Energie-Ramping: Dieser Schritt gilt f\xFCr Protonen-Physik und Schwerionen. Magnetfeld und Hochfrequenz werden hochgefahren, bis der Strahl seine Zielenergie erreicht. Beim Pilot-Strahl entf\xE4llt dieser Schritt, da die Injektionsenergie von 0,45 TeV bereits der Betriebsenergie entspricht.\n\n(4) Beam Squeeze: Quadrupol-Magnete fokussieren die beiden Strahlen an den Kollisionspunkten enger zusammen, um die Kollisionsrate f\xFCr die Messungen zu erh\xF6hen.\n\n(5) Datennahme: \u201EAuto-Datennahme\u201C sammelt fortlaufend Kollisionen und f\xFCllt das Massenspektrum. \xDCber die Detektor-Reiter (ATLAS, CMS, ALICE, LHCb) wird die Anzeige des jeweiligen Experiments ausgew\xE4hlt.\n\nUnter dem Schema zeigt das Event-Display links eine einzelne Kollision. Ein Klick auf eine Schicht \xF6ffnet Erkl\xE4rungen, die \u201ESignaturen-Tour\u201C f\xFChrt durch die Teilchenarten. Rechts w\xE4chst das Massenspektrum der gemessenen Teilchen. Ein Klick auf einen Beschleuniger oder Detektor im Plan \xF6ffnet Details und Kennzahlen.&quot;,
+    introUse: &quot;So bedienst du die Schaltzentrale. Die Schritte folgen der Reihenfolge im echten LHC-Betrieb.\n\n(1) Preset w\xE4hlen: Oben stehen drei reale Betriebsmodi (Protonen-Physik, Schwerionen und Pilot-Strahl). Das gew\xE4hlte Preset stellt alle Strahl-Parameter automatisch ein. Sie erscheinen links unter \u201ELHC-Messwerte und Strahl-Parameter\u201C. \xDCber das Feld \u201ETeilchen\u201C kann zwischen Protonen und Blei-Ionen gewechselt werden.\n\n(2) Strahl f\xFCllen: Der Knopf \u201EF\xFCllprotokoll starten\u201C schickt die Teilchenpakete durch die Vorbeschleuniger in den LHC. Das PS formt die Pakete zu Gruppen aus 72 Bunches, das SPS b\xFCndelt bis zu vier Gruppen zu einem Zug. Der Tempo-Knopf wechselt zwischen zwei Zeitma\xDFst\xE4ben. F\xFCllen und Hochfahren laufen im Zeitraffer (1 Sekunde entspricht 15 Sekunden real), die sp\xE4tere Datennahme l\xE4uft langsamer, da ein realer Fill viele Stunden dauert.\n\n(3) Energie-Ramping: Dieser Schritt gilt f\xFCr Protonen-Physik und Schwerionen. Magnetfeld und Hochfrequenz werden hochgefahren, bis der Strahl seine Zielenergie erreicht. Beim Pilot-Strahl entf\xE4llt dieser Schritt, da die Injektionsenergie von 0,45 TeV bereits der Betriebsenergie entspricht.\n\n(4) Beam Squeeze: Quadrupol-Magnete fokussieren die beiden Strahlen an den Kollisionspunkten enger zusammen, um die Kollisionsrate f\xFCr die Messungen zu erh\xF6hen.\n\n(5) Datennahme: \u201EAuto-Datennahme\u201C sammelt fortlaufend Kollisionen und f\xFCllt das Massenspektrum. \xDCber die Detektor-Reiter (ATLAS, CMS, ALICE, LHCb) wird die Anzeige des jeweiligen Experiments ausgew\xE4hlt.\n\nUnter dem Schema zeigt das Event-Display links eine einzelne Kollision. Ein Klick auf eine Schicht \xF6ffnet Erkl\xE4rungen, die \u201ESignaturen-Tour\u201C f\xFChrt durch die Teilchenarten. Rechts w\xE4chst das Massenspektrum der gemessenen Teilchen. Ein Klick auf einen Beschleuniger oder Detektor im Plan \xF6ffnet Details und Kennzahlen.&quot;,
     evRead: &quot;Der Detektor besteht aus konzentrischen Schichten. Die farbigen Ringe stellen den Querschnitt dar. Jede Linie zeigt die Spur eines Teilchens, das von der Kollision im Zentrum nach au\xDFen fliegt. Verschiedene Teilchenarten werden in unterschiedlichen Schichten gestoppt: Myonen (gr\xFCn) durchqueren alle Schichten, Elektronen (blau) stoppen im elektromagnetischen Kalorimeter, Photonen (gelb) hinterlassen dort Energie ohne Spur im Tracker, Hadronen (orange) erzeugen Schauer im Hadron-Kalorimeter, und Neutrinos (grau gestrichelt) entweichen unbemerkt. Das Magnetfeld kr\xFCmmt die Spuren geladener Teilchen zur Impulsmessung. Die Visualisierung basiert auf CMS-Open-Data. Ein Klick auf eine Schicht zeigt Details; die Signaturen-Tour f\xFChrt Schritt f\xFCr Schritt durch die Teilchenarten.&quot;,
-    spRead: &quot;In diesem Diagramm wird die Masse von Teilchen bestimmt. Aus den Spuren der Zerfallsprodukte wird die invariante Masse berechnet und im Histogramm erfasst. Ein stabiler Zustand wie das Z-Boson bei 91 GeV bildet ein deutliches Signal \xFCber dem statistischen Untergrund. Die Signifikanz in Standardabweichungen (\u03C3) gibt an, wie unwahrscheinlich eine zuf\xE4llige Schwankung ist. Ab 5 \u03C3 gilt ein Teilchen als statistisch nachgewiesen, was 2012 zur Entdeckung des Higgs-Bosons f\xFChrte. Mit steigender Anzahl an Kollisionen w\xE4chst die Signifikanz proportional zur Wurzel der Datenmenge.&quot;
+    spRead: &quot;Wie wiegt man Teilchen, die man nicht einmal sehen kann? In diesem Diagramm wird die Masse von instabilen Elementarteilchen bestimmt. Aus den gemessenen Spuren der Zerfallsprodukte berechnet der Computer die sogenannte invariante Masse (die Ruhemasse des urspr\xFCnglichen Mutterteilchens) und erfasst sie im Histogramm. Ein Teilchen mit einer exakt definierten Masse (eine sogenannte \u201EResonanz\u201C, wie das Z-Boson bei 91 GeV) bildet dabei einen scharfen Peak \xFCber dem kontinuierlichen Untergrund. Die Signifikanz in Standardabweichungen (\u03C3, gesprochen \u201ESigma\u201C) gibt an, wie unwahrscheinlich eine zuf\xE4llige Fluktuation des Untergrunds ist. Ab 5 \u03C3 gilt eine Entdeckung in der Physik als statistisch gesichert \u2013 die Wahrscheinlichkeit f\xFCr einen reinen Zufall liegt dann bei unter 1 zu 3,5 Millionen. Mit genau diesem Kriterium wurde 2012 auch das Higgs-Boson nachgewiesen. Mit steigender Anzahl an Kollisionen w\xE4chst diese Signifikanz proportional zur Wurzel der gesammelten Datenmenge.&quot;
   };
   var PARAM_INFO_FIG = {
     evRead: {
@@ -3297,23 +3327,95 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
       return p;
     };
     const ringOf = (pts) => pts.length ? bboxC(pts) : null;
-    const rings = { ps: psRing, psb: psbRing, leir: ringOf(ptsOf(INJ.leir)), sps: ringOf(ptsOf(GEO.sps || [])) };
-    const edge = (a, b) => {
-      if (!a || !b) return null;
-      const dx = b.cx - a.cx, dy = b.cy - a.cy, d = Math.hypot(dx, dy) || 1, ux = dx / d, uy = dy / d;
-      return `M ${(a.cx + ux * a.r).toFixed(2)},${(a.cy + uy * a.r).toFixed(2)} L ${(b.cx - ux * b.r).toFixed(2)},${(b.cy - uy * b.r).toFixed(2)}`;
+    const ptOf = (d, last = true) => {
+      if (!d) return null;
+      const pts = d.replace(/^M /, &quot;&quot;).split(&quot; L &quot;);
+      const v = (last ? pts[pts.length - 1] : pts[0]).trim().split(&quot;,&quot;);
+      return { x: +v[0], y: +v[1] };
     };
+    const angTo = (ring, pt) => Math.atan2(pt.y - ring.cy, pt.x - ring.cx);
+    const joinPaths = (d1, d2) => d1 + &quot; &quot; + d2.replace(/^M [^ ]+ /, &quot;&quot;);
     const acc = INJ.accel || [];
+    const tra = INJ.transfer || [];
+    const leirRing = ringOf(ptsOf(INJ.leir));
+    const spsRing = ringOf(ptsOf(GEO.sps || []));
+    const rings = { ps: psRing, psb: psbRing, leir: leirRing, sps: spsRing };
+    const endsOf = (d) => {
+      if (!d) return null;
+      const pts = d.replace(/^M /, &quot;&quot;).split(&quot; L &quot;).map((s5) => s5.split(&quot;,&quot;).map(Number));
+      return [pts[0], pts[pts.length - 1]];
+    };
+    const a0 = endsOf(acc[0]), a1 = endsOf(acc[1]);
+    const t0 = endsOf(tra[0]), t1 = endsOf(tra[1]), t2 = endsOf(tra[2]), t3 = endsOf(tra[3]), t5 = endsOf(tra[5]), t6 = endsOf(tra[6]);
+    const N0 = a0 &amp;&amp; a0[0], N1 = a0 &amp;&amp; a0[1];
+    const N2 = a1 &amp;&amp; a1[0], N3 = a1 &amp;&amp; a1[1];
+    const N4 = t0 &amp;&amp; t0[1], N5 = t1 &amp;&amp; t1[0], N6 = t1 &amp;&amp; t1[1];
+    const N7 = t2 &amp;&amp; t2[0], N8 = t2 &amp;&amp; t2[1], N9 = t3 &amp;&amp; t3[0], N10 = t3 &amp;&amp; t3[1], N11 = t6 &amp;&amp; t6[1];
+    const onRing = (pt, ring) => {
+      const dx = pt[0] - ring.cx, dy = pt[1] - ring.cy, d = Math.hypot(dx, dy) || 1;
+      return { p: [ring.cx + ring.r * dx / d, ring.cy + ring.r * dy / d], a: Math.atan2(dy, dx) };
+    };
+    const chain = (pts) => &quot;M &quot; + pts.filter(Boolean).map((p) => p[0].toFixed(3) + &quot;,&quot; + p[1].toFixed(3)).join(&quot; L &quot;);
+    const psbIn = N4 ? onRing(N4, psbRing) : { p: null, a: Math.PI };
+    const psbOut = N9 ? onRing(N9, psbRing) : { p: null, a: 0 };
+    const leirAt = N8 ? onRing(N8, leirRing) : { p: null, a: Math.PI };
+    const psFromPsb = N10 ? onRing(N10, psRing) : { p: null, a: Math.PI };
+    const psFromLeir = N11 ? onRing(N11, psRing) : { p: null, a: Math.PI };
+    const psbEntryA = psbIn.a, psbExitA = psbOut.a;
+    const leirEntryA = leirAt.a, leirExitA = leirAt.a;
+    const psEntryFromPsbA = psFromPsb.a;
+    const psEntryFromLeirA = psFromLeir.a;
+    const l3 = { d: chain([N0, N1, N7, leirAt.p]) };
+    const leirPs = { d: chain([leirAt.p, N7, N1, psFromLeir.p]) };
+    const l4 = { d: chain([N3, N2, N6, N5, N1, psbIn.p]) };
+    const psbPs = { d: chain([psbOut.p, psFromPsb.p]) };
+    const ttPS = (GEO.tt || [])[0] || null;
+    const tt0Start = ttPS ? ptOf(ttPS, false) : null;
+    const tt0End = ttPS ? ptOf(ttPS) : null;
+    const psExitA = psRing &amp;&amp; tt0Start ? angTo(psRing, tt0Start) : 0;
+    const spsEntryA = spsRing &amp;&amp; tt0End ? angTo(spsRing, tt0End) : Math.PI;
+    const tt1 = (GEO.tt || [])[1] || null;
+    const ti2Base = (GEO.ti || {}).ti2 || null;
+    const ti2Rail = tt1 &amp;&amp; ti2Base ? joinPaths(tt1, ti2Base) : ti2Base;
+    const tt1Start = tt1 ? ptOf(tt1, false) : null;
+    const spsExitB1A = spsRing &amp;&amp; tt1Start ? angTo(spsRing, tt1Start) : 0;
+    const ti8Base = (GEO.ti || {}).ti8 || null;
+    const ti8StartPt = ti8Base ? ptOf(ti8Base, false) : null;
+    const spsExitB2A = spsRing &amp;&amp; ti8StartPt ? angTo(spsRing, ti8StartPt) : 0;
+    let ti8Rail = ti8Base;
+    if (spsRing &amp;&amp; ti8StartPt &amp;&amp; ti8Base) {
+      const f = (n) => n.toFixed(2);
+      const bx = spsRing.cx + spsRing.r * Math.cos(spsExitB2A);
+      const by = spsRing.cy + spsRing.r * Math.sin(spsExitB2A);
+      ti8Rail = `M ${f(bx)},${f(by)} L ` + ti8Base.replace(/^M /, &quot;&quot;);
+    }
     App.geoRings = rings;
     App.geoRails = {
-      linac4: railPath(acc[1]),
-      linac3: railPath(acc[0]),
-      psbPs: railPath(edge(rings.psb, rings.ps)),
-      leirPs: railPath(edge(rings.leir, rings.ps)),
-      psSps: railPath(edge(rings.ps, rings.sps)),
-      ti2: railPath((GEO.ti || {}).ti2),
-      ti8: railPath((GEO.ti || {}).ti8),
-      lhc: railPath(GEO.lhc.join(&quot; &quot;))
+      linac4: railPath(l4.d),
+      linac3: railPath(l3.d),
+      // orange Trassen via Hub bis in PSB/LEIR
+      psbPs: railPath(psbPs.d),
+      // t[3]: PSB-Rand → PS-Rand
+      leirPs: railPath(leirPs.d),
+      // t[2] zurueck + t[6]: LEIR → Hub → PS
+      psSps: railPath(ttPS),
+      // GEO.tt[0]: echter PS→SPS-Tunnel (gruen gestrichelt)
+      ti2: railPath(ti2Rail),
+      // GEO.tt[1] + GEO.ti.ti2
+      ti8: railPath(ti8Rail),
+      // Bruecke + GEO.ti.ti8
+      lhc: railPath(GEO.lhc.join(&quot; &quot;)),
+      // Vorberechnete Ring-Winkel fuer lueckenlose Twin-Uebergaenge:
+      psbEntryA,
+      psbExitA,
+      leirEntryA,
+      leirExitA,
+      psEntryFromPsbA,
+      psEntryFromLeirA,
+      psExitA,
+      spsEntryA,
+      spsExitB1A,
+      spsExitB2A
     };
   }
   function drawFCC(g2) {
@@ -3341,6 +3443,7 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
       &quot;LHC 27 km \xB7 SPS 7 km \xB7 FCC 91 km   (\xD73,4)&quot;,
       { fill: FC + &quot;0.7)&quot;, &quot;font-size&quot;: fs(11), &quot;font-family&quot;: &quot;monospace&quot;, &quot;text-anchor&quot;: &quot;middle&quot; }
     ));
+    fcc.appendChild(hit(mk(&quot;circle&quot;, { cx, cy, r: R3, fill: &quot;none&quot;, stroke: FC + &quot;0)&quot;, &quot;stroke-width&quot;: 16 }), &quot;FCC&quot;, { ring: true }));
     g2.appendChild(fcc);
     if (GEO.lakeLabel) {
       const t = mk(&quot;circle&quot;, {
