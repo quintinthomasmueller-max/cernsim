@@ -178,13 +178,15 @@ describe('Interaktionen (esbuild-Bundle, jsdom)', () => {
     ['ATLAS','CMS','ALICE','LHCB'].forEach(n => expect(txt).toContain(n));
   });
 
-  it('Injektor-Komplex an realer Lage: LINAC3/4 + LEIR + PSB + Hinweis', () => {
+  it('Injektor-Komplex an realer Lage: LINAC3/4 + LEIR + PSB', () => {
     const txt = $('geo-layer').textContent;
-    ['LINAC4','LINAC3','LEIR','PSB','Injektor-Komplex'].forEach(n => expect(txt).toContain(n));
+    // geo-inj-hint (gruener Hinweis-Kreis) wurde entfernt; die vier Kern-Labels bleiben.
+    ['LINAC4','LINAC3','LEIR','PSB'].forEach(n => expect(txt).toContain(n));
   });
   it('Injektor-Detail steckt in .geo-inj-detail (erst beim Zoom sichtbar)', () => {
     expect($('geo-layer').querySelector('.geo-inj-detail')).toBeTruthy();
-    expect($('geo-layer').querySelector('.geo-inj-hint')).toBeTruthy();
+    // geo-inj-hint wurde entfernt (Markierung fuer Meyrin nicht mehr noetig)
+    expect($('geo-layer').querySelector('.geo-inj-hint')).toBeNull();
     // kein separater Inset-Kasten mehr (rect im geo-layer)
     expect($('geo-layer').querySelector('rect')).toBeNull();
   });

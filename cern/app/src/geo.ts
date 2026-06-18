@@ -100,22 +100,9 @@ function drawGeo() {
   // (Der See-Wasserfläche-Overlay ist entfernt — der Lac Léman ist im 0.9-Satellitenbild
   //  ohnehin sichtbar; ein blaues Füll-Polygon darüber wäre nur Redundanz.)
 
-  // CERN-Gelände (Meyrin, Prévessin) als dezent gefülltes Gebiets-Polygon markieren.
-  // Stilisierte ~1-km-Fläche (Achteck) um die beiden CERN-Standort-POIs herum — KEINE
-  // vermessene Grenze, sondern ein flächiger Standort-Hinweis bei niedriger Opazität,
-  // damit das Satellitenbild durchscheint. geo-far: im Injektor-Zoom ausgeblendet.
-  (GEO.poi || []).filter(p => /^CERN /.test(p.t)).forEach(p => {
-    const w = 26, h = 22, ch = 8;   // Halbbreite/-höhe + abgeschrägte Ecke (Nord oben, achsen-parallel)
-    const d = `M ${p.x - w + ch},${p.y - h} L ${p.x + w - ch},${p.y - h} L ${p.x + w},${p.y - h + ch}`
-      + ` L ${p.x + w},${p.y + h - ch} L ${p.x + w - ch},${p.y + h} L ${p.x - w + ch},${p.y + h}`
-      + ` L ${p.x - w},${p.y + h - ch} L ${p.x - w},${p.y - h + ch} Z`;
-    const poly = path(d, { fill: 'rgba(46,164,79,0.22)', stroke: 'rgba(57,211,83,0.95)', 'stroke-width': 1.4, 'stroke-dasharray': '5,3' });
-    poly.classList.add('geo-far'); g.appendChild(poly);
-  });
-
   // CH/FR-Staatsgrenze
   GEO.border.forEach(d => g.appendChild(path(d, {
-    stroke: 'rgba(255,255,255,0.26)', 'stroke-width': 1.1, 'stroke-dasharray': '6,5' })));
+    stroke: 'rgba(255,255,255,0.6)', 'stroke-width': 1.5, 'stroke-dasharray': '6,5' })));
 
   // LHC-Ring (echte Form/Lage) — im Real-Modus die Hauptstruktur
   GEO.lhc.forEach(d => g.appendChild(path(d, { stroke: 'rgba(88,166,255,0.85)', 'stroke-width': 2 })));
@@ -159,10 +146,10 @@ function drawGeo() {
   }
 
   // Beschleuniger-Labels (Zentroide). Klasse geo-far → im Injektor-Zoom
-  // ausgeblendet (sonst wären die 7px-PS/PSB-Labels ~20× zu groß); die feinen
+  // ausgeblendet (sonst wären die 8px-PS/PSB-Labels ~20× zu groß); die feinen
   // Ersatz-Labels liefert dort die Detail-Ebene (drawInjector).
   (GEO.accelLabels || []).forEach(p => { const el = label(p.x, p.y, p.t, {
-    fill: 'rgba(205,214,228,0.7)', 'font-size': '7px', 'font-family': 'monospace', 'text-anchor': 'middle' });
+    fill: 'rgba(205,214,228,0.95)', 'font-size': '8px', 'font-family': 'monospace', 'text-anchor': 'middle' });
     el.classList.add('geo-far'); g.appendChild(el); });
   // TI-Labels an der Trassen-Mitte (Polylinie M..L..L..)
   if (GEO.ti) ['ti2', 'ti8'].forEach(k => {
@@ -170,22 +157,22 @@ function drawGeo() {
     const cs = d.replace('M ', '').split(' L ').map(s => s.split(',').map(Number));
     const m = cs[Math.floor(cs.length / 2)];
     if (m && m.length === 2) g.appendChild(label(m[0], m[1] - 3, k.toUpperCase().replace('TI', 'TI '), {
-      fill: 'rgba(46,164,79,0.9)', 'font-size': '7px', 'font-family': 'monospace', 'text-anchor': 'middle' }));
+      fill: 'rgba(46,164,79,1.0)', 'font-size': '8px', 'font-family': 'monospace', 'text-anchor': 'middle' }));
   });
 
   // POI (projizierte reale Standorte)
   (GEO.poi || []).forEach(p => {
-    g.appendChild(mk('circle', { cx: p.x, cy: p.y, r: 2, fill: 'rgba(255,255,255,0.55)' }));
+    g.appendChild(mk('circle', { cx: p.x, cy: p.y, r: 2, fill: 'rgba(255,255,255,0.8)' }));
     g.appendChild(label(p.x + (p.a === 'start' ? 5 : 0), p.y - 4, p.t, {
-      fill: 'rgba(255,255,255,0.5)', 'font-size': '7px', 'font-family': 'monospace', 'text-anchor': p.a }));
+      fill: 'rgba(255,255,255,0.85)', 'font-size': '7.5px', 'font-family': 'monospace', 'text-anchor': p.a }));
   });
 
   // Regions-/Gewässer-Labels
   if (GEO.lakeLabel) g.appendChild(label(GEO.lakeLabel.x, GEO.lakeLabel.y, 'LAC LÉMAN', {
-    fill: 'rgba(88,166,255,0.6)', 'font-size': '8px', 'font-family': 'monospace', 'text-anchor': 'middle' }));
-  g.appendChild(label(112, 252, 'FRANKREICH (FR)', { fill: 'rgba(255,255,255,0.3)', 'font-size': '8.5px', 'font-family': 'monospace', 'text-anchor': 'middle' }));
-  g.appendChild(label(610, 150, 'SCHWEIZ (CH)', { fill: 'rgba(255,255,255,0.3)', 'font-size': '8.5px', 'font-family': 'monospace', 'text-anchor': 'middle' }));
-  g.appendChild(label(64, 38, 'JURA (FR)', { fill: 'rgba(255,255,255,0.24)', 'font-size': '7px', 'font-family': 'monospace' }));
+    fill: 'rgba(88,166,255,0.9)', 'font-size': '9px', 'font-family': 'monospace', 'text-anchor': 'middle' }));
+  g.appendChild(label(112, 252, 'FRANKREICH (FR)', { fill: 'rgba(255,255,255,0.7)', 'font-size': '9px', 'font-family': 'monospace', 'text-anchor': 'middle' }));
+  g.appendChild(label(610, 150, 'SCHWEIZ (CH)', { fill: 'rgba(255,255,255,0.7)', 'font-size': '9px', 'font-family': 'monospace', 'text-anchor': 'middle' }));
+  g.appendChild(label(64, 38, 'JURA (FR)', { fill: 'rgba(255,255,255,0.6)', 'font-size': '7.5px', 'font-family': 'monospace' }));
   g.appendChild(label(6, 474, '© OpenStreetMap (ODbL)' + (SAT ? ' · ' + SAT_ATTRIB : '') + ' · Web-Mercator', {
     fill: 'rgba(255,255,255,0.3)', 'font-size': '6px', 'font-family': 'monospace' }));
 
@@ -478,14 +465,6 @@ function drawInjector(g) {
   if (leirP.length) { const c = bboxC(leirP); det.appendChild(hit(mk('circle', { cx: c.cx, cy: c.cy, r: c.r + 0.8, fill: 'rgba(0,0,0,0.001)' }), 'LEIR')); }
   g.appendChild(det);
 
-  // Dezenter Dauer-Hinweis im Vollbild (verschwindet beim Zoom): markiert die Lage.
-  const PS = (GEO.accelLabels || []).find(l => l.t === 'PS');
-  if (PS) {
-    const hint = mk('g'); hint.setAttribute('class', 'geo-element geo-inj-hint');
-    hint.appendChild(mk('circle', { cx: PS.x, cy: PS.y, r: 8, fill: 'none', stroke: 'rgba(46,164,79,0.55)', 'stroke-width': 0.9, 'stroke-dasharray': '2.5,2' }));
-    hint.appendChild(label(PS.x - 11, PS.y + 18, 'Injektor-Komplex (Zoom)', { fill: 'rgba(205,214,228,0.72)', 'font-size': '6.5px', 'font-family': 'monospace', 'text-anchor': 'start' }));
-    g.appendChild(hint);
-  }
 }
 
 // ── Modus-Umschaltung (hart: kein Overlay/Overlap) ──────────────────────────

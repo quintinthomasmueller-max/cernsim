@@ -155,6 +155,9 @@
 /* Easter Egg FCC: Ring standardmäßig versteckt, erscheint beim Heraus-Zoom. */
 .geo-fcc{opacity:0;transition:opacity .8s}
 #svg.fcc-on .geo-fcc{opacity:1}
+/* PS→SPS-Transferzwilling: r=2.4 als Attribut (Vollbild sichtbar); im Injektor-Zoom
+   per CSS auf Injektor-Groesse schrumpfen — dynamisch, kein JS-Polling noetig. */
+#svg.inj-zoom .geo-twin-tr2sps{r:0.22px}
 /* FCC-Hitbox erst klickbar, wenn der FCC-Ring eingeblendet ist (sonst kein unsichtbarer Klickfaenger). */
 .geo-fcc .geo-hit-ring{pointer-events:none}
 #svg.fcc-on .geo-fcc .geo-hit-ring{pointer-events:stroke}
@@ -184,7 +187,7 @@
 .cv4-info-stat{background:var(--card);border:1px solid var(--bd-soft);border-radius:6px;padding:4px 6px}
 .cv4-info-stat-l{display:block;font-size:7.5px;color:var(--tx-dim);text-transform:uppercase;letter-spacing:0.3px}
 .cv4-info-stat-v{display:block;font-size:10px;font-weight:700;font-family:'Courier New',monospace}
-.cv4-info-text{font-size:10.5px;color:var(--tx-dim);line-height:1.6}
+.cv4-info-text{font-size:10.5px;color:var(--tx-dim);line-height:1.6;white-space:pre-line}
 .cv4-info-src{margin-top:8px;font-size:7.5px;font-family:'Courier New',monospace;color:var(--tx-dim);opacity:.7;line-height:1.4}
 .cv4-pi-btn{background:none;border:1px solid var(--bd);color:var(--blue);border-radius:5px;cursor:pointer;padding:0 6px;font-size:10px;line-height:1.5;vertical-align:middle;margin-left:3px;transition:all .15s}
 .cv4-pi-btn:hover{background:rgba(88,166,255,.12);border-color:var(--blue)}

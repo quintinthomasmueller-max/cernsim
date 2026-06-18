@@ -47,7 +47,7 @@ function geoRailFor(velKey, beam){
   case 'ps':      return { kind:'ring', ring:ps, r:0.20,
     entryA: ion?(R.psEntryFromLeirA??Math.PI):(R.psEntryFromPsbA??Math.PI),
     exitA:  R.psExitA??0 };
-  case 'trToSps': return { kind:'path', el: R.psSps, r:0.22 };
+  case 'trToSps': return { kind:'path', el: R.psSps, r:2.4 };
   case 'sps':     return { kind:'ring', ring:RG.sps, r:2.4,
     entryA: R.spsEntryA??Math.PI,
     exitA:  beam===1?(R.spsExitB1A??0):(R.spsExitB2A??0) };
@@ -241,6 +241,9 @@ async function flowStep(dot, pathEl, nodeEl, stageIdx, velKey, ringArgs, gen, be
  const abort = ()=>runAborted(gen);
  const geo = geoRailFor(velKey, beam);
  if(geo && dot.__geo) twinR(dot.__geo, geo.r);
+ // trToSps: im Injektor-Zoom via CSS auf Injektor-Größe schrumpfen (r-Attribut = 2.4
+ // für die Vollbild-Ansicht, CSS überschreibt auf 0.22 im Zoom — kein JS-Polling nötig).
+ if(velKey === 'trToSps' && dot.__geo) dot.__geo.classList.add('geo-twin-tr2sps');
  if(stageIdx!=null) stageEnter(stageIdx);
  if(nodeEl) enterNode(nodeEl);
  enterPath(pathEl);
@@ -303,6 +306,7 @@ async function injectBatch(beam, parked, gen){
  const key=beam===1?"b1":"b2";
  const rec={ el:dot, off:s.spsDots[key].length*0.7 };
  twinR(dot.__geo, 2.4);   // im SPS angekommen → Geo-Zwilling auf Vollbild-Groesse
+ if(dot.__geo) dot.__geo.classList.remove('geo-twin-tr2sps');
  s.spsDots[key].push(rec); parked.push(rec);
  stageEnter(3); enterNode(nodes.sps); pulseNode(nodes.sps);   // SPS leuchtet, solange Batches umlaufen
  startSpsLoop();
