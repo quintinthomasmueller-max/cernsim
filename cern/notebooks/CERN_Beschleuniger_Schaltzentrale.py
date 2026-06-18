@@ -733,6 +733,76 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
   var s = App.state;
   var E = App.els;
   var g = App.g;
+  function geoLen(el) {
+    try {
+      return el.__glen || (el.__glen = el.getTotalLength());
+    } catch (e) {
+      return 0;
+    }
+  }
+  function mkTwin(beam, rPx) {
+    if (!E.geoLayer || !App.geoRails) return null;
+    const t = document.createElementNS(SVG_NS, &quot;circle&quot;);
+    t.setAttribute(&quot;class&quot;, &quot;geo-twin&quot;);
+    t.setAttribute(&quot;r&quot;, rPx);
+    t.setAttribute(&quot;fill&quot;, beamColor(beam));
+    t.setAttribute(&quot;stroke&quot;, &quot;none&quot;);
+    t.style.pointerEvents = &quot;none&quot;;
+    E.geoLayer.appendChild(t);
+    return t;
+  }
+  function twinR(el, rPx) {
+    if (el) el.setAttribute(&quot;r&quot;, rPx);
+  }
+  function placeTwinPath(el, railEl, frac) {
+    if (!el || !railEl) return;
+    const L = geoLen(railEl);
+    if (!L) return;
+    try {
+      const pt = railEl.getPointAtLength(Math.max(0, Math.min(1, frac)) * L);
+      el.setAttribute(&quot;cx&quot;, pt.x);
+      el.setAttribute(&quot;cy&quot;, pt.y);
+    } catch (e) {
+    }
+  }
+  function placeTwinRing(el, ring, a) {
+    if (!el || !ring) return;
+    el.setAttribute(&quot;cx&quot;, ring.cx + ring.r * Math.cos(a));
+    el.setAttribute(&quot;cy&quot;, ring.cy + ring.r * Math.sin(a));
+  }
+  function endDot(el) {
+    if (!el) return;
+    if (el.__geo) {
+      el.__geo.remove();
+      el.__geo = null;
+    }
+    el.remove();
+  }
+  function geoRailFor(velKey, beam) {
+    const R3 = App.geoRails || {}, RG = App.geoRings || {}, ion = s.isIon, ps = RG.ps;
+    const toward = (rg) => rg &amp;&amp; ps ? Math.atan2(rg.cy - ps.cy, rg.cx - ps.cx) : Math.PI;
+    switch (velKey) {
+      case &quot;linac&quot;:
+        return { kind: &quot;path&quot;, el: ion ? R3.linac3 : R3.linac4, r: 0.18 };
+      case &quot;ring1&quot;: {
+        const rg = ion ? RG.leir : RG.psb;
+        return { kind: &quot;ring&quot;, ring: rg, r: 0.18, entryA: toward(rg) };
+      }
+      case &quot;trToPs&quot;:
+        return { kind: &quot;path&quot;, el: ion ? R3.leirPs : R3.psbPs, r: 0.18 };
+      case &quot;ps&quot;: {
+        const src = ion ? RG.leir : RG.psb;
+        return { kind: &quot;ring&quot;, ring: ps, r: 0.2, entryA: ps &amp;&amp; src ? Math.atan2(src.cy - ps.cy, src.cx - ps.cx) : Math.PI };
+      }
+      case &quot;trToSps&quot;:
+        return { kind: &quot;path&quot;, el: R3.psSps, r: 0.22 };
+      case &quot;sps&quot;:
+        return { kind: &quot;ring&quot;, ring: RG.sps, r: 2.4, entryA: Math.PI };
+      case &quot;ti&quot;:
+        return { kind: &quot;path&quot;, el: beam === 1 ? R3.ti2 : R3.ti8, r: 2.4 };
+    }
+    return null;
+  }
   var fc = () => s.isIon ? FILL.ion : FILL.proton;
   var totalBatches = () => Math.round(fc().total / fc().psBatch);
   var trainsTotal = () => Math.ceil(totalBatches() / fc().batchesPerTrain);
@@ -793,6 +863,7 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
     s.dumping = false;
     stopAutoCollide();
     document.querySelectorAll(&quot;.traveling-dot&quot;).forEach((d) => d.remove());
+    document.querySelectorAll(&quot;.geo-twin&quot;).forEach((d) => d.remove());
     E.btnAuto.classList.remove(&quot;off&quot;);
     s.filling = false;
     clearIllum();
@@ -841,7 +912,7 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
     g.paths.lhc.classList.remove(&quot;lit&quot;, &quot;lit-i&quot;);
     setStatus(&quot;BEREIT&quot;, &quot;on&quot;);
   }
-  async function moveAlongPath(dot, pathEl, vpx, abort) {
+  async function moveAlongPath(dot, pathEl, vpx, abort, geo) {
     return new Promise((res) => {
       const len = pathEl.__len || (pathEl.__len = pathEl.getTotalLength());
       const dur = Math.max(1, len / vpx);
@@ -856,15 +927,17 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
         let pt = pathEl.getPointAtLength(p * len);
         dot.setAttribute(&quot;cx&quot;, pt.x);
         dot.setAttribute(&quot;cy&quot;, pt.y);
+        if (geo &amp;&amp; geo.kind === &quot;path&quot;) placeTwinPath(dot.__geo, geo.el, p);
         p < 1 ? requestAnimationFrame(step) : res();
       }
       requestAnimationFrame(step);
     });
   }
-  async function orbitRing(dot, ring, entryA, exitA, orbits, vpx, abort) {
+  async function orbitRing(dot, ring, entryA, exitA, orbits, vpx, abort, geo) {
     let partial = ((exitA - entryA) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
     let totalA = orbits * 2 * Math.PI + partial;
     const dur = Math.max(1, ring.r * totalA / vpx);
+    const gEntry = geo &amp;&amp; geo.entryA != null ? geo.entryA : 0;
     return new Promise((res) => {
       let t0 = null;
       function step(ts) {
@@ -877,6 +950,7 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
         let a = entryA + p * totalA;
         dot.setAttribute(&quot;cx&quot;, ring.cx + ring.r * Math.cos(a));
         dot.setAttribute(&quot;cy&quot;, ring.cy + ring.r * Math.sin(a));
+        if (geo &amp;&amp; geo.kind === &quot;ring&quot;) placeTwinRing(dot.__geo, geo.ring, gEntry + p * totalA);
         p < 1 ? requestAnimationFrame(step) : res();
       }
       requestAnimationFrame(step);
@@ -946,14 +1020,16 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
   function runAborted(gen) {
     return s.resetFlag || gen !== s.fillGen;
   }
-  async function flowStep(dot, pathEl, nodeEl, stageIdx, velKey, ringArgs, gen) {
+  async function flowStep(dot, pathEl, nodeEl, stageIdx, velKey, ringArgs, gen, beam) {
     if (runAborted(gen)) return false;
     const abort = () => runAborted(gen);
+    const geo = geoRailFor(velKey, beam);
+    if (geo &amp;&amp; dot.__geo) twinR(dot.__geo, geo.r);
     if (stageIdx != null) stageEnter(stageIdx);
     if (nodeEl) enterNode(nodeEl);
     enterPath(pathEl);
-    if (ringArgs) await orbitRing(dot, ringArgs[0], ringArgs[1], ringArgs[2], ringArgs[3], App.getStageVel(velKey), abort);
-    else await moveAlongPath(dot, pathEl, App.getStageVel(velKey), abort);
+    if (ringArgs) await orbitRing(dot, ringArgs[0], ringArgs[1], ringArgs[2], ringArgs[3], App.getStageVel(velKey), abort, geo);
+    else await moveAlongPath(dot, pathEl, App.getStageVel(velKey), abort, geo);
     leavePath(pathEl);
     if (nodeEl) leaveNode(nodeEl);
     if (stageIdx != null) stageLeave(stageIdx);
@@ -971,6 +1047,7 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
     dot.setAttribute(&quot;fill&quot;, c);
     dot.setAttribute(&quot;stroke&quot;, c);
     (E.schematic || E.svg).appendChild(dot);
+    dot.__geo = mkTwin(beam, 0.18);
     return dot;
   }
   function pulseNode(n) {
@@ -994,22 +1071,23 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
     const ion = s.isIon, R3 = g.R, J2 = g.J, paths = g.paths, nodes = g.nodes;
     const dot = newDot(beam, &quot;2.4&quot;);
     const fin = () => {
-      dot.remove();
+      endDot(dot);
     };
     const lp = ion ? paths.linac3 : paths.linac4, ln = ion ? nodes.linac3 : nodes.linac4;
-    if (!await flowStep(dot, lp, ln, 0, &quot;linac&quot;, null, gen)) return fin();
+    if (!await flowStep(dot, lp, ln, 0, &quot;linac&quot;, null, gen, beam)) return fin();
     const r1 = ion ? R3.LEIR : R3.PSB, r1p = ion ? paths.leir : paths.psb, r1n = ion ? nodes.leir : nodes.psb;
     const r1e = ion ? J2.LEIR_ENTRY : J2.PSB_ENTRY, r1x = ion ? J2.LEIR_EXIT : J2.PSB_EXIT;
-    if (!await flowStep(dot, r1p, r1n, 1, &quot;ring1&quot;, [r1, r1e, r1x, 3], gen)) return fin();
-    if (!await flowStep(dot, ion ? paths.leirPs : paths.psbPs, null, null, &quot;trToPs&quot;, null, gen)) return fin();
+    if (!await flowStep(dot, r1p, r1n, 1, &quot;ring1&quot;, [r1, r1e, r1x, 3], gen, beam)) return fin();
+    if (!await flowStep(dot, ion ? paths.leirPs : paths.psbPs, null, null, &quot;trToPs&quot;, null, gen, beam)) return fin();
     const psE = ion ? J2.PS_FROM_LEIR : J2.PS_FROM_PSB;
-    if (!await flowStep(dot, paths.ps, nodes.ps, 2, &quot;ps&quot;, [R3.PS, psE, J2.PS_EXIT, 3], gen)) return fin();
+    if (!await flowStep(dot, paths.ps, nodes.ps, 2, &quot;ps&quot;, [R3.PS, psE, J2.PS_EXIT, 3], gen, beam)) return fin();
     pulseNode(nodes.ps);
     dot.setAttribute(&quot;r&quot;, &quot;3.2&quot;);
-    if (!await flowStep(dot, paths.psSps, null, null, &quot;trToSps&quot;, null, gen)) return fin();
+    if (!await flowStep(dot, paths.psSps, null, null, &quot;trToSps&quot;, null, gen, beam)) return fin();
     if (runAborted(gen)) return fin();
     const key = beam === 1 ? &quot;b1&quot; : &quot;b2&quot;;
     const rec = { el: dot, off: s.spsDots[key].length * 0.7 };
+    twinR(dot.__geo, 2.4);
     s.spsDots[key].push(rec);
     parked.push(rec);
     stageEnter(3);
@@ -1051,7 +1129,7 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
     const target = await mergeBatches(parked, gen);
     const startA = s.spsAngle + phase + target;
     parked.forEach((rec) => {
-      rec.el.remove();
+      endDot(rec.el);
       stageLeave(3);
       leaveNode(nodes.sps);
       const i = s.spsDots[key].indexOf(rec);
@@ -1060,18 +1138,19 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
     parked.length = 0;
     if (runAborted(gen)) return;
     const train = newDot(beam, &quot;4.2&quot;);
+    twinR(train.__geo, 2.4);
     train.setAttribute(&quot;cx&quot;, R3.SPS.cx + R3.SPS.r * Math.cos(startA));
     train.setAttribute(&quot;cy&quot;, R3.SPS.cy + R3.SPS.r * Math.sin(startA));
     const spsExit = beam === 1 ? J2.SPS_TI2 : J2.SPS_TI8;
-    if (!await flowStep(train, paths.sps, nodes.sps, 3, &quot;sps&quot;, [R3.SPS, startA, spsExit, 1], gen)) {
-      train.remove();
+    if (!await flowStep(train, paths.sps, nodes.sps, 3, &quot;sps&quot;, [R3.SPS, startA, spsExit, 1], gen, beam)) {
+      endDot(train);
       return;
     }
-    if (!await flowStep(train, beam === 1 ? paths.ti2 : paths.ti8, null, null, &quot;ti&quot;, null, gen)) {
-      train.remove();
+    if (!await flowStep(train, beam === 1 ? paths.ti2 : paths.ti8, null, null, &quot;ti&quot;, null, gen, beam)) {
+      endDot(train);
       return;
     }
-    train.remove();
+    endDot(train);
     addPermanentDot(beam);
     if (beam === 1) s.b1Count++;
     else s.b2Count++;
@@ -1090,7 +1169,7 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
     }
     await Promise.all(proms);
     if (runAborted(gen)) {
-      parked.forEach((rec) => rec.el.remove());
+      parked.forEach((rec) => endDot(rec.el));
       return;
     }
     await fuseTrain(beam, parked, gen);
@@ -1197,6 +1276,7 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
     dot.setAttribute(&quot;fill&quot;, c);
     dot.setAttribute(&quot;stroke&quot;, c);
     (E.schematic || E.svg).appendChild(dot);
+    dot.__geo = mkTwin(beam, 2.6);
     s.lhcDots[key].push({ el: dot, off: angleOffset });
     if (!s.lhcRunning) startLHCLoop();
   }
@@ -1210,10 +1290,12 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
       let dt = ts - s.spsLastT;
       s.spsLastT = ts;
       s.spsAngle += App.getStageVel(&quot;sps&quot;) / R3.SPS.r * dt;
+      const gsps = App.geoRings &amp;&amp; App.geoRings.sps;
       const place = (arr, phase) => arr.forEach((d) => {
         const a = s.spsAngle + phase + d.off;
         d.el.setAttribute(&quot;cx&quot;, R3.SPS.cx + R3.SPS.r * Math.cos(a));
         d.el.setAttribute(&quot;cy&quot;, R3.SPS.cy + R3.SPS.r * Math.sin(a));
+        if (d.el.__geo) placeTwinRing(d.el.__geo, gsps, a);
       });
       place(s.spsDots.b1, 0);
       place(s.spsDots.b2, Math.PI);
@@ -1231,17 +1313,21 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
       let dt = ts - s.lhcLastT;
       s.lhcLastT = ts;
       s.lhcAngle += s.lhcSpeed / timeScale() * dt;
+      const glhc = App.geoRails &amp;&amp; App.geoRails.lhc;
+      const frac = (a) => (a / (2 * Math.PI) % 1 + 1) % 1;
       s.lhcDots.b1.forEach((d) => {
         let a = s.lhcAngle + d.off;
         let r = 180 + 5.5 * Math.sin(a * 2);
         d.el.setAttribute(&quot;cx&quot;, R3.LHC.cx + r * Math.cos(a));
         d.el.setAttribute(&quot;cy&quot;, R3.LHC.cy + r * Math.sin(a));
+        if (d.el.__geo) placeTwinPath(d.el.__geo, glhc, frac(a));
       });
       s.lhcDots.b2.forEach((d) => {
         let a = -s.lhcAngle + d.off;
         let r = 180 - 5.5 * Math.sin(a * 2);
         d.el.setAttribute(&quot;cx&quot;, R3.LHC.cx + r * Math.cos(a));
         d.el.setAttribute(&quot;cy&quot;, R3.LHC.cy + r * Math.sin(a));
+        if (d.el.__geo) placeTwinPath(d.el.__geo, glhc, frac(a));
       });
       if (s.lhcRunning) requestAnimationFrame(frame);
     }
@@ -3198,8 +3284,37 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
       &quot;font-size&quot;: &quot;6px&quot;,
       &quot;font-family&quot;: &quot;monospace&quot;
     }));
+    buildGeoRails(g2, psRing, psbRing);
     drawInjector(g2);
     drawFCC(g2);
+  }
+  function buildGeoRails(g2, psRing, psbRing) {
+    const railPath = (d) => {
+      if (!d) return null;
+      const p = mk(&quot;path&quot;, { d, fill: &quot;none&quot;, stroke: &quot;none&quot; });
+      p.style.pointerEvents = &quot;none&quot;;
+      g2.appendChild(p);
+      return p;
+    };
+    const ringOf = (pts) => pts.length ? bboxC(pts) : null;
+    const rings = { ps: psRing, psb: psbRing, leir: ringOf(ptsOf(INJ.leir)), sps: ringOf(ptsOf(GEO.sps || [])) };
+    const edge = (a, b) => {
+      if (!a || !b) return null;
+      const dx = b.cx - a.cx, dy = b.cy - a.cy, d = Math.hypot(dx, dy) || 1, ux = dx / d, uy = dy / d;
+      return `M ${(a.cx + ux * a.r).toFixed(2)},${(a.cy + uy * a.r).toFixed(2)} L ${(b.cx - ux * b.r).toFixed(2)},${(b.cy - uy * b.r).toFixed(2)}`;
+    };
+    const acc = INJ.accel || [];
+    App.geoRings = rings;
+    App.geoRails = {
+      linac4: railPath(acc[1]),
+      linac3: railPath(acc[0]),
+      psbPs: railPath(edge(rings.psb, rings.ps)),
+      leirPs: railPath(edge(rings.leir, rings.ps)),
+      psSps: railPath(edge(rings.ps, rings.sps)),
+      ti2: railPath((GEO.ti || {}).ti2),
+      ti8: railPath((GEO.ti || {}).ti8),
+      lhc: railPath(GEO.lhc.join(&quot; &quot;))
+    };
   }
   function drawFCC(g2) {
     const LHC = { cx: 350, cy: 240, r: 180 };

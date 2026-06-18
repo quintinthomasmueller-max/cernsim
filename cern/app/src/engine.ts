@@ -8,6 +8,46 @@ import { App, FILL, REAL_SPS_CYCLE_S, SIM_SCALE, DT_SCALE, BEAM_LIFETIME_H, DUMP
 
 const s = App.state, E = App.els, g = App.g;
 
+// ── Geo-Zwillinge: jeder wandernde/kreisende Schema-Punkt bekommt einen Punkt in der
+// Realansicht (#geo-layer), der mit DEMSELBEN Fortschritt p / Winkel entlang der Geo-
+// Geometrie laeuft (App.geoRails/App.geoRings aus geo.ts) → beide Ansichten sind per
+// Konstruktion synchron. CSS-Display zeigt je Modus den richtigen; die Punktgroesse
+// trennt Injektor-Zoom (klein, im Vollbild unsichtbar) von SPS/LHC-Vollbild (gross,
+// im Zoom ausserhalb des Fensters). Fehlt die Geo-Ebene → keine Zwillinge (Schema
+// unveraendert; jsdom-Tests fuellen nicht → getPointAtLength wird nie aufgerufen).
+function geoLen(el){ try { return el.__glen || (el.__glen = el.getTotalLength()); } catch(e){ return 0; } }
+function mkTwin(beam, rPx){
+ if(!E.geoLayer || !App.geoRails) return null;
+ const t=document.createElementNS(SVG_NS,"circle");
+ t.setAttribute("class","geo-twin"); t.setAttribute("r",rPx);
+ // NUR Fill, KEINE Stroke: eine Default-Stroke (1 User-Unit) wuerde im ~53x-Injektor-
+ // Zoom zu einem riesigen Blob (~53 px) skalieren. Groesse = r (mit der Zoomstufe).
+ t.setAttribute("fill",beamColor(beam)); t.setAttribute("stroke","none");
+ (t as any).style.pointerEvents="none"; E.geoLayer.appendChild(t); return t;
+}
+function twinR(el, rPx){ if(el) el.setAttribute("r", rPx); }
+function placeTwinPath(el, railEl, frac){
+ if(!el || !railEl) return; const L=geoLen(railEl); if(!L) return;
+ try { const pt=railEl.getPointAtLength(Math.max(0,Math.min(1,frac))*L); el.setAttribute("cx",pt.x); el.setAttribute("cy",pt.y); } catch(e){}
+}
+function placeTwinRing(el, ring, a){ if(!el || !ring) return; el.setAttribute("cx",ring.cx+ring.r*Math.cos(a)); el.setAttribute("cy",ring.cy+ring.r*Math.sin(a)); }
+function endDot(el){ if(!el) return; if(el.__geo){ el.__geo.remove(); el.__geo=null; } el.remove(); }
+// velKey (+ Strahl/Ion) → Geo-Rail des aktuellen Schritts. r = Geo-Punktgroesse.
+function geoRailFor(velKey, beam){
+ const R=App.geoRails||{}, RG=App.geoRings||{}, ion=s.isIon, ps=RG.ps;
+ const toward=(rg)=> (rg&&ps)? Math.atan2(rg.cy-ps.cy, rg.cx-ps.cx) : Math.PI;
+ switch(velKey){
+  case 'linac':   return { kind:'path', el: ion?R.linac3:R.linac4, r:0.18 };
+  case 'ring1':   { const rg=ion?RG.leir:RG.psb; return { kind:'ring', ring:rg, r:0.18, entryA:toward(rg) }; }
+  case 'trToPs':  return { kind:'path', el: ion?R.leirPs:R.psbPs, r:0.18 };
+  case 'ps':      { const src=ion?RG.leir:RG.psb; return { kind:'ring', ring:ps, r:0.20, entryA:(ps&&src)?Math.atan2(src.cy-ps.cy,src.cx-ps.cx):Math.PI }; }
+  case 'trToSps': return { kind:'path', el: R.psSps, r:0.22 };
+  case 'sps':     return { kind:'ring', ring:RG.sps, r:2.4, entryA:Math.PI };
+  case 'ti':      return { kind:'path', el: beam===1?R.ti2:R.ti8, r:2.4 };
+ }
+ return null;
+}
+
 // Aktuelle Füll-Konfig (Protonen vs. Pb-Ionen) + abgeleitete Batch-/Zug-Zahlen.
 const fc = () => s.isIon ? FILL.ion : FILL.proton;
 const totalBatches = () => Math.round(fc().total / fc().psBatch);          // PS-Batches/Strahl
@@ -84,6 +124,7 @@ function resetLHC(keepData=false){
  s.dumping = false;
  stopAutoCollide();
  document.querySelectorAll(".traveling-dot").forEach(d=>d.remove());
+ document.querySelectorAll(".geo-twin").forEach(d=>d.remove());   // Geo-Zwillinge mit aufraeumen
  E.btnAuto.classList.remove("off");
  s.filling = false; clearIllum();
  s.lhcDots.b1.forEach(d=>d.el.remove()); s.lhcDots.b2.forEach(d=>d.el.remove());
@@ -108,7 +149,7 @@ function resetLHC(keepData=false){
 
 // abort(): bricht die Animation SOFORT ab (statt das Segment auf einem bereits
 // aus dem DOM entfernten Punkt zu Ende zu rechnen — verschenkte rAF-Frames).
-async function moveAlongPath(dot, pathEl, vpx, abort){
+async function moveAlongPath(dot, pathEl, vpx, abort, geo?){
  return new Promise<void>(res=>{
   // Pfadlängen sind statisch → einmal messen und am Element cachen
   const len = pathEl.__len || (pathEl.__len = pathEl.getTotalLength());
@@ -120,16 +161,18 @@ async function moveAlongPath(dot, pathEl, vpx, abort){
    let p=Math.min((ts-t0)/dur,1);
    let pt=pathEl.getPointAtLength(p*len);
    dot.setAttribute("cx",pt.x); dot.setAttribute("cy",pt.y);
+   if(geo && geo.kind==='path') placeTwinPath(dot.__geo, geo.el, p);   // Geo-Zwilling am selben Fortschritt
    p<1 ? requestAnimationFrame(step) : res();
   }
   requestAnimationFrame(step);
  });
 }
 
-async function orbitRing(dot, ring, entryA, exitA, orbits, vpx, abort){
+async function orbitRing(dot, ring, entryA, exitA, orbits, vpx, abort, geo?){
   let partial=((exitA-entryA)%(2*Math.PI)+2*Math.PI)%(2*Math.PI);
   let totalA=orbits*2*Math.PI+partial;
   const dur=Math.max(1, (ring.r*totalA)/vpx);   // Dauer = Bogenlänge / Geschwindigkeit (gleiche Leiter wie Transfers)
+  const gEntry = geo && geo.entryA!=null ? geo.entryA : 0;
   return new Promise<void>(res=>{
    let t0=null;
    function step(ts){
@@ -139,6 +182,7 @@ async function orbitRing(dot, ring, entryA, exitA, orbits, vpx, abort){
     let a=entryA+p*totalA;
     dot.setAttribute("cx",ring.cx+ring.r*Math.cos(a));
     dot.setAttribute("cy",ring.cy+ring.r*Math.sin(a));
+    if(geo && geo.kind==='ring') placeTwinRing(dot.__geo, geo.ring, gEntry+p*totalA);   // gleicher Umlauf, Geo-Ring
     p<1 ? requestAnimationFrame(step) : res();
    }
    requestAnimationFrame(step);
@@ -179,14 +223,16 @@ function clearIllum(){
 function runAborted(gen){ return s.resetFlag || gen !== s.fillGen; }
 
 // Ein Fluss-Schritt: Stufe betreten -> animieren -> verlassen; bricht bei Abbruch sauber & bilanziert ab.
-async function flowStep(dot, pathEl, nodeEl, stageIdx, velKey, ringArgs, gen){
+async function flowStep(dot, pathEl, nodeEl, stageIdx, velKey, ringArgs, gen, beam?){
  if(runAborted(gen)) return false;
  const abort = ()=>runAborted(gen);
+ const geo = geoRailFor(velKey, beam);
+ if(geo && dot.__geo) twinR(dot.__geo, geo.r);
  if(stageIdx!=null) stageEnter(stageIdx);
  if(nodeEl) enterNode(nodeEl);
  enterPath(pathEl);
- if(ringArgs) await orbitRing(dot, ringArgs[0], ringArgs[1], ringArgs[2], ringArgs[3], App.getStageVel(velKey), abort);
- else         await moveAlongPath(dot, pathEl, App.getStageVel(velKey), abort);
+ if(ringArgs) await orbitRing(dot, ringArgs[0], ringArgs[1], ringArgs[2], ringArgs[3], App.getStageVel(velKey), abort, geo);
+ else         await moveAlongPath(dot, pathEl, App.getStageVel(velKey), abort, geo);
  leavePath(pathEl);
  if(nodeEl) leaveNode(nodeEl);
  if(stageIdx!=null) stageLeave(stageIdx);
@@ -205,7 +251,9 @@ function newDot(beam, r){
  const dot=document.createElementNS(SVG_NS,"circle");
  dot.setAttribute("class","traveling-dot"); dot.setAttribute("r",r);
  const c=beamColor(beam); dot.setAttribute("fill",c); dot.setAttribute("stroke",c);
- (E.schematic||E.svg).appendChild(dot); return dot;
+ (E.schematic||E.svg).appendChild(dot);
+ dot.__geo = mkTwin(beam, 0.18);   // Geo-Zwilling (Injektor-Groesse; SPS/LHC setzen groesser)
+ return dot;
 }
 function pulseNode(n){ if(!n) return; n.classList.add("flash"); setTimeout(()=>n.classList.remove("flash"),200); }
 // Füllstands-Balken = was im LHC ANGEKOMMEN ist (Aufruf erst bei Zug-Ankunft in
@@ -224,23 +272,24 @@ async function injectBatch(beam, parked, gen){
  // (LINAC-Puls bzw. wenige PSB/LEIR-Pakete) — sie entsteht erst durch das
  // Bunch-Splitting im PS, dort „wächst" der Punkt (s. u.).
  const dot=newDot(beam, "2.4");
- const fin=()=>{ dot.remove(); };
+ const fin=()=>{ endDot(dot); };
  const lp=ion?paths.linac3:paths.linac4, ln=ion?nodes.linac3:nodes.linac4;
- if(!await flowStep(dot, lp, ln, 0, 'linac', null, gen)) return fin();
+ if(!await flowStep(dot, lp, ln, 0, 'linac', null, gen, beam)) return fin();
  const r1=ion?R.LEIR:R.PSB, r1p=ion?paths.leir:paths.psb, r1n=ion?nodes.leir:nodes.psb;
  const r1e=ion?J.LEIR_ENTRY:J.PSB_ENTRY, r1x=ion?J.LEIR_EXIT:J.PSB_EXIT;
- if(!await flowStep(dot, r1p, r1n, 1, 'ring1', [r1, r1e, r1x, 3], gen)) return fin();
- if(!await flowStep(dot, ion?paths.leirPs:paths.psbPs, null, null, 'trToPs', null, gen)) return fin();
+ if(!await flowStep(dot, r1p, r1n, 1, 'ring1', [r1, r1e, r1x, 3], gen, beam)) return fin();
+ if(!await flowStep(dot, ion?paths.leirPs:paths.psbPs, null, null, 'trToPs', null, gen, beam)) return fin();
  const psE=ion?J.PS_FROM_LEIR:J.PS_FROM_PSB;
- if(!await flowStep(dot, paths.ps, nodes.ps, 2, 'ps', [R.PS, psE, J.PS_EXIT, 3], gen)) return fin();
+ if(!await flowStep(dot, paths.ps, nodes.ps, 2, 'ps', [R.PS, psE, J.PS_EXIT, 3], gen, beam)) return fin();
  // Bunch-Splitting: erst HIER wird das Paket zum 72-Bunch-Batch (25-ns-Struktur).
  pulseNode(nodes.ps); dot.setAttribute("r","3.2");
- if(!await flowStep(dot, paths.psSps, null, null, 'trToSps', null, gen)) return fin();
+ if(!await flowStep(dot, paths.psSps, null, null, 'trToSps', null, gen, beam)) return fin();
  if(runAborted(gen)) return fin();
  // Am SPS angekommen → tritt in den SPS-Umlauf ein (akkumuliert kreisend, NICHT
  // statisch geparkt → kein Stau am Eingang) + als Bunches zählen.
  const key=beam===1?"b1":"b2";
  const rec={ el:dot, off:s.spsDots[key].length*0.7 };
+ twinR(dot.__geo, 2.4);   // im SPS angekommen → Geo-Zwilling auf Vollbild-Groesse
  s.spsDots[key].push(rec); parked.push(rec);
  stageEnter(3); enterNode(nodes.sps); pulseNode(nodes.sps);   // SPS leuchtet, solange Batches umlaufen
  startSpsLoop();
@@ -280,17 +329,18 @@ async function fuseTrain(beam, parked, gen){
  // 2) Übergabe AM ORT des nun gestapelten Clusters (s.spsAngle + Phase + Schwerpunkt)
  //    → der Zug entsteht genau dort, wo die Batches stehen (nahtlos, kein Teleport).
  const startA = s.spsAngle + phase + target;
- parked.forEach(rec=>{ rec.el.remove(); stageLeave(3); leaveNode(nodes.sps); const i=s.spsDots[key].indexOf(rec); if(i>=0) s.spsDots[key].splice(i,1); });
+ parked.forEach(rec=>{ endDot(rec.el); stageLeave(3); leaveNode(nodes.sps); const i=s.spsDots[key].indexOf(rec); if(i>=0) s.spsDots[key].splice(i,1); });
  parked.length=0;
  if(runAborted(gen)) return;
  const train=newDot(beam, "4.2");
+ twinR(train.__geo, 2.4);   // Zug = Vollbild-Groesse (SPS→TI→LHC)
  train.setAttribute("cx", R.SPS.cx + R.SPS.r*Math.cos(startA));
  train.setAttribute("cy", R.SPS.cy + R.SPS.r*Math.sin(startA));
  const spsExit=beam===1?J.SPS_TI2:J.SPS_TI8;
  // Orbit vom aktuellen Cluster-Winkel aus (1 voller Umlauf = SPS-Beschleunigung) bis zum TI-Ausgang.
- if(!await flowStep(train, paths.sps, nodes.sps, 3, 'sps', [R.SPS, startA, spsExit, 1], gen)){ train.remove(); return; }
- if(!await flowStep(train, beam===1?paths.ti2:paths.ti8, null, null, 'ti', null, gen)){ train.remove(); return; }
- train.remove();
+ if(!await flowStep(train, paths.sps, nodes.sps, 3, 'sps', [R.SPS, startA, spsExit, 1], gen, beam)){ endDot(train); return; }
+ if(!await flowStep(train, beam===1?paths.ti2:paths.ti8, null, null, 'ti', null, gen, beam)){ endDot(train); return; }
+ endDot(train);
  addPermanentDot(beam);
  if(beam===1) s.b1Count++; else s.b2Count++;
  countBatch(beam, nB);
@@ -310,7 +360,7 @@ async function injectTrain(beam, nBatches, gen){
   if(i<nBatches-1) await sleep(sub);
  }
  await Promise.all(proms);
- if(runAborted(gen)){ parked.forEach(rec=>rec.el.remove()); return; }
+ if(runAborted(gen)){ parked.forEach(rec=>endDot(rec.el)); return; }
  await fuseTrain(beam, parked, gen);
 }
 
@@ -402,6 +452,7 @@ function addPermanentDot(beam){
  // KEIN drop-shadow-Filter (Perf): die 12 Bunches kreisen jeden Frame.
  dot.setAttribute("fill",c); dot.setAttribute("stroke",c);
  (E.schematic||E.svg).appendChild(dot);
+ dot.__geo = mkTwin(beam, 2.6);   // umlaufender LHC-Bunch im Geo-Vollbild
  s.lhcDots[key].push({el:dot,off:angleOffset});
  if(!s.lhcRunning) startLHCLoop();
 }
@@ -423,7 +474,8 @@ function startSpsLoop(){
   // Beide Strahlen GLEICHLÄUFIG (ein Synchrotron = eine Umlaufrichtung). Die
   // Gegenläufigkeit beginnt erst im LHC (TI 2 vs. TI 8). B2 nur um π phasen-
   // versetzt, damit die Punkte sichtbar getrennt sind — NICHT gegenläufig.
-  const place=(arr,phase)=>arr.forEach(d=>{ const a=s.spsAngle+phase+d.off; d.el.setAttribute("cx",R.SPS.cx+R.SPS.r*Math.cos(a)); d.el.setAttribute("cy",R.SPS.cy+R.SPS.r*Math.sin(a)); });
+  const gsps = App.geoRings && App.geoRings.sps;
+  const place=(arr,phase)=>arr.forEach(d=>{ const a=s.spsAngle+phase+d.off; d.el.setAttribute("cx",R.SPS.cx+R.SPS.r*Math.cos(a)); d.el.setAttribute("cy",R.SPS.cy+R.SPS.r*Math.sin(a)); if(d.el.__geo) placeTwinRing(d.el.__geo, gsps, a); });
   place(s.spsDots.b1, 0); place(s.spsDots.b2, Math.PI);
   if(s.spsRunning && (s.spsDots.b1.length || s.spsDots.b2.length)) requestAnimationFrame(frame);
   else s.spsRunning=false;
@@ -438,15 +490,19 @@ function startLHCLoop(){
   if(!s.lhcLastT) s.lhcLastT=ts;
   let dt=ts-s.lhcLastT; s.lhcLastT=ts;
   s.lhcAngle += (s.lhcSpeed/timeScale())*dt;
+  const glhc = App.geoRails && App.geoRails.lhc;
+  const frac = (a)=>((a/(2*Math.PI))%1+1)%1;   // Winkel → Bahnanteil auf dem Geo-LHC-Rail
   s.lhcDots.b1.forEach(d=>{
    let a=s.lhcAngle+d.off;
    let r=180 + 5.5 * Math.sin(a * 2);
    d.el.setAttribute("cx",R.LHC.cx+r*Math.cos(a)); d.el.setAttribute("cy",R.LHC.cy+r*Math.sin(a));
+   if(d.el.__geo) placeTwinPath(d.el.__geo, glhc, frac(a));         // B1 vorwaerts
   });
   s.lhcDots.b2.forEach(d=>{
    let a=-s.lhcAngle+d.off;
    let r=180 - 5.5 * Math.sin(a * 2);
    d.el.setAttribute("cx",R.LHC.cx+r*Math.cos(a)); d.el.setAttribute("cy",R.LHC.cy+r*Math.sin(a));
+   if(d.el.__geo) placeTwinPath(d.el.__geo, glhc, frac(a));         // B2 gegenlaeufig (a faellt)
   });
   if(s.lhcRunning) requestAnimationFrame(frame);
  }

@@ -110,3 +110,8 @@ interface AppNamespace {
   timeScale?: () => number;
   [k: string]: any;               // dynamisch registrierte Funktionen (drawHist, setStatus, …)
 }
+
+/** Laufzeit-Properties, die die Engine an SVG-Elemente haengt:
+ *  __geo = Geo-Zwilling-Punkt (Realansicht), __len/__glen = gecachte Pfadlaengen. */
+interface SVGCircleElement { __geo?: any; }
+interface SVGGeometryElement { __len?: number; __glen?: number; }

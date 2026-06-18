@@ -189,8 +189,35 @@ function drawGeo() {
   g.appendChild(label(6, 474, '© OpenStreetMap (ODbL)' + (SAT ? ' · ' + SAT_ATTRIB : '') + ' · Web-Mercator', {
     fill: 'rgba(255,255,255,0.3)', 'font-size': '6px', 'font-family': 'monospace' }));
 
+  buildGeoRails(g, psRing, psbRing);
   drawInjector(g);
   drawFCC(g);
+}
+
+// ── Geo-Rails fuer die Batch-Animation (geo-flow, engine.ts) ─────────────────
+// Unsichtbare <path> (getPointAtLength) + Ring-Geometrien {cx,cy,r}. Jeder Schema-
+// Punkt bekommt einen Geo-Zwilling, der mit DEMSELBEN Fortschritt/Winkel hier
+// entlanglaeuft -> Real- und Schema-Ansicht sind per Konstruktion synchron. Die
+// Transfer-Verbinder sind als gerade Kantenlinien zwischen den Ringen geschaetzt
+// (keine eigenen Geodaten); LHC/SPS/TI/Linacs nutzen die echten Trassen.
+function buildGeoRails(g, psRing, psbRing) {
+  const railPath = (d) => { if (!d) return null; const p = mk('path', { d, fill: 'none', stroke: 'none' }); p.style.pointerEvents = 'none'; g.appendChild(p); return p; };
+  const ringOf = (pts) => pts.length ? bboxC(pts) : null;
+  const rings: any = { ps: psRing, psb: psbRing, leir: ringOf(ptsOf(INJ.leir)), sps: ringOf(ptsOf(GEO.sps || [])) };
+  const edge = (a, b) => {                                   // Linie Kante(a)->Kante(b)
+    if (!a || !b) return null;
+    const dx = b.cx - a.cx, dy = b.cy - a.cy, d = Math.hypot(dx, dy) || 1, ux = dx / d, uy = dy / d;
+    return `M ${(a.cx + ux * a.r).toFixed(2)},${(a.cy + uy * a.r).toFixed(2)} L ${(b.cx - ux * b.r).toFixed(2)},${(b.cy - uy * b.r).toFixed(2)}`;
+  };
+  const acc = INJ.accel || [];
+  App.geoRings = rings;
+  App.geoRails = {
+    linac4: railPath(acc[1]), linac3: railPath(acc[0]),
+    psbPs: railPath(edge(rings.psb, rings.ps)), leirPs: railPath(edge(rings.leir, rings.ps)),
+    psSps: railPath(edge(rings.ps, rings.sps)),
+    ti2: railPath((GEO.ti || {}).ti2), ti8: railPath((GEO.ti || {}).ti8),
+    lhc: railPath(GEO.lhc.join(' ')),
+  };
 }
 
 // ── Easter Egg: Future Circular Collider (FCC) ──────────────────────────────
