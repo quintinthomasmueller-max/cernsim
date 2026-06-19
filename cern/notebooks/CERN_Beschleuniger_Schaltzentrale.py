@@ -2045,7 +2045,7 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
       name: &quot;Myon (\u03BC)&quot;,
       col: &quot;#2ea44f&quot;,
       hl: [&quot;muon&quot;],
-      text: &quot;Ein Myon, ein schwererer Verwandter des Elektrons, durchquert den gesamten Detektor und wird als einziges Teilchen ganz au\xDFen in den Myonkammern registriert. Am CERN bilden vier solche Spuren im ATLAS- oder CMS-Detektor den ber\xFChmten \u201EGoldkanal\u201C, mit dem 2012 das Higgs-Boson nachgewiesen wurde.&quot;
+      text: &quot;Ein Myon, ein schwererer Verwandter des Elektrons, durchquert den gesamten Detektor und wird als einziges Teilchen ganz au\xDFen in den Myonkammern registriert. Am CERN bilden vier solche Spuren im ATLAS- oder CMS-Detektor den ber\xFChmten \u201Egoldenen Kanal\u201D (englisch: golden channel), mit dem 2012 das Higgs-Boson nachgewiesen wurde.&quot;
     },
     {
       typ: &quot;e&quot;,
@@ -2301,11 +2301,11 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
           disco: true,
           rate: 0.12,
           target: 90,
-          title: &quot;CMS \xB7 H\u2192ZZ*\u21924\u2113 (p-p \xB7 Goldkanal)&quot;,
+          title: &quot;CMS \xB7 H\u2192ZZ*\u21924\u2113 (p-p \xB7 goldener Kanal)&quot;,
           sub: &quot;Z\u21924\u2113-Peak (91) + Higgs-Bump (125) auf ZZ*-Untergrund \xB7 Higgs-Rate steigt steil mit der Energie&quot;,
           prov: &quot;4\u2113-Massen und -Kinematik: echte CMS-Open-Data (Record 5200, 278 Kandidaten 2011/2012)&quot;,
           real: &quot;Real nur ~1 H\u21924\u2113 pro Tag; die 278 echten Kandidaten zeigen Z\u21924\u2113 und den Higgs-Bump&quot;,
-          explain: &quot;Der Goldkanal der Higgs-Entdeckung: Das Higgs zerf\xE4llt \xFCber zwei Z-Bosonen in vier Leptonen. Im Spektrum erkennst du zwei Strukturen \u2014 einen Peak bei 91 GeV (ein einzelnes Z, das in vier Leptonen zerf\xE4llt) und einen kleinen H\xFCgel bei 125 GeV: das Higgs-Boson. Der Kanal ist sehr selten (real etwa 1 Ereignis pro Tag), aber besonders sauber. Die gezeigten 278 Kandidaten sind echte CMS-Ereignisse von 2011/2012.&quot;,
+          explain: &quot;Der goldene Kanal (englisch: golden channel) der Higgs-Entdeckung: Das Higgs zerf\xE4llt \xFCber zwei Z-Bosonen in vier Leptonen. Im Spektrum erkennst du zwei Strukturen \u2014 einen Peak bei 91 GeV (ein einzelnes Z, das in vier Leptonen zerf\xE4llt) und einen kleinen H\xFCgel bei 125 GeV: das Higgs-Boson. Der Kanal ist sehr selten (real etwa 1 Ereignis pro Tag), aber besonders sauber. Die gezeigten 278 Kandidaten sind echte CMS-Ereignisse von 2011/2012.&quot;,
           discoMsg: &quot;5\u03C3: Higgs-Boson entdeckt.&quot;
         },
         PbPb: {

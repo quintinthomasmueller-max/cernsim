@@ -100,11 +100,11 @@ const DETSPEC = {
    pp: {
     channel: "4l", pool: () => R.higgs4l, range: [80, 200], bins: 60,
     bg: v => Math.exp(-(v - 80) / 46), reson: [HIG, Z4L], primary: "H", disco: true, rate: 0.12, target: 90,
-    title: "CMS · H→ZZ*→4ℓ (p-p · Goldkanal)",
+    title: "CMS · H→ZZ*→4ℓ (p-p · goldener Kanal)",
     sub: "Z→4ℓ-Peak (91) + Higgs-Bump (125) auf ZZ*-Untergrund · Higgs-Rate steigt steil mit der Energie",
     prov: "4ℓ-Massen und -Kinematik: echte CMS-Open-Data (Record 5200, 278 Kandidaten 2011/2012)",
     real: "Real nur ~1 H→4ℓ pro Tag; die 278 echten Kandidaten zeigen Z→4ℓ und den Higgs-Bump",
-    explain: "Der Goldkanal der Higgs-Entdeckung: Das Higgs zerfällt über zwei Z-Bosonen in vier Leptonen. Im Spektrum erkennst du zwei Strukturen — einen Peak bei 91 GeV (ein einzelnes Z, das in vier Leptonen zerfällt) und einen kleinen Hügel bei 125 GeV: das Higgs-Boson. Der Kanal ist sehr selten (real etwa 1 Ereignis pro Tag), aber besonders sauber. Die gezeigten 278 Kandidaten sind echte CMS-Ereignisse von 2011/2012.",
+    explain: "Der goldene Kanal (englisch: golden channel) der Higgs-Entdeckung: Das Higgs zerfällt über zwei Z-Bosonen in vier Leptonen. Im Spektrum erkennst du zwei Strukturen — einen Peak bei 91 GeV (ein einzelnes Z, das in vier Leptonen zerfällt) und einen kleinen Hügel bei 125 GeV: das Higgs-Boson. Der Kanal ist sehr selten (real etwa 1 Ereignis pro Tag), aber besonders sauber. Die gezeigten 278 Kandidaten sind echte CMS-Ereignisse von 2011/2012.",
     discoMsg: "5σ: Higgs-Boson entdeckt."
    },
    PbPb: {
