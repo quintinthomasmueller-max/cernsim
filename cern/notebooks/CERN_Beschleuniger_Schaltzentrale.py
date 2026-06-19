@@ -316,7 +316,7 @@ display(HTML(r'''<iframe id="cern-v4-frame" title="CERN Stellwerk" scrolling="no
  .cv4-bottom{grid-template-columns:1fr}           /* Event-Display + Spektrum untereinander */
  .cv4-preset-grid{grid-template-columns:1fr 1fr}
  #btn-diagram-full{display:block!important}        /* „Großansicht&quot; nur am Handy */
- #btn-toggle-geo{top:48px}                         /* unter btn-diagram-full (beide top-right) */
+ #btn-toggle-geo{top:48px!important}               /* unter btn-diagram-full; !important schlaegt Inline-Style */
  /* Info-Panel auf Mobile wieder als zentriertes Modal (sonst weit unten in der einspal. Liste) */
  .cv4-info-panel{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:min(340px,94vw);max-height:86vh;overflow-y:auto;z-index:9999;border-radius:14px}
 }
