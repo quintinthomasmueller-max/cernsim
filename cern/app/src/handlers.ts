@@ -242,6 +242,9 @@ export function wireHandlers(){
       `<img class="cv4-pi-img" src="${src}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.display='none'">`
       + `<div class="cv4-pi-cap">${fig.cap}<br>Foto: ${fig.cred}</div>`);
     }
+    // Weiterführende Literatur ans Ende des Akkordeons hängen (falls vorhanden)
+    const weiter = App.weiterHtml ? App.weiterHtml(key) : '';
+    if(weiter) box.insertAdjacentHTML('beforeend', weiter);
     box.dataset.filled = '1';
    }
    const wasOpen = box.classList.contains('open');
@@ -273,7 +276,7 @@ export function wireHandlers(){
   s.targetBetaStar = 0.5; E.lblBeta.innerText = App.de(1.5,2) + " m";   // β* live: 1,50 m → 0,50 m nach Squeeze
   s.paramRampSpeed = 0.05; E.lblRampSpeed.innerText = App.de(0.05,2) + " T/s"; E.lblRampSpeed.style.color = "#58a6ff";
   App.updateReadouts(); selectDetector("ALICE");
-  App.setStatus("Preset Schwerionen (Pb-Pb, √s_NN = 5,36 TeV). ALICE und CMS messen das Aufschmelzen gebundener Quark-Paare im Quark-Gluon-Plasma, ATLAS das Z⁰ als Vergleichsmaßstab. Massen echt (CMS), Plasma-Unterdrückung modelliert.", "on");
+  App.setStatus("Preset Schwerionen (Pb-Pb, √s_NN = 5,36 TeV). ALICE und CMS messen das Aufschmelzen gebundener Quark-Antiquark-Paare im Quark-Gluon-Plasma, ATLAS das Z⁰ als Vergleichsmaßstab. Massen echt (CMS), Plasma-Unterdrückung modelliert.", "on");
  });
 
  E.btnPrePilot.addEventListener("click",()=>{

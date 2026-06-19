@@ -307,7 +307,7 @@ function drawTrack(x0,y0,ang,len,curv,color,lw){
 // dem Canvas. Schritt 6 = komplette Kollision. Gesteuert über s.tourStep (0=aus).
 const TOUR=[
  {typ:'mu', name:'Myon (μ)', col:'#2ea44f', hl:['muon'],
-  text:'Ein Myon, ein schwererer Verwandter des Elektrons, durchfliegt alle Schichten und wird als einziges Teilchen ganz außen in den Myonkammern registriert. Vier solche grünen Spuren auf einmal bilden den Goldkanal, mit dem 2012 das Higgs entdeckt wurde.'},
+  text:'Ein Myon, ein schwererer Verwandter des Elektrons, durchquert den gesamten Detektor und wird als einziges Teilchen ganz außen in den Myonkammern registriert. Am CERN bilden vier solche Spuren im ATLAS- oder CMS-Detektor den berühmten „Goldkanal“, mit dem 2012 das Higgs-Boson nachgewiesen wurde.'},
  {typ:'e', name:'Elektron (e⁻)', col:'#58a6ff', hl:['track','em'],
   text:'Das Elektron zieht erst eine vom Magnetfeld gekrümmte Spur durch den Spurdetektor und bleibt dann im EM-Kalorimeter stecken; der blaue Keil ist seine dort deponierte Energie.'},
  {typ:'gamma', name:'Photon (γ)', col:'#f1e05a', hl:['em'],
@@ -317,7 +317,7 @@ const TOUR=[
  {typ:'nu', name:'Neutrino (ν)', col:'#8b949e', hl:[],
   text:'Ein Neutrino durchquert den ganzen Detektor, und sogar die Erde, völlig spurlos. Verraten wird es nur durch die Bilanz: Auf einer Seite fehlt Impuls; der gestrichelte Pfeil zeigt, wohin er verschwand.'},
  {typ:'all', name:'Alles zusammen', col:'#f0f6fc', hl:null,
-  text:'Eine komplette Kollision: viele Untergrund-Spuren und dazu die Signaturen von eben. Aus diesen Mustern lesen die Physiker ab, welches Teilchen für rund 10⁻²² Sekunden existiert hat. Ein Klick auf eine Schicht zeigt Foto und Details.'}
+  text:'Eine komplette Kollision: viele Untergrund-Spuren und dazu die Signaturen von eben. Aus diesen Mustern lesen die Physiker ab, welches Teilchen für rund 10⁻²² Sekunden existiert hat. Ein Klick auf eine Detektor-Komponente zeigt Foto und Details.'}
 ];
 function evTourDraw(){
  const st=TOUR[s.tourStep-1]; if(!st) return;

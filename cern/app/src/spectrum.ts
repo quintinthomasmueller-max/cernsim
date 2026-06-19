@@ -79,6 +79,7 @@ const DETSPEC = {
     sub: "EW-Eichkanal · Z⁰-Resonanz bei 91 GeV",
     prov: "Massen: echte CMS-Open-Data (μ⁺μ⁻) · Spuren & Pile-up: illustrativ",
     real: "Real ~30 Z⁰→μμ pro s bei L=2·10³⁴, ein Präzisions-Eichkanal",
+    explain: "Aus je zwei Myonen (μ⁺μ⁻) wird die gemeinsame Masse berechnet; sie häuft sich scharf bei 91 GeV — der Masse des Z-Bosons. Weil dieser Wert extrem genau bekannt ist, eicht man mit dem Z die Energiemessung der Detektoren. Die Massen stammen aus echten CMS-Daten.",
     discoMsg: "5σ: Z⁰-Resonanz präzise vermessen."
    },
    PbPb: {
@@ -88,6 +89,7 @@ const DETSPEC = {
     sub: "Z⁰ ist elektroschwach und koppelt nicht ans QGP, bleibt also unverändert",
     prov: "Massen: echte CMS-p-p-Z⁰ (in Pb-Pb identisch, EW) · Spuren: illustrativ",
     real: "Z⁰ als QGP-blinde Standardkerze, eicht den Pb-Pb-Lauf",
+    explain: "Auch in Blei-Blei-Kollisionen erscheint das Z-Boson bei 91 GeV. Das Besondere: Das Z ist elektroschwach und spürt das heiße Quark-Gluon-Plasma nicht — es durchquert es unverändert. Daher dient es als Standardkerze, an der man prüft, ob die Messung im Schwerionenlauf richtig geeicht ist.",
     discoMsg: "5σ: Z⁰-Standardkerze in Pb-Pb vermessen."
    }
   }
@@ -102,6 +104,7 @@ const DETSPEC = {
     sub: "Z→4ℓ-Peak (91) + Higgs-Bump (125) auf ZZ*-Untergrund · Higgs-Rate steigt steil mit der Energie",
     prov: "4ℓ-Massen und -Kinematik: echte CMS-Open-Data (Record 5200, 278 Kandidaten 2011/2012)",
     real: "Real nur ~1 H→4ℓ pro Tag; die 278 echten Kandidaten zeigen Z→4ℓ und den Higgs-Bump",
+    explain: "Der Goldkanal der Higgs-Entdeckung: Das Higgs zerfällt über zwei Z-Bosonen in vier Leptonen. Im Spektrum erkennst du zwei Strukturen — einen Peak bei 91 GeV (ein einzelnes Z, das in vier Leptonen zerfällt) und einen kleinen Hügel bei 125 GeV: das Higgs-Boson. Der Kanal ist sehr selten (real etwa 1 Ereignis pro Tag), aber besonders sauber. Die gezeigten 278 Kandidaten sind echte CMS-Ereignisse von 2011/2012.",
     discoMsg: "5σ: Higgs-Boson entdeckt."
    },
    PbPb: {
@@ -111,6 +114,7 @@ const DETSPEC = {
     sub: "Bottomonium-Thermometer: Υ(3S)>Υ(2S)>Υ(1S) zunehmend geschmolzen",
     prov: "Υ-Massen: echte CMS-p-p · Pb-Pb-Unterdrückung modelliert (R_AA)",
     real: "Sequentielle Υ-Unterdrückung misst die QGP-Temperatur (reales CMS-Resultat)",
+    explain: "Hier sind die Υ-Mesonen (ein Bottom- und ein Antibottom-Quark) ein Thermometer für das Quark-Gluon-Plasma. Je heißer es ist, desto eher schmelzen locker gebundene Zustände: Υ(3S) verschwindet zuerst, Υ(2S) danach, das fest gebundene Υ(1S) hält am längsten. Aus dieser Reihenfolge liest man die Temperatur ab. Massen echt (CMS), die Plasma-Unterdrückung (R_AA) ist modelliert.",
     discoMsg: "5σ: sequentielle Υ-Unterdrückung (QGP) nachgewiesen.", supp: true
    }
   }
@@ -125,6 +129,7 @@ const DETSPEC = {
     sub: "Vakuum-Referenz: unverdrängte Quarkonia, keine Entdeckung (QGP nur in Pb-Pb)",
     prov: "Massen: echte CMS-Open-Data (μ⁺μ⁻) · Spuren & Multiplizität: illustrativ",
     real: "Unverdrängte Quarkonia, die p-p-Baseline, gegen die Pb-Pb verglichen wird",
+    explain: "Dies ist die Vergleichsbasis ohne Plasma: In Proton-Proton-Kollisionen entstehen Quarkonia (J/ψ bei 3,1 GeV, Υ bei 9,5 GeV) ungestört im Vakuum. Ihre Peaks zeigen die ungestörte Ausbeute. Erst der Vergleich mit dem Blei-Blei-Lauf verrät, welche im Plasma fehlen — deshalb ist dies bewusst keine Entdeckung, sondern der Maßstab.",
     discoMsg: "5σ: Quarkonia-Referenzspektrum (Vakuum) etabliert."
    },
    PbPb: {
@@ -135,6 +140,7 @@ const DETSPEC = {
     sub: "R_AA < 1 vs. p-p-Referenz · Schmelzen gebundener Zustände im Quark-Gluon-Plasma",
     prov: "Massen: echte CMS-p-p-Quarkonia · QGP-Unterdrückung modelliert (R_AA)",
     real: "J/ψ und Υ im QGP unterdrückt (R_AA<1), verglichen mit der unverdrängten p-p-Referenz",
+    explain: "Im Blei-Blei-Lauf vergleicht man die Quarkonia-Ausbeute mit der Proton-Proton-Referenz. Kleinere Peaks (R_AA < 1) bedeuten: Die gebundenen Quark-Antiquark-Paare wurden im heißen Plasma teilweise aufgelöst. Beim J/ψ kann sich am LHC sogar ein Teil neu bilden (Rekombination). Massen echt (CMS), Unterdrückung modelliert.",
     discoMsg: "5σ: Quarkonia-Unterdrückung (QGP) nachgewiesen.", supp: true
    }
   }
@@ -149,6 +155,7 @@ const DETSPEC = {
     sub: "Materie-Antimaterie-Asymmetrie im B-Mesonen-Zerfall",
     prov: "B-Masse: kalibrierte Simulation (kein B im Dimuon-Set) · Vertex: illustrativ",
     real: "B⁰→h⁺h⁻: CP-Asymmetrie baut sich über viele Fills auf",
+    explain: "LHCb sucht den winzigen Unterschied zwischen Materie und Antimaterie (CP-Verletzung). Dazu vergleicht es, wie oft B⁰-Mesonen (Peak bei 5,28 GeV) in bestimmte Endzustände zerfallen — und wie oft ihre Antiteilchen. Die Asymmetrie baut sich über viele Kollisionen auf. Hinweis: Der B-Peak ist hier kalibrierte Simulation, da der offene CMS-Datensatz keine B-Mesonen enthält.",
     discoMsg: "5σ: CP-Verletzung etabliert."
    },
    PbPb: {
@@ -158,6 +165,7 @@ const DETSPEC = {
     sub: "kein Standard-Schwerionen-Collider-Detektor, daher kein sauberes B⁰-Signal",
     prov: "Pb-Pb-Vorwärts/SMOG: kein Standard-B⁰-Kollider-Spektrum (didaktische Simulation)",
     real: "LHCb misst Pb-Pb nur im Vorwärts- oder Fixed-Target-Modus (SMOG): geringe Akzeptanz, kein B⁰→h⁺h⁻-Peak",
+    explain: "LHCb ist kein klassischer Rundum-Schwerionendetektor: Im Blei-Blei-Lauf nimmt es nur eingeschränkt teil (Vorwärts-/Fixed-Target-Modus SMOG). Ein sauberer B⁰-Peak entsteht dabei nicht — im Standardkanal bleibt nur Untergrund. Deshalb gibt es in diesem Modus keine Standard-Entdeckung.",
     discoMsg: "", note: "LHCb ist im Pb-Pb-Collider-Lauf nur eingeschränkt aktiv (spezialisiertes Vorwärts-/SMOG-Programm); im Standard-Kanal nur Untergrund."
    }
   }
@@ -523,6 +531,8 @@ function drawHist() {
  const elR = $("sp-real"); if (elR) elR.textContent = realTxt;
  const elP = $("sp-prov"); if (elP) elP.textContent = sp.prov
   + " · Maßstab: Massen aus CMS-Open-Data (√s = 7 TeV, energieunabhängig), Raten modelliert, Kandidaten statt Roh-Kollisionen · Modellkurve aus den Daten kalibriert.";
+ // Dynamische Erklär-Box „Dieser Graph": pro Variante neu gesetzt (Akkordeon-Inhalt).
+ const elE = $("pi-spExplain"); if (elE) elE.textContent = sp.explain || "";
 
  const activeData = s.massStore[s.selDet];
  if (!activeData.length) {

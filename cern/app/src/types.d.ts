@@ -50,6 +50,7 @@ interface SpectrumProfile {
   sub?: string;
   prov?: string;                  // Datenherkunft (echt vs. Modell)
   real?: string;                  // „was würde man real messen"
+  explain?: string;               // „Dieser Graph": Erklär-Box pro Variante
   discoMsg?: string;              // 5σ-Meldung
   col?: string;
   fc?: unknown;                   // datenkalibrierte Kurven-Funktion (Cache)

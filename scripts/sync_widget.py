@@ -79,7 +79,7 @@ RESIZE_REPORTER = (
     "if(window.ResizeObserver){new ResizeObserver(r).observe(document.body);}})();</script>"
 )
 
-FALLBACK_H = 1040  # px – greift, falls postMessage in einer Umgebung blockiert ist
+FALLBACK_H = 1090  # px – greift, falls postMessage in einer Umgebung blockiert ist (inkl. Footer)
 
 def esc_srcdoc(s):
     """Für das srcdoc-Attribut nur & und das Anführungszeichen escapen

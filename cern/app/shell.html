@@ -208,7 +208,7 @@
 
   <div>
    <div class="cv4-ptitle">LHC-FÜLLSTAND</div>
-   <div style="font-size:8.5px;color:#8b949e;margin:-2px 0 4px;line-height:1.35">1 Punkt = 1 Strahl-Paket im LHC. Die Paketierung davor: &nbsp;• Bunch — winziges Protonen-Paket (vor dem PS nur wenige). &nbsp;• Batch — 72 Bunches, im PS geformt (der Punkt wächst). &nbsp;• Zug — bis 4 Batches, im SPS gebündelt (≤ 288 Bunches). 1 LHC-Punkt entspricht einem ganzen Zug, nicht einem einzelnen Bunch. Ca. 10 Züge füllen den LHC (Pb-Ionen: 592 Bunches). Die Balken zählen die im LHC angekommenen Bunches.</div>
+   <div style="font-size:8.5px;color:#8b949e;margin:-2px 0 4px;line-height:1.35">Die Balken zählen die im LHC angekommenen Bunches (Teilchenpakete); voll sind 2.808 pro Strahl (Pb-Ionen: 592). Davor werden die Teilchen schrittweise gebündelt: Bunch (winziges Paket) → Batch (72 Bunches, im PS geformt — der wandernde Punkt wächst) → Zug (bis 4 Batches = ≤ 288 Bunches, im SPS gebündelt). Ein wandernder Punkt steht hier vereinfacht für einen ganzen Zug, nicht für einen einzelnen Bunch. Im Modell füllen rund 10 Züge den Ring (Pb-Ionen: 8); real sind es eher ~12 Einschüsse, weil nicht jeder Zug voll besetzt ist.</div>
    <div class="cv4-fill-row"><span style="width:108px;font-size:9.5px">B1 <span id="b1c">0 / 2.808</span></span><div class="cv4-fill-bar"><div class="cv4-fill-bar-inner b1" id="b1bar" style="width:0%"></div></div></div>
    <div class="cv4-fill-row" style="margin-top:4px"><span style="width:108px;font-size:9.5px">B2 <span id="b2c">0 / 2.808</span></span><div class="cv4-fill-bar"><div class="cv4-fill-bar-inner b2" id="b2bar" style="width:0%"></div></div></div>
   </div>
@@ -238,6 +238,7 @@
     <div class="cv4-info-stats-grid" id="info-stats"></div>
     <div class="cv4-info-text" id="info-text"></div>
     <div class="cv4-info-src" id="info-src"></div>
+    <div id="info-link"></div>
    </div>
   </div>
 
@@ -258,7 +259,8 @@
   <div class="cv4-sp-foot"><div id="ev-caption"></div></div>
  </div>
  <div>
-  <div class="cv4-ptitle">MASSENSPEKTRUM · TEILCHEN WIEGEN <span class="cv4-pi-btn" data-pi="spRead" style="float:right">Diagramm lesen</span></div>
+  <div class="cv4-ptitle">MASSENSPEKTRUM · TEILCHEN WIEGEN <span class="cv4-pi-btn" data-pi="spRead" style="float:right">Diagramm lesen</span><span class="cv4-pi-btn" data-pi="spExplain" style="float:right;margin-right:8px">Dieser Graph</span></div>
+  <div class="cv4-param-info" id="pi-spExplain"></div>
   <div class="cv4-param-info" id="pi-spRead"></div>
   <div class="cv4-sp-head">
    <div class="cv4-sp-title" id="sp-title">—</div>
@@ -277,6 +279,12 @@
    <div class="cv4-sp-prov" id="sp-prov"></div>
   </div>
  </div>
+</div>
+
+<!-- FOOTER: ehrliche Datenherkunft + Hinweis -->
+<div class="cv4-footer">
+ <span>Echte Messdaten: CMS Open Data — <a href="https://opendata.cern.ch/record/545" target="_blank" rel="noopener noreferrer">Dimuon (Record 545)</a>, √s = 7 TeV, und <a href="https://opendata.cern.ch/record/5200" target="_blank" rel="noopener noreferrer">Higgs→4ℓ (Record 5200)</a>, 2011/2012. Schwerionen / Quark-Gluon-Plasma und das LHCb-B⁰-Signal sind als Modell gekennzeichnet (keine offenen Daten dafür verfügbar).</span>
+ <span class="cv4-footer-cc">Interaktives Lernprojekt — programmiert mit Hilfe von Claude Code.</span>
 </div>
 
 {{SCRIPT}}

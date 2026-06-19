@@ -189,6 +189,16 @@
 .cv4-info-stat-v{display:block;font-size:10px;font-weight:700;font-family:'Courier New',monospace}
 .cv4-info-text{font-size:10.5px;color:var(--tx-dim);line-height:1.6;white-space:pre-line}
 .cv4-info-src{margin-top:8px;font-size:7.5px;font-family:'Courier New',monospace;color:var(--tx-dim);opacity:.7;line-height:1.4}
+/* Weiterführende Literatur (Ende der Info-Panels + Param-Akkordeons) */
+.cv4-weiter{margin-top:9px;font-size:9px;line-height:1.7;color:var(--tx-dim)}
+.cv4-weiter-l{display:block;font-weight:700;letter-spacing:.04em;text-transform:uppercase;opacity:.6;margin-bottom:2px}
+.cv4-weiter a{color:var(--blue);text-decoration:none;border-bottom:1px dotted rgba(88,166,255,.45)}
+.cv4-weiter a:hover{border-bottom-color:var(--blue)}
+/* Footer: ehrliche Datenherkunft + Hinweis (ganz unten im Widget) */
+.cv4-footer{margin-top:10px;padding:9px 12px;border-top:1px solid var(--bd);font-size:8.5px;line-height:1.6;color:var(--tx-dim);opacity:.9}
+.cv4-footer a{color:var(--blue);text-decoration:none;border-bottom:1px dotted rgba(88,166,255,.45)}
+.cv4-footer a:hover{border-bottom-color:var(--blue)}
+.cv4-footer-cc{display:block;margin-top:3px;opacity:.75}
 .cv4-pi-btn{background:none;border:1px solid var(--bd);color:var(--blue);border-radius:5px;cursor:pointer;padding:0 6px;font-size:10px;line-height:1.5;vertical-align:middle;margin-left:3px;transition:all .15s}
 .cv4-pi-btn:hover{background:rgba(88,166,255,.12);border-color:var(--blue)}
 .cv4-param-info{max-height:0;overflow:hidden;transition:max-height 0.28s ease,padding 0.28s ease,margin 0.28s ease;font-size:10px;color:var(--tx-dim);line-height:1.6;white-space:pre-line;padding:0 9px;margin:0;background:rgba(14,20,29,0.75);border-left:2px solid var(--bd);border-radius:0 0 6px 6px}

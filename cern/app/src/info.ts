@@ -69,7 +69,7 @@ const INFO_DB = {
   cred: 'Gillis · CC BY 3.0',
   stats: [['Länge/Umfang','6,9 km'],['Geschwindigkeit','99,94 → 99,9998 % c'],['In Betrieb seit','1976']],
   src: 'CERN · home.cern · Wikipedia',
-  text: 'Das Super Proton Synchrotron ist die letzte Stufe vor dem LHC. Es bringt die Protonen auf 450 GeV. Die Geschwindigkeit steigt dabei nur von 99,94 auf 99,9998 Prozent der Lichtgeschwindigkeit, die Energie aber auf das Zwanzigfache. Von hier werden die fertigen Bunch-Züge über die Transfertunnel TI 2 und TI 8 in beide Umlaufrichtungen in den LHC eingeschossen. 1983 gelang am SPS die Entdeckung der W- und Z-Bosonen, ausgezeichnet mit dem Nobelpreis 1984.'
+  text: 'Das Super Proton Synchrotron ist die letzte Stufe vor dem LHC. Es bringt die Protonen auf 450 GeV. Die Geschwindigkeit steigt dabei nur von 99,94 auf 99,9998 Prozent der Lichtgeschwindigkeit, die Energie aber auf das Zwanzigfache. Von hier werden die fertigen Bunch-Züge über die zwei Transfertunnel TI 2 und TI 8 in die beiden gegenläufigen LHC-Strahlen eingeschossen (je ein Tunnel pro Umlaufrichtung). 1983 gelang am SPS — damals als Proton-Antiproton-Collider betrieben — die Entdeckung der W- und Z-Bosonen, ausgezeichnet mit dem Nobelpreis 1984.'
  },
  LHC: {
   title: 'Large Hadron Collider',
@@ -79,7 +79,7 @@ const INFO_DB = {
   cred: 'alpinethread · CC BY-SA 2.0',
   stats: [['Länge/Umfang','26,7 km'],['Geschwindigkeit','99,9998 → 99,999999 % c'],['In Betrieb seit','2008']],
   src: 'CERN · home.cern · Wikipedia',
-  text: 'Im Large Hadron Collider laufen alle Strahlen zusammen: 27 Kilometer Umfang, rund 100 Meter unter der Erde. Bei 6,8 TeV sind die Protonen nur noch etwa 3 Meter pro Sekunde langsamer als das Licht. 1 232 supraleitende Dipolmagnete mit 8,3 Tesla, gekühlt auf 1,9 Kelvin und damit kälter als der Weltraum, halten die zwei Strahlen auf ihrer Kreisbahn. Sie umrunden den Ring rund 11 245-mal pro Sekunde; die Animation zeigt das stark verlangsamt. An vier Punkten kreuzen sich die Strahlen und kollidieren mit einer Schwerpunktsenergie von √s = 13,6 TeV. 2012 führte das zur Entdeckung des Higgs-Bosons.'
+  text: 'Im Large Hadron Collider mündet die gesamte Beschleuniger-Kette: 27 Kilometer Umfang, rund 100 Meter unter der Erde. Bei 6,8 TeV sind die Protonen nur noch etwa 3 Meter pro Sekunde langsamer als das Licht. 1 232 supraleitende Dipolmagnete mit 8,3 Tesla, gekühlt auf 1,9 Kelvin und damit kälter als der Weltraum, halten die zwei gegenläufigen Strahlen auf ihrer Kreisbahn. Sie umrunden den Ring rund 11 245-mal pro Sekunde; die Animation zeigt das stark verlangsamt. Die beiden Strahlen laufen wie auf zwei Spuren in getrennten Röhren und werden nur an den vier Experimenten in ein gemeinsames Rohr zusammengeführt. Dort kreuzen sie sich unter einem kleinen Winkel; erst wenn sie eng gebündelt sind (Stable Beams), treffen die Pakete im Mittelpunkt aufeinander und kollidieren (√s = 13,6 TeV) — sonst bleiben sie getrennt. 2012 führte das zur Entdeckung des Higgs-Bosons.'
  },
  FCC: {
   title: 'Future Circular Collider',
@@ -117,7 +117,7 @@ const INFO_DB = {
   cred: 'Andres T · CC BY-SA 2.0',
   stats: [['Maße','26 × 16 m'],['Schwerpunktsenergie','√s_NN ≤ 5,5 TeV'],['Gewicht','10 000 t']],
   src: 'ALICE / CERN · home.cern · Wikipedia',
-  text: 'ALICE ist der Spezialist für Blei-Blei-Kollisionen. Prallen zwei Bleikerne aufeinander, entsteht für einen winzigen Moment das Quark-Gluon-Plasma, ein Urzustand der Materie wie einige Mikrosekunden nach dem Urknall: so heiß, dass Quarks und Gluonen nicht mehr in Teilchen gebunden, sondern frei sind. Eine einzige solche Kollision erzeugt tausende Teilchen gleichzeitig. Das Herzstück von ALICE, eine 90 Kubikmeter große Gas-Kammer (TPC), kann sie einzeln auseinanderhalten.'
+  text: 'ALICE ist der Spezialist für Blei-Blei-Kollisionen. Prallen zwei Bleikerne aufeinander, entsteht für einen winzigen Moment das Quark-Gluon-Plasma, ein Urzustand der Materie wie einige Mikrosekunden nach dem Urknall: so heiß, dass Quarks und Gluonen nicht mehr in Teilchen gebunden, sondern frei sind. Eine einzige solche Kollision erzeugt tausende Teilchen gleichzeitig. Das Herzstück von ALICE, eine knapp 90 Kubikmeter große Gas-Kammer (TPC), kann sie einzeln auseinanderhalten.'
  },
  LHCB: {
   title: 'LHCb Detektor',
@@ -157,7 +157,7 @@ const INFO_DB = {
   cred: 'Wikimedia Commons · CC BY-SA 3.0',
   stats: [['Aufgabe','stoppt Hadronen (Jets)'],['Prinzip','Teilchenschauer in Messing/Stahl'],['Detektor','ATLAS, CMS']],
   src: 'CERN · home.cern · Wikipedia',
-  text: 'Das Hadron-Kalorimeter ist die dickste Bremsschicht: Platten aus Messing und Stahl, dazwischen Kunststoff, der beim Durchgang aufleuchtet. Hadronen, also Teilchen aus Quarks wie Protonen und Pionen, lösen hier ganze Teilchenschauer aus (Jets). Ein Teil des CMS-Messings stammt übrigens aus eingeschmolzenen Granathülsen der russischen Marine.'
+  text: 'Das Hadron-Kalorimeter ist die dickste Bremsschicht. Hadronen — Teilchen aus Quarks wie Protonen, Neutronen und Pionen — lösen hier ganze Teilchenschauer aus (Jets). Es besteht aus schweren Metallplatten mit leuchtendem Kunststoff dazwischen, in zwei Bauweisen:\n• Messing (CMS): die Absorberplatten sind aus Messing; ein Teil stammt aus eingeschmolzenen Granathülsen der russischen Marine.\n• Stahl (ATLAS): das „Tile"-Kalorimeter wechselt Stahlplatten mit Kunststoff-Szintillatoren ab.\nDie Helligkeit der Lichtblitze verrät die Energie des Schauers.'
  },
  L_COIL: {
   title: 'Die Magnetspule',
@@ -177,7 +177,7 @@ const INFO_DB = {
   cred: 'zipckr (Flickr) · CC BY 2.0',
   stats: [['Aufgabe','weist Myonen nach'],['Prinzip','nur Myonen dringen so weit'],['Detektor','ATLAS, CMS']],
   src: 'CERN · home.cern · Wikipedia',
-  text: 'Myonen sind extrem durchdringend und fliegen fast ungestört durch alle Kalorimeter; sie werden ganz außen in den Myonkammern registriert. Auch hier gibt es zwei Konzepte:\n• Mit Magnet-Rückflussjoch (CMS): die Kammern sind in ein massives, 12 500 Tonnen schweres Eisenjoch eingebettet, das das Magnetfeld zurückführt.\n• Luft-Toroid-System (ATLAS): die Kammern hängen frei zwischen gigantischen Magnetschleifen, was eine Spurmessung ohne störendes Eisen erlaubt.\nVier Myonspuren auf einmal sind eine besonders saubere Signatur für den Zerfall eines Higgs-Bosons. Das Myon steht sogar im Namen des CMS-Detektors: Compact Muon Solenoid.'
+  text: 'Myonen sind extrem durchdringend und fliegen fast ungestört durch alle Kalorimeter; sie werden ganz außen in den Myonkammern registriert. Auch hier gibt es zwei Konzepte:\n• Mit Magnet-Rückflussjoch (CMS): die Kammern sitzen im rund 12 500 Tonnen schweren Magnetsystem aus Spule und Eisenjoch, das das Magnetfeld zurückführt.\n• Luft-Toroid-System (ATLAS): die Kammern hängen frei zwischen gigantischen Magnetschleifen, was eine Spurmessung ohne störendes Eisen erlaubt.\nVier Myonspuren auf einmal sind eine besonders saubere Signatur für den Zerfall eines Higgs-Bosons. Das Myon steht sogar im Namen des CMS-Detektors: Compact Muon Solenoid.'
  },
  L_TPC: {
   title: 'TPC — Zeitprojektionskammer',
@@ -187,7 +187,7 @@ const INFO_DB = {
   cred: 'A. Saba/CERN · CC BY-SA 3.0',
   stats: [['Aufgabe','3D-Spurbild dichter Events'],['Prinzip','driftende Elektronen im Gas'],['Detektor','ALICE']],
   src: 'CERN · home.cern · Wikipedia',
-  text: 'Die Zeitprojektionskammer ist die größte Gas-Kammer der Welt: ein Zylinder mit 90 Kubikmetern Gas. Fliegt ein geladenes Teilchen hindurch, schlägt es aus den Gasatomen Elektronen heraus; diese driften zu den Endplatten und ergeben ein dreidimensionales Bild der Bahn. Nur so kann ALICE die bis zu 20 000 Spuren einer einzigen Blei-Blei-Kollision entwirren.'
+  text: 'Die Zeitprojektionskammer ist die größte Gas-Kammer der Welt: ein Zylinder mit knapp 90 Kubikmetern Gas. Fliegt ein geladenes Teilchen hindurch, schlägt es aus den Gasatomen Elektronen heraus; diese driften zu den Endplatten und ergeben ein dreidimensionales Bild der Bahn. Nur so kann ALICE die bis zu 20 000 Spuren einer einzigen Blei-Blei-Kollision entwirren.'
  },
  L_TOF: {
   title: 'TOF — Flugzeit-Detektor',
@@ -239,13 +239,13 @@ const PARAM_INFO = {
  rampspeed: 'dB/dt ist das Tempo, mit dem das Magnetfeld beim Hochfahren ansteigt. In den Magneten dürfen keine zu starken Wirbelströme entstehen, um die Teilchenbahn nicht zu stören. Real lässt sich der LHC dafür rund 20 Minuten Zeit, was im Mittel etwa 0,006 Tesla pro Sekunde entspricht. Ein Quench, also ein plötzlicher Zusammenbruch der Supraleitung, würde den Betrieb für Stunden lahmlegen.',
  ramp: 'Beim Hochfahren (Ramping) steigt der Strom in den Dipolmagneten von 760 Ampere bei 0,45 TeV auf etwa 11 500 Ampere bei 6,8 TeV. Die 1 232 supraleitenden Magnete müssen durchgehend auf 1,9 Kelvin gekühlt bleiben. Gleichzeitig erhöhen die Hochfrequenz-Resonatoren (400 MHz) ihre Spannung, um die Teilchenpakete zusammenzuhalten. Die Dauer der Rampe ist physikalisch berechnet: Dauer = Feldhub ΔB geteilt durch die Ramp-Rate. Bei einer Fahrt auf eine geringere Zielenergie ist die Rampe entsprechend schneller abgeschlossen.',
  squeeze: 'Nach dem Hochfahren werden die Strahlen an den Kollisionspunkten eng gebündelt. Quadrupol-Magnete rund 30 Meter vor jedem Detektor verringern β* vom Injektionswert (real rund 11 Meter, in dieser Anzeige vereinfacht 1,50 Meter) auf den Zielwert von beispielsweise 0,30 Meter. Der Strahldurchmesser schrumpft dabei auf etwa 13 Mikrometer, um eine hohe Kollisionsrate zu ermöglichen. Das muss langsam geschehen, damit der Strahl stabil bleibt.',
- prePp: 'Der Standardlauf des LHC macht rund 90 Prozent der Betriebszeit aus. Hier kollidieren Protonen bei voller Energie (Run 3: 6,8 TeV pro Strahl, √s = 13,6 TeV). An diesem Strahl arbeiten in Wirklichkeit alle vier Detektoren gleichzeitig. ATLAS und CMS suchen das Higgs-Boson im Zerfallskanal H→ZZ*→4ℓ und vermessen das Z-Boson zur Kalibrierung. LHCb untersucht die CP-Verletzung an B-Mesonen, um den Materie-Antimaterie-Unterschied im Universum zu ergründen. Da alle Experimente denselben Strahl nutzen, genügt im Widget ein Wechsel des Detektor-Reiters. Die Datenbasis des Widgets nutzt CMS-Open-Data: die Dimuon-Massen (μ⁺μ⁻) sowie die 278 veröffentlichten 4-Lepton-Higgs-Kandidaten von 2011 und 2012. Darin ist der Z-Peak bei 91 GeV und der Higgs-Anstieg bei 125 GeV zu sehen. Die Massen der Resonanzen sind physikalisch konstant; die Produktionsraten sind an die Strahlenergie angepasst.',
- preQgp: 'Der Schwerionenlauf findet etwa einen Monat pro Jahr statt. Dabei kollidieren Bleikerne bei 2,68 TeV pro Nukleon (√s_NN = 5,36 TeV). In der Kollision entsteht für einen winzigen Moment das Quark-Gluon-Plasma. Dies ist ein Urzustand der Materie, in dem Quarks und Gluonen frei beweglich sind, ähnlich wie einige Mikrosekunden nach dem Urknall. ALICE rekonstruiert die Spuren und misst, wie das Plasma gebundene Quark-Antiquark-Paare (die Mesonen J/ψ und Υ) aufschmilzt. CMS nutzt die Reihenfolge dieses Aufschmelzens als Thermometer. ATLAS und CMS vermessen das Z-Boson als Referenz, da es das Plasma unbeeinflusst durchdringt. Die Teilchenmassen basieren auf CMS-Daten. Die Effekte der Plasma-Unterdrückung sind didaktisch modelliert, da für Blei-Blei-Kollisionen keine freien Open-Data-Sätze vorliegen. Die Spurzahl im Display ist aus Gründen der Übersichtlichkeit reduziert.',
- prePilot: 'Dieser Modus dient der Inbetriebnahme und dem Testbetrieb. Der Strahl kreist mit der Injektionsenergie von 0,45 TeV ohne weiteres Hochfahren und mit geringer Intensität. Bei dieser Energie entstehen keine schweren Teilchen, was für Tests der Strahlführung und Steuerung beabsichtigt ist. Erst wenn alle Systeme stabil arbeiten, wird die Energie erhöht. So beginnt jeder Betriebszyklus des LHC. Im Massenspektrum ist daher nur der kontinuierliche Untergrund zu sehen, da die Energie für die Erzeugung schwerer Teilchen wie Z-Bosonen oder des Higgs-Bosons nicht ausreicht.',
+ prePp: 'Der Standardlauf des LHC macht rund 90 Prozent der Betriebszeit aus. Hier kollidieren Protonen bei voller Energie (Run 3: 6,8 TeV pro Strahl, √s = 13,6 TeV). An diesem Strahl arbeiten in Wirklichkeit alle vier Detektoren gleichzeitig. ATLAS und CMS vermessen das 2012 entdeckte Higgs-Boson im Zerfallskanal H→ZZ*→4ℓ und nutzen das Z-Boson zur Kalibrierung. LHCb untersucht die CP-Verletzung an B-Mesonen, um den Materie-Antimaterie-Unterschied im Universum zu ergründen. Da alle Experimente denselben Strahl nutzen, genügt im Widget ein Wechsel des Detektor-Reiters. Die Datenbasis des Widgets nutzt CMS-Open-Data: die Dimuon-Massen (μ⁺μ⁻) sowie die 278 veröffentlichten 4-Lepton-Higgs-Kandidaten von 2011 und 2012. Darin ist der Z-Peak bei 91 GeV und der Higgs-Anstieg bei 125 GeV zu sehen. Die Massen der Resonanzen sind physikalisch konstant; die Produktionsraten sind an die Strahlenergie angepasst.',
+ preQgp: 'Der Schwerionenlauf findet etwa einen Monat pro Jahr statt. Dabei kollidieren Bleikerne bei rund 2,7 TeV pro Nukleon (√s_NN = 5,36 TeV). In der Kollision entsteht für einen winzigen Moment das Quark-Gluon-Plasma. Dies ist ein Urzustand der Materie, in dem Quarks und Gluonen frei beweglich sind, ähnlich wie einige Mikrosekunden nach dem Urknall. ALICE rekonstruiert die Spuren und misst, wie das Plasma gebundene Quark-Antiquark-Paare (die Mesonen J/ψ und Υ) aufschmilzt. CMS nutzt die Reihenfolge dieses Aufschmelzens als Thermometer. ATLAS und CMS vermessen das Z-Boson als Referenz, da es das Plasma unbeeinflusst durchdringt. Die Teilchenmassen basieren auf CMS-Daten. Die Effekte der Plasma-Unterdrückung sind didaktisch modelliert, da für Blei-Blei-Kollisionen keine freien Open-Data-Sätze vorliegen. Die Spurzahl im Display ist aus Gründen der Übersichtlichkeit reduziert.',
+ prePilot: 'Dieser Modus dient der Inbetriebnahme und dem Testbetrieb. Der Strahl kreist mit der Injektionsenergie von 0,45 TeV ohne weiteres Hochfahren und mit geringer Intensität. Bei dieser niedrigen Energie entstehen noch keine schweren Teilchen — das ist gewollt, denn zunächst werden nur Strahlführung und Steuerung getestet. Erst wenn alle Systeme stabil arbeiten, wird die Energie erhöht. So beginnt jeder Betriebszyklus des LHC. Im Massenspektrum ist daher nur der kontinuierliche Untergrund zu sehen, da die Energie für die Erzeugung schwerer Teilchen wie Z-Bosonen oder des Higgs-Bosons nicht ausreicht.',
 
  // ── Laien-Einstieg (Elternabend) ────────────────────────────────────────────
  introCern: 'Das CERN bei Genf betreibt den Large Hadron Collider (LHC) in einem 27 Kilometer langen Ringtunnel etwa 100 Meter unter der Erde. Darin werden zwei Strahlen aus Teilchen fast auf Lichtgeschwindigkeit beschleunigt und an vier Punkten zur Kollision gebracht. Bei den Zusammenstößen wandelt sich Energie in neue Teilchen um (nach E = mc²), die von den Detektoren ATLAS, CMS, ALICE und LHCb vermessen werden. So wurde 2012 das Higgs-Boson nachgewiesen. Vor dem LHC durchlaufen die Teilchen eine Kette von Vorbeschleunigern (LINAC, PSB/LEIR, PS und SPS), die oben im Schema dargestellt ist.',
- introUse: 'So bedienst du die Schaltzentrale. Die Schritte folgen der Reihenfolge im echten LHC-Betrieb.\n\n(1) Preset wählen: Oben stehen drei reale Betriebsmodi (Protonen-Physik, Schwerionen und Pilot-Strahl). Das gewählte Preset stellt alle Strahl-Parameter automatisch ein. Sie erscheinen links unter „LHC-Messwerte und Strahl-Parameter“. Über das Feld „Teilchen“ kann zwischen Protonen und Blei-Ionen gewechselt werden.\n\n(2) Strahl füllen: Der Knopf „Füllprotokoll starten“ schickt die Teilchenpakete durch die Vorbeschleuniger in den LHC. Das PS formt die Pakete zu Gruppen aus 72 Bunches, das SPS bündelt bis zu vier Gruppen zu einem Zug. Der Tempo-Knopf wechselt zwischen zwei Zeitmaßstäben. Füllen und Hochfahren laufen im Zeitraffer (1 Sekunde entspricht 15 Sekunden real), die spätere Datennahme läuft langsamer, da ein realer Fill viele Stunden dauert.\n\n(3) Energie-Ramping: Dieser Schritt gilt für Protonen-Physik und Schwerionen. Magnetfeld und Hochfrequenz werden hochgefahren, bis der Strahl seine Zielenergie erreicht. Beim Pilot-Strahl entfällt dieser Schritt, da die Injektionsenergie von 0,45 TeV bereits der Betriebsenergie entspricht.\n\n(4) Beam Squeeze: Quadrupol-Magnete fokussieren die beiden Strahlen an den Kollisionspunkten enger zusammen, um die Kollisionsrate für die Messungen zu erhöhen.\n\n(5) Datennahme: „Auto-Datennahme“ sammelt fortlaufend Kollisionen und füllt das Massenspektrum. Über die Detektor-Reiter (ATLAS, CMS, ALICE, LHCb) wird die Anzeige des jeweiligen Experiments ausgewählt.\n\nUnter dem Schema zeigt das Event-Display links eine einzelne Kollision. Ein Klick auf eine Schicht öffnet Erklärungen, die „Signaturen-Tour“ führt durch die Teilchenarten. Rechts wächst das Massenspektrum der gemessenen Teilchen. Ein Klick auf einen Beschleuniger oder Detektor im Plan öffnet Details und Kennzahlen.',
+ introUse: 'So bedienst du die Schaltzentrale. Die Schritte folgen der Reihenfolge im echten LHC-Betrieb.\n\n(1) Preset wählen: Unten stehen drei reale Betriebsmodi (Protonen-Physik, Schwerionen/QGP und Pilot-Strahl). Das gewählte Preset stellt alle Strahl-Parameter automatisch ein. Sie erscheinen links unter „LHC-Messwerte und Strahl-Parameter“. Über das Feld „Teilchen“ kann zwischen Protonen und Blei-Ionen gewechselt werden.\n\n(2) Strahl füllen: Der Knopf „Füllprotokoll starten“ schickt die Teilchenpakete durch die Vorbeschleuniger in den LHC. Das PS formt die Pakete zu Gruppen aus 72 Bunches, das SPS bündelt bis zu vier Gruppen zu einem Zug. Der Tempo-Knopf wechselt zwischen zwei Zeitmaßstäben. Füllen und Hochfahren laufen im Zeitraffer (1 Sekunde entspricht 15 Sekunden real), die spätere Datennahme ist noch stärker gerafft (1 Sekunde entspricht etwa 15 Minuten real), da ein realer Fill viele Stunden dauert.\n\n(3) Energie-Ramping: Dieser Schritt gilt für Protonen-Physik und Schwerionen. Magnetfeld und Hochfrequenz werden hochgefahren, bis der Strahl seine Zielenergie erreicht. Beim Pilot-Strahl entfällt dieser Schritt, da die Injektionsenergie von 0,45 TeV bereits der Betriebsenergie entspricht.\n\n(4) Beam Squeeze: Quadrupol-Magnete fokussieren die beiden Strahlen an den Kollisionspunkten enger zusammen, um die Kollisionsrate für die Messungen zu erhöhen.\n\n(5) Datennahme: „Auto-Datennahme“ sammelt fortlaufend Kollisionen und füllt das Massenspektrum. Über die Detektor-Reiter (ATLAS, CMS, ALICE, LHCb) wird die Anzeige des jeweiligen Experiments ausgewählt.\n\nUnter dem Schema zeigt das Event-Display links eine einzelne Kollision. Ein Klick auf eine Detektor-Komponente öffnet Erklärungen, die „Signaturen-Tour“ führt durch die Teilchenarten. Rechts wächst das Massenspektrum der gemessenen Teilchen. Ein Klick auf einen Beschleuniger oder Detektor im Plan öffnet Details und Kennzahlen.',
  evRead: 'Je nach Detektortyp liest man das Bild anders:\n• ATLAS, CMS und ALICE: der runde Querschnitt (Zwiebelschalen) — die Teilchen fliegen vom Zentrum radial nach außen.\n• LHCb (Vorwärts-Spektrometer): die Teilchen fliegen kegelförmig nach rechts durch flache, hintereinander aufgereihte Detektor-Stationen.\nIn beiden Fällen zeigt jede Linie die Spur eines Teilchens, und verschiedene Arten werden unterschiedlich gestoppt: Myonen (grün) durchqueren alles und werden ganz außen registriert, Elektronen (blau) stoppen im elektromagnetischen Kalorimeter, Photonen (gelb) hinterlassen dort Energie ohne Spur im Tracker, Hadronen (orange) erzeugen Schauer im Hadron-Kalorimeter, Neutrinos (grau gestrichelt) entweichen unbemerkt. Das Magnetfeld krümmt die Spuren geladener Teilchen zur Impulsmessung. Die Visualisierung basiert auf CMS-Open-Data. Ein Klick auf eine Detektor-Komponente zeigt Details; die Signaturen-Tour führt Schritt für Schritt durch die Teilchenarten.',
  spRead: 'Wie wiegt man Teilchen, die man nicht einmal sehen kann? In diesem Diagramm wird die Masse von instabilen Elementarteilchen bestimmt. Aus den gemessenen Spuren der Zerfallsprodukte berechnet der Computer die sogenannte invariante Masse (die Ruhemasse des ursprünglichen Mutterteilchens) und erfasst sie im Histogramm. Ein Teilchen mit einer exakt definierten Masse (eine sogenannte „Resonanz“, wie das Z-Boson bei 91 GeV) bildet dabei einen scharfen Peak über dem kontinuierlichen Untergrund. Die Signifikanz in Standardabweichungen (σ, gesprochen „Sigma“) gibt an, wie unwahrscheinlich eine zufällige Fluktuation des Untergrunds ist. Ab 5 σ gilt eine Entdeckung in der Physik als statistisch gesichert – die Wahrscheinlichkeit für einen reinen Zufall liegt dann bei unter 1 zu 3,5 Millionen. Mit genau diesem Kriterium wurde 2012 auch das Higgs-Boson nachgewiesen. Mit steigender Anzahl an Kollisionen wächst diese Signifikanz proportional zur Wurzel der gesammelten Datenmenge.'
 };
@@ -258,6 +258,62 @@ const PARAM_INFO_FIG = {
   cap: 'Das Original: zwei echte Higgs-Kandidaten von 2012. Oben CMS (H→γγ: zwei grüne Energiebündel im Kristall-Kalorimeter), unten ATLAS (H→4μ: rote Spuren bis ganz nach außen). Unser Display zeichnet diese Art Bild vereinfacht nach.'
  }
 };
+
+// ═══════════════════════════════════════════════════════════════════════════
+// WEITERFÜHRENDE LITERATUR — populärwissenschaftliche Quellen je Infotext.
+// Erscheint am Ende jedes Info-Panels (INFO_DB) und Param-Akkordeons (PARAM_INFO).
+// Quellen geprüft (home.cern, Welt der Physik, Symmetry, Scientific American).
+// ═══════════════════════════════════════════════════════════════════════════
+const L_REF = {
+ complex:  { url:'https://home.cern/science/accelerators/the-accelerator-complex/', t:'CERN: Beschleunigerkomplex', lang:'EN' },
+ linac4:   { url:'https://home.cern/science/accelerators/linear-accelerator-4/', t:'CERN: Linac 4', lang:'EN' },
+ psb:      { url:'https://home.cern/science/accelerators/proton-synchrotron-booster/', t:'CERN: PS Booster', lang:'EN' },
+ leir:     { url:'https://home.cern/science/accelerators/low-energy-ion-ring/', t:'CERN: LEIR', lang:'EN' },
+ ps:       { url:'https://home.cern/science/accelerators/proton-synchrotron/', t:'CERN: Proton Synchrotron', lang:'EN' },
+ sps:      { url:'https://home.cern/science/accelerators/super-proton-synchrotron/', t:'CERN: Super Proton Synchrotron', lang:'EN' },
+ lhc:      { url:'https://home.cern/science/accelerators/large-hadron-collider/', t:'CERN: LHC', lang:'EN' },
+ fcc:      { url:'https://home.cern/science/accelerators/future-circular-collider/', t:'CERN: FCC', lang:'EN' },
+ hilumi:   { url:'https://home.cern/science/accelerators/hilumi-lhc/', t:'CERN: HL-LHC', lang:'EN' },
+ atlas:    { url:'https://home.cern/science/experiments/atlas/', t:'CERN: ATLAS', lang:'EN' },
+ cms:      { url:'https://home.cern/science/experiments/cms/', t:'CERN: CMS', lang:'EN' },
+ alice:    { url:'https://home.cern/science/experiments/alice/', t:'CERN: ALICE', lang:'EN' },
+ lhcb:     { url:'https://home.cern/science/experiments/lhcb/', t:'CERN: LHCb', lang:'EN' },
+ detector: { url:'https://home.cern/how-detector-works/', t:'CERN: Wie ein Detektor funktioniert', lang:'EN' },
+ magnets:  { url:'https://home.cern/science/engineering/pulling-together-superconducting-electromagnets/', t:'CERN: Supraleitende Magnete', lang:'EN' },
+ rf:       { url:'https://home.cern/science/engineering/accelerating-radiofrequency-cavities/', t:'CERN: HF-Resonatoren', lang:'EN' },
+ cryo:     { url:'https://home.cern/science/engineering/cryogenics-low-temperatures-high-performance/', t:'CERN: Kryotechnik', lang:'EN' },
+ cmsMuon:  { url:'https://cms.cern/detector/detecting-muons', t:'CMS: Myonen nachweisen', lang:'EN' },
+ higgs:    { url:'https://home.cern/science/physics/higgs-boson/', t:'CERN: Higgs-Boson', lang:'EN' },
+ antimat:  { url:'https://home.cern/science/physics/antimatter/', t:'CERN: Antimaterie', lang:'EN' },
+ wdpLhc:   { url:'https://www.weltderphysik.de/gebiet/teilchen/experimente/teilchenbeschleuniger/cern-lhc/lhc-faq/', t:'Welt der Physik: LHC-FAQ', lang:'DE' },
+ wdpAlice: { url:'https://www.weltderphysik.de/gebiet/teilchen/experimente/teilchenbeschleuniger/cern-lhc/lhc-experimente/alice/', t:'Welt der Physik: ALICE und QGP', lang:'DE' },
+ wdpHiggs: { url:'https://www.weltderphysik.de/gebiet/teilchen/bausteine/higgs/', t:'Welt der Physik: Higgs', lang:'DE' },
+ symLumi:  { url:'https://www.symmetrymagazine.org/article/what-is-luminosity', t:'Symmetry: Luminosität', lang:'EN' },
+ symSigma: { url:'https://www.symmetrymagazine.org/article/july-2012/sigma', t:'Symmetry: Sigma', lang:'EN' },
+ sciSigma: { url:'https://www.scientificamerican.com/blog/observations/five-sigmawhats-that/', t:'Scientific American: 5 Sigma', lang:'EN' }
+};
+const WEITER = {
+ // Beschleuniger
+ LINAC4:[L_REF.linac4], LINAC3:[L_REF.complex], PSB:[L_REF.psb], LEIR:[L_REF.leir],
+ PS:[L_REF.ps], SPS:[L_REF.sps], LHC:[L_REF.lhc, L_REF.wdpLhc], FCC:[L_REF.fcc],
+ // Detektoren
+ ATLAS:[L_REF.atlas], CMS:[L_REF.cms], ALICE:[L_REF.alice, L_REF.wdpAlice], LHCB:[L_REF.lhcb],
+ // Schichten/Komponenten
+ L_TRACK:[L_REF.detector], L_EM:[L_REF.detector], L_HAD:[L_REF.detector], L_COIL:[L_REF.magnets],
+ L_MUON:[L_REF.cmsMuon, L_REF.detector], L_TPC:[L_REF.alice], L_TOF:[L_REF.detector],
+ L_VTX:[L_REF.lhcb], L_RICH:[L_REF.detector], L_MAGNET:[L_REF.magnets],
+ // Parameter & Konzepte (Akkordeons)
+ energy:[L_REF.higgs], intensity:[L_REF.symLumi], beta:[L_REF.symLumi, L_REF.hilumi],
+ rampspeed:[L_REF.magnets], ramp:[L_REF.rf, L_REF.cryo], squeeze:[L_REF.hilumi],
+ prePp:[L_REF.higgs, L_REF.wdpHiggs], preQgp:[L_REF.wdpAlice, L_REF.alice], prePilot:[L_REF.complex],
+ introCern:[L_REF.complex, L_REF.wdpLhc], evRead:[L_REF.detector], spRead:[L_REF.symSigma, L_REF.sciSigma]
+};
+function weiterHtml(key){
+ const arr = WEITER[key]; if(!arr || !arr.length) return '';
+ const links = arr.map(l =>
+   `<a href="${l.url}" target="_blank" rel="noopener noreferrer">${l.t} (${l.lang})</a>`).join(' · ');
+ return `<div class="cv4-weiter"><span class="cv4-weiter-l">Weiterführende Literatur</span>${links}</div>`;
+}
 
 // Echtes Foto (Wikimedia Commons, CC) als Panel-Kopf — mit Farbverlauf-Tint,
 // Quellen-Credit und Offline-Fallback (falls kein Internet, Gradient-Box).
@@ -290,6 +346,8 @@ function showInfo(key){
  document.getElementById('info-text').textContent = d.text;
  const srcEl = document.getElementById('info-src');
  if(srcEl) srcEl.textContent = d.src ? 'Quelle: ' + d.src : '';
+ const linkEl = document.getElementById('info-link');
+ if(linkEl) linkEl.innerHTML = weiterHtml(key);
  panel.classList.add('visible');
  if(key.startsWith('L_') && App.setActiveLayer) App.setActiveLayer(key);
 }
@@ -312,3 +370,4 @@ App.PARAM_INFO_FIG = PARAM_INFO_FIG;
 App.showInfo = showInfo;
 App.hideInfo = hideInfo;
 App.toggleParamInfo = toggleParamInfo;
+App.weiterHtml = weiterHtml;

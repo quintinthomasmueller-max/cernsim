@@ -71,7 +71,7 @@ function start(){
  App.setViewMode(false); // Start im Didaktik-Modus (Schema sichtbar, Geo aus)
  App.resizeCanvases();
  App.updateReadouts(); App.drawDetBg(); App.drawHist();
- App.setStatus("BEREIT. Wähle eine Teilchenart und starte das Füllprotokoll","on");
+ App.setStatus("BEREIT. Wähle ein Preset und starte das Füllprotokoll","on");
  // Backing-Store an die per-CSS bestimmte Anzeigegröße koppeln. ResizeObserver
  // feuert initial UND bei jeder Layout-Änderung (Grid-Reflow @860px, iframe-
  // Resize in Jupyter, verzögerter Stylesheet-Load) → eine evtl. vor dem Layout
